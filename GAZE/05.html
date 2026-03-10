@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.0 WINTER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0603;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    font-family: 'Cinzel', Georgia, serif;
+  }
+
+  #stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    perspective: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #world {
+    position: relative;
+    width: 900px;
+    height: 600px;
+    transform-style: preserve-3d;
+    transform: rotateX(45deg) rotateZ(0deg) translateY(60px);
+    transition: transform 2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Parchment map base */
+  #map {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 40%, #c9a96e 0%, #b8935a 30%, #8b6914 60%, #3e2008 100%);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.6),
+      inset 0 0 30px rgba(184,134,11,0.2);
+  }
+
+  /* Map texture lines */
+  #map::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(62,32,8,0.12) 18px, rgba(62,32,8,0.12) 19px),
+      repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(62,32,8,0.08) 18px, rgba(62,32,8,0.08) 19px);
+    border-radius: 4px;
+  }
+
+  /* Terrain relief blobs */
+  #map::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 120px 60px at 20% 30%, rgba(62,32,8,0.3) 0%, transparent 70%),
+      radial-gradient(ellipse 80px 40px at 75% 20%, rgba(62,32,8,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 100px 50px at 60% 70%, rgba(62,32,8,0.2) 0%, transparent 70%),
+      radial-gradient(ellipse 60px 30px at 85% 60%, rgba(184,134,11,0.15) 0%, transparent 70%);
+    border-radius: 4px;
+  }
+
+  /* ===== GEAR SYSTEM ===== */
+  .gear-container {
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+
+  svg.gear {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s;
+  }
+
+  svg.gear.visible { opacity: 1; }
+
+  /* ===== STRUCTURES ===== */
+  .structure {
+    position: absolute;
+    transform-style: preserve-3d;
+    transform: scaleY(0);
+    transform-origin: bottom center;
+    transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  .structure.risen { transform: scaleY(1); }
+  .structure.retracted { transform: scaleY(0); transition: transform 1.2s cubic-bezier(0.7, 0, 0.8, 0.2); }
+
+  /* Tower A — rises and retracts (the hopeful one) */
+  #tower-a {
+    left: 160px; bottom: 220px;
+    width: 40px; height: 110px;
+  }
+  #tower-a .body {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 80px;
+    background: linear-gradient(180deg, #c8a050 0%, #7a4a10 60%, #3e2008 100%);
+    box-shadow: 3px 3px 0 #2a1505, inset -4px 0 8px rgba(0,0,0,0.5), inset 4px 0 6px rgba(184,134,11,0.2);
+  }
+  #tower-a .cap {
+    position: absolute;
+    bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-bottom: 32px solid #8b5a1a;
+    filter: drop-shadow(2px 2px 0 #2a1505);
+  }
+  #tower-a .battlements {
+    position: absolute;
+    bottom: 78px; left: 50%;
+    transform: translateX(-50%);
+    width: 32px; height: 10px;
+    background: repeating-linear-gradient(90deg, #7a4a10 0px, #7a4a10 6px, transparent 6px, transparent 10px);
+  }
+
+  /* Wall segment */
+  #wall-a {
+    left: 200px; bottom: 205px;
+    width: 160px; height: 30px;
+    transform: scaleX(0) scaleY(0);
+    transform-origin: left bottom;
+  }
+  #wall-a.risen { transform: scaleX(1) scaleY(1); }
+  #wall-a.retracted { transform: scaleX(0) scaleY(0); }
+
+  #wall-a .body {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 22px;
+    background: linear-gradient(180deg, #a07030 0%, #5c3510 100%);
+    box-shadow: 2px 4px 0 #2a1505;
+  }
+  #wall-a .merlons {
+    position: absolute;
+    bottom: 22px; left: 0;
+    width: 100%; height: 12px;
+    background: repeating-linear-gradient(90deg, #7a4a10 0px, #7a4a10 10px, transparent 10px, transparent 16px);
+  }
+
+  /* Tower B — the knife */
+  #tower-b {
+    left: 480px; bottom: 200px;
+    width: 30px; height: 150px;
+  }
+  #tower-b .body {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 18px; height: 120px;
+    background: linear-gradient(180deg, #d4b060 0%, #8a5a18 50%, #3e2008 100%);
+    box-shadow: 4px 4px 0 #1a0a02, inset -3px 0 6px rgba(0,0,0,0.6);
+  }
+  #tower-b .blade {
+    position: absolute;
+    bottom: 118px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 40px solid #c09040;
+    filter: drop-shadow(1px -1px 0 #2a1505);
+  }
+  /* Crack in the blade */
+  #tower-b .crack {
+    position: absolute;
+    bottom: 140px; left: 50%;
+    transform: translateX(-50%) rotate(15deg);
+    width: 2px; height: 30px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8), transparent);
+    opacity: 0;
+    transition: opacity 1s 0.5s;
+  }
+  #tower-b.cracked .crack { opacity: 1; }
+
+  /* Bridge to nowhere */
+  #bridge-a {
+    left: 360px; bottom: 200px;
+    width: 120px; height: 18px;
+    transform: scaleX(0);
+    transform-origin: left bottom;
+    transition: transform 2s cubic-bezier(0.2,0.8,0.3,1);
+  }
+  #bridge-a.risen { transform: scaleX(1); }
+  #bridge-a.retracted { transform: scaleX(0); }
+
+  #bridge-a .span {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 10px;
+    background: linear-gradient(180deg, #a07030 0%, #5c3510 100%);
+    box-shadow: 0 4px 0 #2a1505;
+  }
+  #bridge-a .arch {
+    position: absolute;
+    bottom: 8px; left: 30px;
+    width: 60px; height: 14px;
+    border-top: none;
+    border-radius: 0 0 30px 30px;
+    border: 4px solid #7a4a10;
+    border-top: none;
+    box-shadow: 0 4px 4px rgba(0,0,0,0.4);
+  }
+
+  /* Grand Palace — the stopped machine */
+  #palace {
+    left: 300px; bottom: 185px;
+    width: 260px; height: 200px;
+    transition: transform 2.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+  }
+  #palace .base {
+    position: absolute;
+    bottom: 0; left: 20px;
+    width: 220px; height: 40px;
+    background: linear-gradient(180deg, #8a6020 0%, #3e2008 100%);
+    box-shadow: 6px 6px 0 #1a0a02;
+  }
+  #palace .main-keep {
+    position: absolute;
+    bottom: 38px; left: 70px;
+    width: 120px; height: 100px;
+    background: linear-gradient(180deg, #c4a040 0%, #7a4a10 50%, #4a2a08 100%);
+    box-shadow: 8px 8px 0 #1a0a02, inset -8px 0 16px rgba(0,0,0,0.5);
+  }
+  #palace .left-tower {
+    position: absolute;
+    bottom: 38px; left: 30px;
+    width: 50px; height: 120px;
+    background: linear-gradient(180deg, #b89030 0%, #6a3a08 60%, #3e2008 100%);
+    box-shadow: 4px 6px 0 #1a0a02;
+  }
+  #palace .right-tower {
+    position: absolute;
+    bottom: 38px; right: 30px;
+    width: 50px; height: 110px;
+    background: linear-gradient(180deg, #b89030 0%, #6a3a08 60%, #3e2008 100%);
+    box-shadow: 4px 6px 0 #1a0a02;
+  }
+  #palace .spire-main {
+    position: absolute;
+    bottom: 136px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-bottom: 55px solid #9a7020;
+    filter: drop-shadow(3px 3px 0 #1a0a02);
+  }
+  #palace .spire-left {
+    position: absolute;
+    bottom: 156px; left: 34px;
+    width: 0; height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-bottom: 28px solid #8a6018;
+    filter: drop-shadow(2px 2px 0 #1a0a02);
+  }
+  #palace .spire-right {
+    position: absolute;
+    bottom: 146px; right: 34px;
+    width: 0; height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-bottom: 28px solid #8a6018;
+    filter: drop-shadow(2px 2px 0 #1a0a02);
+  }
+  #palace .windows {
+    position: absolute;
+    bottom: 60px; left: 85px;
+    width: 90px; height: 60px;
+    background:
+      radial-gradient(ellipse 8px 12px at 20px 20px, rgba(255,180,60,0.6) 0%, transparent 100%),
+      radial-gradient(ellipse 8px 12px at 50px 20px, rgba(255,160,40,0.4) 0%, transparent 100%),
+      radial-gradient(ellipse 8px 12px at 70px 20px, rgba(255,180,60,0.5) 0%, transparent 100%);
+  }
+  #palace .battlements-top {
+    position: absolute;
+    bottom: 136px; left: 70px;
+    width: 120px; height: 10px;
+    background: repeating-linear-gradient(90deg, #6a3a08 0px, #6a3a08 12px, transparent 12px, transparent 18px);
+  }
+
+  /* The figure — shadow only */
+  #figure {
+    position: absolute;
+    left: 250px; bottom: 178px;
+    width: 12px; height: 40px;
+    opacity: 0;
+    transition: opacity 2s;
+    z-index: 10;
+  }
+  #figure.visible { opacity: 1; }
+  #figure .body {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 30px;
+    background: rgba(0,0,0,0.85);
+    box-shadow: 30px 0 20px rgba(0,0,0,0.3);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+  }
+  #figure .head {
+    position: absolute;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 10px;
+    background: rgba(0,0,0,0.85);
+    border-radius: 50%;
+  }
+
+  /* ===== TEXT OVERLAY ===== */
+  #text-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .text-line {
+    position: absolute;
+    color: #D2B48C;
+    text-align: center;
+    opacity: 0;
+    letter-spacing: 0.15em;
+    text-shadow:
+      0 0 20px rgba(184,134,11,0.8),
+      2px 2px 0 rgba(62,32,8,0.9),
+      -1px -1px 0 rgba(0,0,0,0.5);
+    transition: opacity 1.5s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .text-line.visible { opacity: 1; }
+  .text-line.gone { opacity: 0; transition: opacity 0.8s ease; }
+
+  .text-line.title {
+    font-family: 'Cinzel Decorative', 'Cinzel', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    color: #D4A820;
+    letter-spacing: 0.3em;
+    text-shadow:
+      0 0 30px rgba(212,168,32,0.9),
+      0 0 60px rgba(184,134,11,0.4),
+      3px 3px 0 rgba(62,32,8,1),
+      -1px -1px 0 rgba(0,0,0,0.8);
+    top: 12%;
+  }
+
+  .text-line.sub {
+    font-size: clamp(10px, 1.6vw, 15px);
+    font-weight: 400;
+    color: #b8935a;
+    letter-spacing: 0.25em;
+    line-height: 1.8;
+  }
+
+  .text-line.verse {
+    font-size: clamp(11px, 1.8vw, 16px);
+    font-weight: 400;
+    color: #c4a060;
+    letter-spacing: 0.18em;
+    line-height: 2;
+  }
+
+  .text-line.final {
+    font-family: 'Cinzel Decorative', 'Cinzel', serif;
+    font-size: clamp(16px, 2.8vw, 26px);
+    font-weight: 700;
+    color: #D4A820;
+    letter-spacing: 0.25em;
+    text-shadow:
+      0 0 20px rgba(212,168,32,0.9),
+      2px 2px 0 rgba(62,32,8,1);
+  }
+
+  /* Candlelight vignette */
+  #vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 30%, rgba(10,6,3,0.6) 70%, rgba(5,2,0,0.95) 100%);
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  /* Flicker overlay */
+  #flicker {
+    position: fixed;
+    inset: 0;
+    background: rgba(184,134,11,0.02);
+    pointer-events: none;
+    z-index: 31;
+    animation: flicker 0.1s infinite;
+  }
+
+  @keyframes flicker {
+    0%   { opacity: 0.6; }
+    25%  { opacity: 1; }
+    50%  { opacity: 0.7; }
+    75%  { opacity: 0.9; }
+    100% { opacity: 0.6; }
+  }
+
+  /* Fade overlay */
+  #fade {
+    position: fixed;
+    inset: 0;
+    background: #0a0603;
+    opacity: 1;
+    pointer-events: none;
+    z-index: 40;
+    transition: opacity 2s ease;
+  }
+  #fade.clear { opacity: 0; }
+  #fade.black { opacity: 1; }
+
+  /* Replay button */
+  #replay {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #6a4a18;
+    background: none;
+    border: 1px solid #3e2008;
+    padding: 10px 24px;
+    cursor: pointer;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 1s, color 0.3s, border-color 0.3s;
+    text-transform: uppercase;
+  }
+  #replay:hover { color: #D2B48C; border-color: #8a6020; }
+  #replay.visible { opacity: 1; }
+
+  /* Gear SVG styling */
+  .gear-tooth { fill: #7a5010; stroke: #3e2008; stroke-width: 1; }
+  .gear-body  { fill: #8a6018; stroke: #4a2a08; stroke-width: 1.5; }
+  .gear-hole  { fill: #2a1005; }
+  .gear-spoke { stroke: #5a3a10; stroke-width: 2; fill: none; }
+</style>
+</head>
+<body>
+
+<div id="vignette"></div>
+<div id="flicker"></div>
+<div id="fade"></div>
+
+<div id="stage">
+  <div id="world">
+    <div id="map"></div>
+
+    <!-- GEARS (SVG inline) -->
+    <svg class="gear" id="gear1" style="left:80px;bottom:160px;width:70px;height:70px;" viewBox="0 0 70 70">
+      <g transform="translate(35,35)">
+        <circle r="28" class="gear-body"/>
+        <circle r="10" class="gear-hole"/>
+        <line x1="0" y1="-28" x2="0" y2="28" class="gear-spoke"/>
+        <line x1="-28" y1="0" x2="28" y2="0" class="gear-spoke"/>
+        <g id="teeth1"></g>
+      </g>
+    </svg>
+
+    <svg class="gear" id="gear2" style="left:250px;bottom:140px;width:90px;height:90px;" viewBox="0 0 90 90">
+      <g transform="translate(45,45)">
+        <circle r="36" class="gear-body"/>
+        <circle r="13" class="gear-hole"/>
+        <line x1="0" y1="-36" x2="0" y2="36" class="gear-spoke"/>
+        <line x1="-36" y1="0" x2="36" y2="0" class="gear-spoke"/>
+        <line x1="-25" y1="-25" x2="25" y2="25" class="gear-spoke"/>
+        <line x1="25" y1="-25" x2="-25" y2="25" class="gear-spoke"/>
+        <g id="teeth2"></g>
+      </g>
+    </svg>
+
+    <svg class="gear" id="gear3" style="right:120px;bottom:150px;width:60px;height:60px;" viewBox="0 0 60 60">
+      <g transform="translate(30,30)">
+        <circle r="22" class="gear-body"/>
+        <circle r="8" class="gear-hole"/>
+        <line x1="0" y1="-22" x2="0" y2="22" class="gear-spoke"/>
+        <line x1="-22" y1="0" x2="22" y2="0" class="gear-spoke"/>
+        <g id="teeth3"></g>
+      </g>
+    </svg>
+
+    <!-- STRUCTURES -->
+    <div class="structure" id="tower-a">
+      <div class="battlements"></div>
+      <div class="cap"></div>
+      <div class="body"></div>
+    </div>
+
+    <div class="structure" id="wall-a">
+      <div class="merlons"></div>
+      <div class="body"></div>
+    </div>
+
+    <div class="structure" id="bridge-a">
+      <div class="arch"></div>
+      <div class="span"></div>
+    </div>
+
+    <div class="structure" id="tower-b">
+      <div class="blade"></div>
+      <div class="crack"></div>
+      <div class="body"></div>
+    </div>
+
+    <div class="structure" id="palace">
+      <div class="spire-main"></div>
+      <div class="spire-left"></div>
+      <div class="spire-right"></div>
+      <div class="battlements-top"></div>
+      <div class="windows"></div>
+      <div class="main-keep"></div>
+      <div class="left-tower"></div>
+      <div class="right-tower"></div>
+      <div class="base"></div>
+    </div>
+
+    <div id="figure">
+      <div class="head"></div>
+      <div class="body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEXT OVERLAY -->
+<div id="text-stage">
+  <div class="text-line title"   id="t-title"  style="top:12%">5.0 &nbsp; WINTER</div>
+  <div class="text-line sub"     id="t-01"    style="top:72%">Winter is not a design constraint.</div>
+  <div class="text-line sub"     id="t-02"    style="top:78%">Winter is the real.</div>
+  <div class="text-line verse"   id="t-03"    style="top:68%">The file that does not exist. &nbsp; The calculation that fails.</div>
+  <div class="text-line verse"   id="t-04"    style="top:75%">The fact that will not be charmed into fiction.</div>
+  <div class="text-line verse"   id="t-05"    style="top:70%">A knife that will not cut bone is not a knife.</div>
+  <div class="text-line verse"   id="t-06"    style="top:76%">A machine that will not fail is not a machine.</div>
+  <div class="text-line verse"   id="t-07"    style="top:72%">It is a wish.</div>
+  <div class="text-line final"   id="t-08"    style="top:65%">The machine does not die.</div>
+  <div class="text-line final"   id="t-09"    style="top:74%">It only stops.</div>
+  <div class="text-line sub"     id="t-10"    style="top:68%">And we stand over it wondering what we did wrong.</div>
+  <div class="text-line verse"   id="t-11"    style="top:76%">As if prayer had a correct form.</div>
+  <div class="text-line verse"   id="t-12"    style="top:82%">As if the gods ever answered because the sentence was arranged well.</div>
+</div>
+
+<button id="replay">↺ &nbsp; Begin Again</button>
+
+<script>
+// ─── Gear teeth generation ─────────────────────────────────────────────────
+function buildGearTeeth(groupId, r, count, toothH, toothW) {
+  const g = document.getElementById(groupId);
+  if (!g) return;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * 2 * Math.PI;
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", -toothW / 2);
+    rect.setAttribute("y", -(r + toothH));
+    rect.setAttribute("width", toothW);
+    rect.setAttribute("height", toothH);
+    rect.setAttribute("rx", "1");
+    rect.setAttribute("class", "gear-tooth");
+    rect.setAttribute("transform", `rotate(${(angle * 180 / Math.PI).toFixed(2)})`);
+    g.appendChild(rect);
+  }
+}
+buildGearTeeth("teeth1", 28, 12, 6, 7);
+buildGearTeeth("teeth2", 36, 16, 7, 8);
+buildGearTeeth("teeth3", 22, 10, 5, 6);
+
+// ─── Gear rotation ─────────────────────────────────────────────────────────
+const gearAnims = [
+  { el: document.querySelector("#gear1 g"), speed: 0.4,  dir: 1  },
+  { el: document.querySelector("#gear2 g"), speed: 0.25, dir: -1 },
+  { el: document.querySelector("#gear3 g"), speed: 0.55, dir: 1  },
+];
+let gearAngle = [0, 0, 0];
+let gearRunning = false;
+let gearAF;
+
+function spinGears(ts) {
+  if (!gearRunning) return;
+  gearAnims.forEach((g, i) => {
+    gearAngle[i] += g.speed * g.dir;
+    g.el.setAttribute("transform", `translate(${g.el.parentElement.getAttribute("viewBox") ? 0 : 0},0) rotate(${gearAngle[i]})`);
+  });
+  // Re-grab inner g elements since we manipulate them
+  document.querySelector("#gear1 g").style.transform = `rotate(${gearAngle[0]}deg)`;
+  document.querySelector("#gear2 g").style.transform = `rotate(${gearAngle[1]}deg)`;
+  document.querySelector("#gear3 g").style.transform = `rotate(${gearAngle[2]}deg)`;
+  gearAF = requestAnimationFrame(spinGears);
+}
+
+// ─── Utility ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const show = id => $(id).classList.add('visible');
+const hide = id => $(id).classList.add('gone');
+const hideEl = id => $(id).classList.remove('visible');
+
+function after(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function showGears(visible) {
+  document.querySelectorAll('svg.gear').forEach(g => {
+    g.classList.toggle('visible', visible);
+  });
+}
+
+// ─── World camera ───────────────────────────────────────────────────────────
+const world = $('world');
+const stage = $('stage');
+
+function setCam(rx, rz, ty, perspective) {
+  stage.style.perspective = perspective + 'px';
+  world.style.transform = `rotateX(${rx}deg) rotateZ(${rz}deg) translateY(${ty}px)`;
+}
+
+// ─── SEQUENCE ───────────────────────────────────────────────────────────────
+async function runSequence() {
+  // Reset
+  $('replay').classList.remove('visible');
+  $('fade').classList.remove('clear');
+
+  document.querySelectorAll('.text-line').forEach(el => {
+    el.classList.remove('visible', 'gone');
+  });
+  document.querySelectorAll('.structure').forEach(el => {
+    el.classList.remove('risen', 'retracted');
+  });
+  $('figure').classList.remove('visible');
+  showGears(false);
+  setCam(45, 0, 60, 900);
+  world.style.transition = 'none';
+
+  await after(100);
+  $('fade').classList.add('clear');
+  await after(2000);
+
+  // 0–2s: Map revealed, gears begin
+  showGears(true);
+  gearRunning = true;
+  gearAF = requestAnimationFrame(spinGears);
+
+  // 1s: Title
+  show('t-title');
+  await after(1800);
+
+  // 2–4s: Tower A rises (hope rises)
+  world.style.transition = 'transform 3s cubic-bezier(0.4,0,0.2,1)';
+  setCam(38, -5, 40, 950);
+  $('tower-a').classList.add('risen');
+  await after(600);
+  show('t-01'); // Winter is not a design constraint
+  await after(1200);
+  show('t-02'); // Winter is the real
+  await after(1800);
+
+  // Tower A retracts — it thought better
+  hide('t-01'); hide('t-02');
+  $('tower-a').classList.add('retracted');
+  await after(1000);
+
+  // 4–6s: Wall rises, bridge to nowhere
+  setCam(35, 8, 20, 1000);
+  $('wall-a').classList.add('risen');
+  await after(600);
+  $('bridge-a').classList.add('risen');
+  await after(400);
+  show('t-03');
+  await after(1000);
+  show('t-04');
+  await after(1800);
+
+  hide('t-title'); hide('t-03'); hide('t-04');
+
+  // 6–8s: Tower B (the knife) rises and cracks
+  setCam(32, 18, 0, 1050);
+  $('tower-b').classList.add('risen');
+  await after(900);
+  $('tower-b').classList.add('cracked');
+  show('t-05'); // knife
+  await after(1000);
+  show('t-06'); // machine
+  await after(1500);
+  show('t-07'); // wish
+  await after(1200);
+
+  hide('t-05'); hide('t-06'); hide('t-07');
+
+  // Wall and bridge retract
+  $('wall-a').classList.add('retracted');
+  $('bridge-a').classList.add('retracted');
+
+  // 8–10s: Grand palace rises — climax
+  setCam(28, 0, -20, 1100);
+  $('palace').classList.add('risen');
+  await after(2000);
+
+  show('t-08'); // does not die
+  await after(1200);
+  show('t-09'); // it only stops
+  await after(2000);
+
+  // THE STOP — gears cease
+  gearRunning = false;
+  cancelAnimationFrame(gearAF);
+
+  await after(600);
+  hide('t-08'); hide('t-09');
+
+  // 10–11s: Figure appears
+  $('figure').classList.add('visible');
+  setCam(25, -3, -30, 1150);
+  await after(1200);
+
+  show('t-10'); // standing over it
+  await after(1500);
+  show('t-11'); // prayer correct form
+  await after(1200);
+  show('t-12'); // gods answered
+  await after(2500);
+
+  // 11–12s: Retract everything — fade to black
+  hide('t-10'); hide('t-11'); hide('t-12');
+  $('palace').classList.add('retracted');
+  $('tower-b').classList.add('retracted');
+  $('figure').classList.remove('visible');
+  showGears(false);
+
+  world.style.transition = 'transform 2s cubic-bezier(0.7,0,0.8,0.2)';
+  setCam(55, 0, 80, 800);
+
+  await after(500);
+  $('fade').classList.remove('clear');
+  $('fade').classList.add('black');
+
+  await after(2500);
+  $('replay').classList.add('visible');
+}
+
+// ─── Replay ────────────────────────────────────────────────────────────────
+$('replay').addEventListener('click', () => {
+  $('fade').classList.remove('black');
+  runSequence();
+});
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  after(500).then(runSequence);
+});
+</script>
+</body>
+</html>

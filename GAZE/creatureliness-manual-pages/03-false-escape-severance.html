@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3.0 THE FALSE ESCAPE · M13 Severance</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --ink: #111725;
+      --muted: #5f6e85;
+      --line: #a4b3cc;
+      --cold: #dce7f8;
+      --office: #ecf1fa;
+      --alarm: #d0344f;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: linear-gradient(180deg, #f8fbff, #edf3fb); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #f7fbff; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #eef4fd; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #111725; color: #fff; border-color: #111725; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #fff; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #f4f8ff; padding: 8px; color: #1b2a44; font: 0.7rem/1.38 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--office); }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #d2dceb; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #eef3fb; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #melt { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(208, 52, 79, 0.0), rgba(208, 52, 79, 0.2)); mix-blend-mode: multiply; opacity: 0; }
+    #melt.on { animation: melt 1.2s ease forwards; }
+    @keyframes melt { from { opacity: 0; } to { opacity: 1; } }
+
+    #words { position: absolute; inset: 0; z-index: 20; pointer-events: none; padding: 6vw; display: flex; flex-direction: column; justify-content: center; }
+    .word { opacity: 0; transform: translateY(12px); transition: opacity 0.2s ease, transform 0.2s ease; text-transform: uppercase; letter-spacing: 0.08em; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; transform: translateY(0); }
+    .w1 { font-size: clamp(36px, 8vw, 108px); color: #0f1728; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #4a5d7f; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #4a5d7f; }
+    .w4 { font-size: clamp(42px, 9vw, 122px); color: var(--alarm); }
+
+    #cursor { position: absolute; right: 14px; bottom: 14px; width: 12px; height: 12px; background: #111725; animation: blink 0.6s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 03/10</div>
+        <h1>3.0 THE FALSE ESCAPE · Agent M13 Severance</h1>
+        <div class="meta">Sterile office logic promises escape; the body keeps leaking back into the frame.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: false triumph of clean systems; contact, friction, and pain remain operational truth.</li>
+            <li>Agent lens: Severance corporate surrealism, immaculate grid interrupted by bodily anomaly.</li>
+            <li>Primary motif: perfect office plan slowly liquefies into red error channels.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.6s: clean floorplan appears, neutral confidence.</li>
+            <li>1.6–3.4s: two-panel split: dashboard certainty vs trembling hand.</li>
+            <li>3.4–6.4s: 3x2 matrix with controlled geometry distorting.</li>
+            <li>6.4–8.9s: text impact: CONTACT / WITH / REALITY / HURTS.</li>
+            <li>8.9–11.1s: all panes slump into one melting corridor.</li>
+            <li>11.1–12.0s: cursor blinks on unfinished sentence.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "3.0 THE FALSE ESCAPE" in Severance mode.
+A sterile office visual system degrades under embodied stress.
+Color: bright paper whites and pale blues, punctured by controlled red failure streaks.
+Use hard jump cuts only. No cinematic drift.
+Show floorplan diagrams, compliance dashboards, hand tremor close-up, corridor recursion, and data panes liquefying.
+Typography in four impacts: CONTACT / WITH / REALITY / HURTS.
+End on a blinking cursor and an unfinished operational sentence.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="grid" class="cfg-single"></div>
+          <div id="melt"></div>
+          <div id="words">
+            <span id="w1" class="word w1">CONTACT</span>
+            <span id="w2" class="word w2">WITH</span>
+            <span id="w3" class="word w3">REALITY</span>
+            <span id="w4" class="word w4">HURTS</span>
+          </div>
+          <div id="cursor"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const melt = document.getElementById('melt');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function plan(v) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f4f8ff"/>
+      ${Array.from({length:6}).map((_,i)=>`<rect x="${20+i*45}" y="${20+(i%2)*12}" width="40" height="160" fill="none" stroke="#7f93b7"/>`).join('')}
+      <path d="M 20 100 L 280 100" stroke="#b7c6df"/><text x="16" y="186" fill="#4a5d7f" font-size="11">FLOORPLAN-${100+v}</text></svg>`;
+    }
+
+    function dash(v) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#edf3fd"/>
+      <rect x="24" y="26" width="252" height="18" fill="#d9e4f6"/>
+      ${Array.from({length:7}).map((_,i)=>`<rect x="24" y="${56+i*18}" width="${60+((i+v)%5)*40}" height="12" fill="${i%3===0?'#d0344f':'#7f93b7'}" opacity="0.8"/>`).join('')}
+      <text x="24" y="188" fill="#4a5d7f" font-size="11">COMPLIANCE ${80-(v%18)}%</text></svg>`;
+    }
+
+    function corridor(v) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#eef4fe"/>
+      ${Array.from({length:9}).map((_,i)=>`<rect x="${20+i*14}" y="${20+i*8}" width="${260-i*28}" height="${160-i*16}" fill="none" stroke="#${i%2?'9bb0cf':'758aa9'}" opacity="0.85"/>`).join('')}
+      <path d="M 140 180 C 150 ${150+v}, 160 ${130+v}, 170 80" stroke="#d0344f" stroke-width="2" fill="none"/>
+      </svg>`;
+    }
+
+    function setLayout(c) { grid.className = ''; grid.classList.add(c); }
+    function setPanels(arr) { grid.innerHTML = arr.map(svg => `<div class="panel">${svg}</div>`).join(''); }
+    function clearWords() { words.forEach((w) => w.classList.remove('on')); }
+    function show(i) { words[i].classList.add('on'); }
+
+    let t = 0;
+    function run() {
+      clearWords();
+      melt.classList.remove('on');
+      const beats = [
+        { t: 0, fn: () => { setLayout('cfg-single'); setPanels([plan(0)]); } },
+        { t: 1600, fn: () => { setLayout('cfg-2x1'); setPanels([dash(0), corridor(0)]); } },
+        { t: 3400, fn: () => { setLayout('cfg-3x2'); setPanels([plan(2), dash(2), corridor(2), dash(4), corridor(4), plan(4)]); } },
+        { t: 4600, fn: () => show(0) },
+        { t: 5600, fn: () => show(1) },
+        { t: 6500, fn: () => show(2) },
+        { t: 7600, fn: () => show(3) },
+        { t: 9000, fn: () => { melt.classList.add('on'); setLayout('cfg-single'); setPanels([corridor(8)]); } },
+        { t: 11100, fn: () => { setLayout('cfg-single'); setPanels([`<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#f3f8ff'/><text x='20' y='98' fill='#1d2c46' font-size='18' font-family='monospace'>SYSTEM STABILIZED_</text></svg>`]); clearWords(); } },
+        { t: 12600, fn: run }
+      ];
+      beats.forEach((b) => setTimeout(b.fn, b.t));
+    }
+
+    setInterval(() => {
+      t += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = corridor((t % 10));
+      if (grid.classList.contains('cfg-3x2') && p.length === 6) {
+        p[0].innerHTML = plan(t % 9);
+        p[1].innerHTML = dash(t % 9);
+        p[2].innerHTML = corridor(t % 9);
+        p[3].innerHTML = dash((t+2) % 9);
+        p[4].innerHTML = corridor((t+3) % 9);
+        p[5].innerHTML = plan((t+4) % 9);
+      }
+    }, 180);
+
+    document.getElementById('copyPrompt').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    run();
+  </script>
+</body>
+</html>

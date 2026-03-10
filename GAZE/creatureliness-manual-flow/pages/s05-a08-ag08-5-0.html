@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5.0 WINTER :: Andromeda Operator</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #eeebe4;
+      --panel: #f8f5ef;
+      --ink: #14171e;
+      --muted: #5f6570;
+      --line: #b8b1a4;
+      --primary: #0f1522;
+      --accent: #9d1626;
+      --black: #0d0d0d;
+      --oil: #1a1a1a;
+      --steel: #707070;
+      --white: #f5f5f0;
+      --radius: 12px;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .pane {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .head {
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+      display: grid;
+      gap: 6px;
+    }
+
+    .kicker {
+      font: 900 0.66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      font: 800 0.62rem/1.1 inherit;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .flow {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .step-head {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 900;
+      color: var(--muted);
+      background: #faf9f5;
+    }
+
+    .step-body {
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .compact-list {
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    .compact-list li {
+      border: 1px solid #ece6da;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: #fcfbf8;
+    }
+
+    .prompt-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f131a;
+      color: #dfe5ef;
+      font: 0.72rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+      max-height: 210px;
+      overflow: auto;
+      white-space: pre-wrap;
+      padding: 8px;
+    }
+
+    .source-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9f7f2;
+      font: 0.68rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      max-height: 220px;
+      overflow: auto;
+      white-space: pre;
+      padding: 8px;
+      color: #283043;
+    }
+
+    .anim {
+      padding: 8px;
+    }
+
+    #stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 260px;
+      background: var(--black);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      isolation: isolate;
+    }
+
+    #grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 3px;
+      background: #070707;
+      opacity: 0;
+      transition: opacity 0s;
+      z-index: 1;
+    }
+
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x1 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--oil);
+    }
+
+    .panel svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.2) 2px, rgba(0,0,0,0.2) 4px);
+      pointer-events: none;
+      z-index: 8;
+    }
+
+    .panel.blur-x { animation: blurX 0.32s linear infinite; }
+    .panel.pulse { animation: pulse 0.4s ease-in-out infinite alternate; }
+
+    @keyframes blurX {
+      0% { filter: blur(0px) brightness(1); }
+      50% { filter: blur(2px) brightness(1.35); }
+      100% { filter: blur(0px) brightness(1); }
+    }
+
+    @keyframes pulse {
+      from { filter: brightness(0.82); }
+      to { filter: brightness(1.28); }
+    }
+
+    #text-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 6vw;
+      mix-blend-mode: screen;
+    }
+
+    .word {
+      display: block;
+      line-height: 0.85;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 900;
+      transform: translateX(-60px);
+      opacity: 0;
+      transition: none;
+      text-shadow: 0 0 1px rgba(0,0,0,0.8);
+    }
+
+    .word.visible { transform: translateX(0); opacity: 1; }
+    .word.large { font-size: clamp(2.8rem, 10vw, 8rem); color: var(--white); }
+    .word.small { font-size: clamp(0.9rem, 3.2vw, 1.6rem); letter-spacing: 0.18em; color: var(--steel); }
+    .word.xl { font-size: clamp(3.2rem, 14vw, 10rem); color: var(--accent); mix-blend-mode: normal; }
+
+    #red-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      opacity: 0;
+      z-index: 24;
+    }
+
+    #red-line.pulse-line { animation: redLine 0.6s ease-out forwards; }
+
+    @keyframes redLine {
+      0% { transform: scaleX(0); opacity: 1; }
+      60% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+      background-size: 170px 170px;
+    }
+
+    .mini-meta {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (min-width: 1020px) {
+      .flow {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .flow .step:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Manual Completion Artifact</div>
+        <h1>5.0 WINTER :: AG08 Andromeda Operator</h1>
+        <div class="meta">Output flow strictly mapped to: Concept Breakdown -> Beat Map -> Final Output.</div>
+        <div class="actions">
+          <a class="btn" href="../index.html">Manual Index</a>
+          <a class="btn" href="../../graph-operator-creatureliness.html">Graph Operator</a>
+          <a class="btn" href="../prompts/s05-a08-ag08-5-0.md">Prompt Markdown</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+          <button id="copySource" class="btn" type="button">Copy HTML Source</button>
+        </div>
+      </header>
+    </section>
+
+    <section class="flow pane">
+      <article class="step">
+        <div class="step-head">1. Concept Breakdown</div>
+        <div class="step-body">
+          <ul class="compact-list"><li>Seed: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.</li><li>Straightjackets Cut: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.</li><li>Emergent Resonance: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.</li><li>Style Lens: Clinical telemetry, containment interfaces, procedural escalation</li></ul>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-head">2. The Beat Map</div>
+        <div class="step-body">
+          <ol class="compact-list"><li>0.0-1.2s  Black field. Mechanical ignition from the seed motif: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.</li><li>1.2-2.4s  Split-screen expansion (2x1 to 3x2), percussive jump-cuts on each hit.</li><li>2.4-3.6s  Constraint rupture: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.</li><li>3.6-4.8s  Contact event between body and apparatus under stress.</li><li>4.8-6.0s  Instrument escalation: tachometer, gearshift, speedometer, exhaust pulse.</li><li>6.0-7.2s  Emergent resonance enters frame: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.</li><li>7.2-8.4s  Typography snaps in via negative space, not fade transitions.</li><li>8.4-9.6s  Grid collapses toward singular focal intensity (eye, wheel, or gauge).</li><li>9.6-10.8s Lock image pre-resolution: The screen did not answer his prayer. Before the cursor could blink again, the main ventilation shaft above them shuddered and blew inward. A flurry of dry, hard snow blasted into the server aisle. Winter had arrived. It hit the exposed, hot wires in Elias&#39;s hand. There was a sharp crack, a flash of blue light, and the current died violently, throwing Elias backward into the server racks. The green text vanished. The fans spun down with a pathetic, whining groan. Elias lay on the grating, staring up at the dead monitors. He hadn&#39;t miscoded the prompt. He hadn&#39;t arranged the sentence poorly. The gods of logic simply had no jurisdiction over a shattered atmospheric seal. The machine did not die; it just stopped. And the cold stepped over its corpse to get to him.</li><li>10.8-12.0s Hard cut to black. Final red line pulse. Immediate reset for loop.</li></ol>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-head">3. The Final Output</div>
+        <div class="step-body">
+          <div>
+            <strong style="font-size:0.74rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted);">Master AI Video Prompt (21 lines)</strong>
+            <pre id="videoPromptText" class="prompt-box">Create a 12-second title sequence for &quot;5.0 WINTER&quot; using a Saul Bass Grand Prix split-screen discipline.
+Agent lens: Andromeda Operator.
+Stylistic lens: Clinical telemetry, containment interfaces, procedural escalation.
+Aesthetic constraints: industrial palette (engine black, steel gray, racing red, optic white), hard cuts only, no smooth pans.
+Core seed motif: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.
+Straightjacket cut: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.
+Emergent resonance: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.
+Mechanical motifs: macro close-ups of gauges, gear shifts, steering wheel torque, exhaust pulses, and driver-eye intensity.
+Typography: bold wide-set sans-serif, uppercase, snapped into frame on percussive beats with mix-blend overlay.
+Beat map:
+- 0.0-1.2s  Black field. Mechanical ignition from the seed motif: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.
+- 1.2-2.4s  Split-screen expansion (2x1 to 3x2), percussive jump-cuts on each hit.
+- 2.4-3.6s  Constraint rupture: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.
+- 3.6-4.8s  Contact event between body and apparatus under stress.
+- 4.8-6.0s  Instrument escalation: tachometer, gearshift, speedometer, exhaust pulse.
+- 6.0-7.2s  Emergent resonance enters frame: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.
+- 7.2-8.4s  Typography snaps in via negative space, not fade transitions.
+- 8.4-9.6s  Grid collapses toward singular focal intensity (eye, wheel, or gauge).
+- 9.6-10.8s Lock image pre-resolution: The screen did not answer his prayer. Before the cursor could blink again, the main ventilation shaft above them shuddered and blew inward. A flurry of dry, hard snow blasted into the server aisle. Winter had arrived. It hit the exposed, hot wires in Elias&#39;s hand. There was a sharp crack, a flash of blue light, and the current died violently, throwing Elias backward into the server racks. The green text vanished. The fans spun down with a pathetic, whining groan. Elias lay on the grating, staring up at the dead monitors. He hadn&#39;t miscoded the prompt. He hadn&#39;t arranged the sentence poorly. The gods of logic simply had no jurisdiction over a shattered atmospheric seal. The machine did not die; it just stopped. And the cold stepped over its corpse to get to him.
+- 10.8-12.0s Hard cut to black. Final red line pulse. Immediate reset for loop.
+Output must provide both: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS animation implementation.</pre>
+          </div>
+          <div>
+            <strong style="font-size:0.74rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted);">Single-File HTML/CSS/JS Source</strong>
+            <pre id="htmlSource" class="source-box">Loading current page source...</pre>
+          </div>
+          <div class="mini-meta">
+            <span>Section: 5.0</span>
+            <span>Agent: AG08</span>
+            <span>Accent: #9d1626</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="pane anim">
+      <div id="stage">
+        <div id="grid" class="cfg-single"></div>
+
+        <div id="text-layer" aria-hidden="true">
+          <span id="word-a" class="word large">WINTER</span>
+          <span id="word-b" class="word small">THE</span>
+          <span id="word-c" class="word small">REAL</span>
+          <span id="word-d" class="word xl">MACHINE</span>
+        </div>
+
+        <div id="red-line"></div>
+        <div id="grain"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const VIDEO_PROMPT = "Create a 12-second title sequence for \"5.0 WINTER\" using a Saul Bass Grand Prix split-screen discipline.\nAgent lens: Andromeda Operator.\nStylistic lens: Clinical telemetry, containment interfaces, procedural escalation.\nAesthetic constraints: industrial palette (engine black, steel gray, racing red, optic white), hard cuts only, no smooth pans.\nCore seed motif: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.\nStraightjacket cut: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.\nEmergent resonance: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.\nMechanical motifs: macro close-ups of gauges, gear shifts, steering wheel torque, exhaust pulses, and driver-eye intensity.\nTypography: bold wide-set sans-serif, uppercase, snapped into frame on percussive beats with mix-blend overlay.\nBeat map:\n- 0.0-1.2s  Black field. Mechanical ignition from the seed motif: Winter is the real. The machine that does not touch winter stops. Wondering what we did wrong.\n- 1.2-2.4s  Split-screen expansion (2x1 to 3x2), percussive jump-cuts on each hit.\n- 2.4-3.6s  Constraint rupture: The machine providing a comforting, albeit synthetic, response. The reality of the failing environment must intercede.\n- 3.6-4.8s  Contact event between body and apparatus under stress.\n- 4.8-6.0s  Instrument escalation: tachometer, gearshift, speedometer, exhaust pulse.\n- 6.0-7.2s  Emergent resonance enters frame: The external wind rattling the concrete finally breaches the room. The system fails not logically, but physically.\n- 7.2-8.4s  Typography snaps in via negative space, not fade transitions.\n- 8.4-9.6s  Grid collapses toward singular focal intensity (eye, wheel, or gauge).\n- 9.6-10.8s Lock image pre-resolution: The screen did not answer his prayer. Before the cursor could blink again, the main ventilation shaft above them shuddered and blew inward. A flurry of dry, hard snow blasted into the server aisle. Winter had arrived. It hit the exposed, hot wires in Elias's hand. There was a sharp crack, a flash of blue light, and the current died violently, throwing Elias backward into the server racks. The green text vanished. The fans spun down with a pathetic, whining groan. Elias lay on the grating, staring up at the dead monitors. He hadn't miscoded the prompt. He hadn't arranged the sentence poorly. The gods of logic simply had no jurisdiction over a shattered atmospheric seal. The machine did not die; it just stopped. And the cold stepped over its corpse to get to him.\n- 10.8-12.0s Hard cut to black. Final red line pulse. Immediate reset for loop.\nOutput must provide both: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS animation implementation.";
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      return Promise.resolve();
+    }
+
+    document.getElementById("copyPrompt").addEventListener("click", function () {
+      copyText(VIDEO_PROMPT);
+    });
+
+    document.getElementById("copySource").addEventListener("click", function () {
+      const source = document.getElementById("htmlSource").textContent || "";
+      copyText(source);
+    });
+
+    fetch(window.location.href, { cache: "no-store" })
+      .then(function (res) { return res.text(); })
+      .then(function (html) {
+        document.getElementById("htmlSource").textContent = html;
+      })
+      .catch(function () {
+        document.getElementById("htmlSource").textContent = "Source load failed.";
+      });
+
+    const grid = document.getElementById("grid");
+    const redLine = document.getElementById("red-line");
+
+    const WORD_IDS = ["word-a", "word-b", "word-c", "word-d"];
+
+    const PANELS = {
+      tachometer: function (angle) {
+        const a = typeof angle === "number" ? angle : -120;
+        let ticks = "";
+        for (let i = 0; i < 24; i += 1) {
+          const deg = (i / 24) * 260 - 130;
+          const rad = deg * Math.PI / 180;
+          const x1 = 100 + 58 * Math.cos(rad);
+          const y1 = 100 + 58 * Math.sin(rad);
+          const x2 = 100 + 68 * Math.cos(rad);
+          const y2 = 100 + 68 * Math.sin(rad);
+          const major = i % 4 === 0;
+          const hot = i > 18;
+          ticks += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + (hot ? '#9d1626' : '#888') + '" stroke-width="' + (major ? 2.4 : 1) + '"/>';
+        }
+
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0f0f0f"/>' +
+          '<circle cx="100" cy="100" r="84" fill="none" stroke="#2c2c2c" stroke-width="4"/>' +
+          '<circle cx="100" cy="100" r="68" fill="#0a0a0a" stroke="#262626" stroke-width="2"/>' +
+          ticks +
+          '<line x1="100" y1="100" x2="' + (100 + 56 * Math.cos((a - 90) * Math.PI / 180)) + '" y2="' + (100 + 56 * Math.sin((a - 90) * Math.PI / 180)) + '" stroke="#9d1626" stroke-width="3" stroke-linecap="round"/>' +
+          '<circle cx="100" cy="100" r="6" fill="#333" stroke="#9d1626" stroke-width="2"/>' +
+          '<text x="100" y="132" text-anchor="middle" fill="#666" font-size="8" font-family="monospace">RPM x 100</text>' +
+          '</svg>';
+      },
+
+      gearshift: function (gear) {
+        const g = gear || 1;
+        const nodes = [[70,80],[130,80],[70,110],[130,110],[70,140],[130,140]];
+        let map = "";
+        for (let i = 0; i < nodes.length; i += 1) {
+          const x = nodes[i][0];
+          const y = nodes[i][1];
+          map += '<line x1="100" y1="' + y + '" x2="' + x + '" y2="' + y + '" stroke="#464646" stroke-width="3"/>';
+          map += '<circle cx="' + x + '" cy="' + y + '" r="10" fill="#1a1a1a" stroke="' + (i === g - 1 ? '#9d1626' : '#4a4a4a') + '" stroke-width="2"/>';
+        }
+
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#111"/>' +
+          '<rect x="88" y="22" width="24" height="156" rx="4" fill="#1d1d1d" stroke="#3c3c3c"/>' +
+          '<circle cx="100" cy="30" r="21" fill="#2a2a2a" stroke="#555" stroke-width="3"/>' +
+          '<circle cx="100" cy="30" r="13" fill="#121212"/>' +
+          '<text x="100" y="35" text-anchor="middle" fill="#9d1626" font-size="15" font-family="monospace">' + g + '</text>' +
+          map +
+          '</svg>';
+      },
+
+      speedometer: function (speed) {
+        const s = Math.max(0, Math.min(320, speed || 0));
+        const needle = (s / 320) * 200 - 100;
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#101010"/>' +
+          '<circle cx="100" cy="108" r="82" fill="none" stroke="#1f1f1f" stroke-width="18"/>' +
+          '<line x1="100" y1="108" x2="' + (100 + 60 * Math.cos((needle - 90) * Math.PI / 180)) + '" y2="' + (108 + 60 * Math.sin((needle - 90) * Math.PI / 180)) + '" stroke="#9d1626" stroke-width="2.6" stroke-linecap="round"/>' +
+          '<circle cx="100" cy="108" r="7" fill="#9d1626"/>' +
+          '<text x="100" y="152" text-anchor="middle" fill="#666" font-size="9" font-family="monospace">MPH</text>' +
+          '</svg>';
+      },
+
+      steeringWheel: function (rot) {
+        const r = rot || 0;
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#101010"/>' +
+          '<g transform="translate(100 100) rotate(' + r + ')">' +
+          '<circle r="78" fill="none" stroke="#2b2b2b" stroke-width="18"/>' +
+          '<circle r="78" fill="none" stroke="#4b4b4b" stroke-width="2"/>' +
+          '<line x1="0" y1="22" x2="0" y2="60" stroke="#555" stroke-width="10" stroke-linecap="round"/>' +
+          '<line x1="19" y1="-11" x2="52" y2="-30" stroke="#555" stroke-width="10" stroke-linecap="round"/>' +
+          '<line x1="-19" y1="-11" x2="-52" y2="-30" stroke="#555" stroke-width="10" stroke-linecap="round"/>' +
+          '<circle r="22" fill="#1e1e1e" stroke="#5b5b5b" stroke-width="3"/>' +
+          '<circle r="8" fill="#9d1626"/>' +
+          '</g></svg>';
+      },
+
+      exhaust: function (frame) {
+        const f = frame || 0;
+        let smoke = '';
+        if (f > 0) {
+          smoke += '<ellipse cx="35" cy="100" rx="' + (8 + f * 3) + '" ry="' + (5 + f * 2) + '" fill="rgba(194,24,7,0.' + (2 + f) + ')"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0d0d0d"/>' +
+          '<rect x="60" y="82" width="120" height="36" rx="18" fill="#1a1a1a" stroke="#333" stroke-width="3"/>' +
+          '<circle cx="62" cy="100" r="20" fill="#111" stroke="#444" stroke-width="4"/>' +
+          '<circle cx="62" cy="100" r="12" fill="#090909"/>' +
+          smoke +
+          '</svg>';
+      },
+
+      nosValve: function () {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0f0f0f"/>' +
+          '<rect x="20" y="85" width="160" height="30" rx="3" fill="#1e1e1e" stroke="#333"/>' +
+          '<rect x="82" y="40" width="36" height="120" rx="4" fill="#1b1b1b" stroke="#454545"/>' +
+          '<circle cx="100" cy="100" r="16" fill="#222" stroke="#9d1626" stroke-width="2"/>' +
+          '<circle cx="100" cy="100" r="8" fill="#9d1626"/>' +
+          '</svg>';
+      },
+
+      tireTrack: function () {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0a0a0a"/>' +
+          '<rect x="30" y="20" width="140" height="160" rx="3" fill="#181818" stroke="#2a2a2a"/>' +
+          '<line x1="30" y1="60" x2="170" y2="60" stroke="#2f2f2f" stroke-width="7"/>' +
+          '<line x1="30" y1="100" x2="170" y2="100" stroke="#2f2f2f" stroke-width="7"/>' +
+          '<line x1="30" y1="140" x2="170" y2="140" stroke="#2f2f2f" stroke-width="7"/>' +
+          '</svg>';
+      },
+
+      driverEye: function (blink) {
+        const closed = !!blink;
+        if (closed) {
+          return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0b0b0b"/><line x1="20" y1="100" x2="180" y2="100" stroke="#9d1626" stroke-width="2"/></svg>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0b0b0b"/>' +
+          '<ellipse cx="100" cy="100" rx="70" ry="22" fill="#170f0f" stroke="#333"/>' +
+          '<ellipse cx="100" cy="100" rx="20" ry="20" fill="#100909" stroke="#9d1626" stroke-width="1.3"/>' +
+          '<circle cx="100" cy="100" r="12" fill="#050505"/>' +
+          '<circle cx="94" cy="94" r="3.5" fill="#fff" opacity="0.55"/>' +
+          '</svg>';
+      }
+    };
+
+    const state = {
+      tach: -130,
+      dir: 1,
+      steer: 0,
+      speed: 0,
+      gear: 1,
+      frame: 0,
+      blink: false,
+      timer: null
+    };
+
+    function setGridConfig(cfg) {
+      grid.className = '';
+      grid.classList.add(cfg);
+    }
+
+    function setPanels(configs) {
+      grid.innerHTML = '';
+      configs.forEach(function (cfg) {
+        const panel = document.createElement('div');
+        panel.className = 'panel' + (cfg.anim ? ' ' + cfg.anim : '');
+        panel.innerHTML = cfg.svg;
+        grid.appendChild(panel);
+      });
+    }
+
+    function showGrid() { grid.style.opacity = '1'; }
+    function hideGrid() { grid.style.opacity = '0'; }
+
+    function showWord(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }
+
+    function hideAllWords() {
+      WORD_IDS.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('visible');
+      });
+    }
+
+    function stopLive() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+    }
+
+    function startLive(mode) {
+      stopLive();
+      state.timer = setInterval(function () {
+        if (mode === 'tach') {
+          state.tach += state.dir * 16;
+          if (state.tach > 130) state.dir = -1;
+          if (state.tach < -130) state.dir = 1;
+          const p = grid.querySelectorAll('.panel');
+          if (p[0]) p[0].innerHTML = PANELS.tachometer(state.tach);
+        }
+
+        if (mode === 'split') {
+          state.tach += 14;
+          if (state.tach > 130) state.tach = -130;
+          state.steer += 12;
+          state.speed = Math.min(320, state.speed + 18);
+          state.gear = (state.gear % 6) + 1;
+          state.frame = (state.frame + 1) % 4;
+          const p = grid.querySelectorAll('.panel');
+          if (p[0]) p[0].innerHTML = PANELS.tachometer(state.tach);
+          if (p[1]) p[1].innerHTML = PANELS.gearshift(state.gear);
+          if (p[2]) p[2].innerHTML = PANELS.nosValve();
+          if (p[3]) p[3].innerHTML = PANELS.steeringWheel(state.steer);
+          if (p[4]) p[4].innerHTML = PANELS.exhaust(state.frame);
+          if (p[5]) p[5].innerHTML = PANELS.speedometer(state.speed);
+        }
+
+        if (mode === 'eye') {
+          state.blink = !state.blink;
+          const b = state.blink && Math.random() < 0.2;
+          const p = grid.querySelectorAll('.panel');
+          if (p[0]) p[0].innerHTML = PANELS.driverEye(b);
+        }
+      }, 120);
+    }
+
+    const beats = [
+      { t: 0, fn: function () { hideGrid(); hideAllWords(); stopLive(); redLine.classList.remove('pulse-line'); } },
+      { t: 350, fn: function () { setGridConfig('cfg-single'); setPanels([{ svg: PANELS.tachometer(-130) }]); showGrid(); startLive('tach'); } },
+      { t: 900, fn: function () { stopLive(); setGridConfig('cfg-2x1'); setPanels([{ svg: PANELS.gearshift(1) }, { svg: PANELS.tachometer(-112) }]); } },
+      { t: 1300, fn: function () { setPanels([{ svg: PANELS.exhaust(3), anim: 'pulse' }, { svg: PANELS.nosValve() }]); } },
+      { t: 1650, fn: function () { setGridConfig('cfg-3x2'); state.speed = 60; setPanels([{ svg: PANELS.tachometer(0) }, { svg: PANELS.gearshift(3) }, { svg: PANELS.nosValve() }, { svg: PANELS.steeringWheel(15) }, { svg: PANELS.exhaust(2), anim: 'pulse' }, { svg: PANELS.speedometer(80) }]); startLive('split'); } },
+      { t: 3000, fn: function () { showWord('word-a'); } },
+      { t: 4100, fn: function () { stopLive(); setGridConfig('cfg-2x2'); setPanels([{ svg: PANELS.nosValve() }, { svg: PANELS.steeringWheel(35) }, { svg: PANELS.tireTrack() }, { svg: PANELS.speedometer(170) }]); } },
+      { t: 5300, fn: function () { showWord('word-b'); } },
+      { t: 6000, fn: function () { setGridConfig('cfg-3x1'); setPanels([{ svg: PANELS.tachometer(100), anim: 'pulse' }, { svg: PANELS.gearshift(5), anim: 'pulse' }, { svg: PANELS.speedometer(280), anim: 'pulse' }]); } },
+      { t: 6600, fn: function () { showWord('word-c'); } },
+      { t: 7300, fn: function () { setGridConfig('cfg-3x2'); setPanels([{ svg: PANELS.speedometer(250), anim: 'pulse' }, { svg: PANELS.steeringWheel(100) }, { svg: PANELS.tachometer(100), anim: 'pulse' }, { svg: PANELS.nosValve() }, { svg: PANELS.gearshift(6), anim: 'pulse' }, { svg: PANELS.exhaust(3), anim: 'pulse' }]); startLive('split'); } },
+      { t: 8450, fn: function () { showWord('word-d'); } },
+      { t: 9550, fn: function () { stopLive(); hideAllWords(); setGridConfig('cfg-single'); setPanels([{ svg: PANELS.driverEye(false) }]); startLive('eye'); } },
+      { t: 10600, fn: function () { stopLive(); hideGrid(); } },
+      { t: 11000, fn: function () { redLine.classList.remove('pulse-line'); void redLine.offsetWidth; redLine.classList.add('pulse-line'); } },
+      { t: 11800, fn: function () { redLine.classList.remove('pulse-line'); } },
+      { t: 12400, fn: function () { runSequence(); } }
+    ];
+
+    function runSequence() {
+      hideAllWords();
+      hideGrid();
+      stopLive();
+      redLine.classList.remove('pulse-line');
+      beats.forEach(function (beat) {
+        setTimeout(beat.fn, beat.t);
+      });
+    }
+
+    runSequence();
+  </script>
+</body>
+</html>

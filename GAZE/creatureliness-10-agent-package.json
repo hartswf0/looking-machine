@@ -1,0 +1,74 @@
+{
+  "package_id": "creatureliness-10-agents-v2",
+  "name": "Creatureliness 10-Agent Finals Package",
+  "description": "Ten differentiated agents synthesize finals from the cold-delivery acts using root prompts plus MODERN folder prompt sources.",
+  "global_sources": [
+    "title-crispr.md",
+    "decon.md",
+    "bass.md",
+    "prompt.md",
+    "MODERN/common-side.md"
+  ],
+  "agents": [
+    {
+      "id": "AG01",
+      "label": "DNA Forensics",
+      "role": "Extract formal title DNA and enforce dual-output structure.",
+      "prompt_sources": ["title-crispr.md", "MODERN/severance.md"]
+    },
+    {
+      "id": "AG02",
+      "label": "Deconstruction Mapper",
+      "role": "Build high-signal beat and transition logic from each act.",
+      "prompt_sources": ["decon.md", "MODERN/succession.md"]
+    },
+    {
+      "id": "AG03",
+      "label": "Bass Art Director",
+      "role": "Apply geometric economy and symbolic reduction with cinematic timing.",
+      "prompt_sources": ["bass.md", "SAUL-BASS/vertigo.md"]
+    },
+    {
+      "id": "AG04",
+      "label": "Optical Interrogator",
+      "role": "Push gaze, apparatus, and ethical pressure into visual system design.",
+      "prompt_sources": ["prompt.md", "MODERN/irma-vep.md"]
+    },
+    {
+      "id": "AG05",
+      "label": "Westworld Operator",
+      "role": "Generate austere techno-moral title motion with mechanical precision.",
+      "prompt_sources": ["MODERN/westworld.md", "MODERN/spiderman.md"]
+    },
+    {
+      "id": "AG06",
+      "label": "True Detective Operator",
+      "role": "Inject gothic-industrial dread and layered silhouette composition.",
+      "prompt_sources": ["MODERN/true-detective.md", "MODERN/high-castle.md"]
+    },
+    {
+      "id": "AG07",
+      "label": "Alien Operator",
+      "role": "Build slow existential emergence from near-darkness and negative space.",
+      "prompt_sources": ["MODERN/alien.md", "MODERN/sphere.md"]
+    },
+    {
+      "id": "AG08",
+      "label": "Andromeda Operator",
+      "role": "Drive procedural biohazard UI language and cold escalation mechanics.",
+      "prompt_sources": ["MODERN/andromeda.md", "MODERN/007.md"]
+    },
+    {
+      "id": "AG09",
+      "label": "High Castle Operator",
+      "role": "Compose ideological dissonance using archival texture and symbolic collisions.",
+      "prompt_sources": ["MODERN/high-castle.md", "MODERN/game-of-thrones.md"]
+    },
+    {
+      "id": "AG10",
+      "label": "Ghost Shell Operator",
+      "role": "Blend cybernetic metamorphosis with lyrical body-interface grammar.",
+      "prompt_sources": ["MODERN/ghost-in-shell.md", "MODERN/stranger-things.md"]
+    }
+  ]
+}

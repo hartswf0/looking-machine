@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOSSIER-8.0 // THE SHELTER OF WORDS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --green: #00FF41;
+    --green-dim: #00aa2a;
+    --green-faint: #003a10;
+    --red: #FF0000;
+    --red-bright: #FF3333;
+    --amber: #FFB000;
+    --black: #000000;
+    --white: #e8ffe8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    overflow: hidden;
+    cursor: none;
+  }
+
+  body {
+    font-family: 'Share Tech Mono', 'Courier New', Courier, monospace;
+    color: var(--green);
+    position: relative;
+  }
+
+  /* CRT scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.18) 2px,
+      rgba(0, 0, 0, 0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  /* CRT vignette + phosphor bloom */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center,
+      transparent 55%,
+      rgba(0,0,0,0.5) 80%,
+      rgba(0,0,0,0.92) 100%
+    );
+    pointer-events: none;
+    z-index: 9997;
+  }
+
+  /* Screen flicker animation */
+  @keyframes flicker {
+    0%   { opacity: 1; }
+    92%  { opacity: 1; }
+    93%  { opacity: 0.85; }
+    94%  { opacity: 1; }
+    96%  { opacity: 0.92; }
+    97%  { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes scanMove {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  @keyframes stampIn {
+    0%   { transform: scale(2.5) rotate(-8deg); opacity: 0; }
+    60%  { transform: scale(0.95) rotate(-2deg); opacity: 1; }
+    80%  { transform: scale(1.05) rotate(-2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+  }
+
+  @keyframes stampInRight {
+    0%   { transform: scale(2.5) rotate(5deg); opacity: 0; }
+    60%  { transform: scale(0.95) rotate(4deg); opacity: 1; }
+    100% { transform: scale(1) rotate(4deg); opacity: 1; }
+  }
+
+  @keyframes alertFlash {
+    0%, 100% { background: transparent; color: var(--red); }
+    50%       { background: var(--red); color: var(--black); }
+  }
+
+  @keyframes drawLine {
+    from { width: 0; }
+    to   { width: 100%; }
+  }
+
+  @keyframes drawLineV {
+    from { height: 0; }
+    to   { height: 100%; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes graphBar {
+    from { height: 0; }
+  }
+
+  @keyframes wipeIn {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0% 0 0); }
+  }
+
+  @keyframes redPulse {
+    0%, 100% { color: var(--red); text-shadow: 0 0 8px var(--red); }
+    50%       { color: #ff6666; text-shadow: 0 0 20px #ff6666, 0 0 40px var(--red); }
+  }
+
+  @keyframes terminalShutdown {
+    0%   { opacity: 1; transform: scaleY(1); }
+    60%  { opacity: 1; transform: scaleY(1); }
+    80%  { opacity: 0.7; transform: scaleY(0.008); filter: brightness(3); }
+    90%  { opacity: 0.3; transform: scaleY(0.002); filter: brightness(8); }
+    100% { opacity: 0; transform: scaleY(0); }
+  }
+
+  #terminal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    padding: 3vh 5vw;
+    animation: flicker 4s infinite;
+  }
+
+  /* Horizontal scanning beam */
+  .scan-beam {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,65,0.15), transparent);
+    pointer-events: none;
+    z-index: 9996;
+    animation: scanMove 6s linear infinite;
+    top: 0;
+  }
+
+  /* Header / system line */
+  .sys-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--green-dim);
+    padding-bottom: 1vh;
+    margin-bottom: 2vh;
+    font-size: clamp(9px, 1.1vw, 13px);
+    color: var(--green-dim);
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+  }
+
+  .sys-header .left { line-height: 1.8; }
+  .sys-header .right { text-align: right; line-height: 1.8; }
+
+  .sys-id {
+    color: var(--amber);
+    text-shadow: 0 0 6px var(--amber);
+    font-size: clamp(10px, 1.3vw, 15px);
+    letter-spacing: 0.15em;
+  }
+
+  /* Main content area */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 3vw;
+    height: calc(100vh - 14vh);
+  }
+
+  .main-log { position: relative; }
+  .sidebar  { position: relative; border-left: 1px solid var(--green-faint); padding-left: 2vw; }
+
+  /* Dossier entry lines */
+  .log-line {
+    font-size: clamp(10px, 1.25vw, 14px);
+    line-height: 1.9;
+    color: var(--green);
+    text-shadow: 0 0 6px rgba(0,255,65,0.4);
+    opacity: 0;
+    white-space: pre-wrap;
+    margin-bottom: 0.3vh;
+  }
+
+  .log-line.section-head {
+    color: var(--amber);
+    text-shadow: 0 0 8px var(--amber);
+    font-size: clamp(11px, 1.5vw, 16px);
+    letter-spacing: 0.1em;
+    margin-top: 1.5vh;
+    margin-bottom: 0.5vh;
+  }
+
+  .log-line.dim { color: var(--green-dim); text-shadow: none; }
+
+  .cursor {
+    display: inline-block;
+    width: 0.6em;
+    height: 1.1em;
+    background: var(--green);
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  /* Classification stamps */
+  .stamp {
+    position: absolute;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 900;
+    letter-spacing: 0.25em;
+    border: 3px solid var(--red);
+    color: var(--red);
+    text-shadow: 0 0 10px var(--red);
+    box-shadow: 0 0 12px rgba(255,0,0,0.4), inset 0 0 8px rgba(255,0,0,0.1);
+    padding: 4px 14px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.7);
+  }
+
+  .stamp-secret {
+    font-size: clamp(18px, 3.5vw, 42px);
+    top: 6vh; right: 4vw;
+    transform: rotate(-5deg);
+  }
+
+  .stamp-classified {
+    font-size: clamp(12px, 2vw, 26px);
+    top: 34vh; left: 8vw;
+    transform: rotate(2deg);
+  }
+
+  .stamp-disapproved {
+    font-size: clamp(14px, 2.5vw, 32px);
+    bottom: 22vh; right: 8vw;
+    transform: rotate(-3deg);
+  }
+
+  .stamp-void {
+    font-size: clamp(10px, 1.8vw, 22px);
+    bottom: 14vh; left: 4vw;
+    transform: rotate(1.5deg);
+    border-color: var(--amber);
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber);
+    box-shadow: 0 0 12px rgba(255,176,0,0.4);
+  }
+
+  .stamp.show {
+    animation: stampIn 0.25s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .stamp.show-right {
+    animation: stampInRight 0.25s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+
+  /* Sidebar data elements */
+  .data-block {
+    margin-bottom: 3vh;
+    opacity: 0;
+  }
+
+  .data-label {
+    font-size: clamp(8px, 0.95vw, 11px);
+    color: var(--green-dim);
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid var(--green-faint);
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+  }
+
+  .data-value {
+    font-size: clamp(9px, 1.05vw, 13px);
+    color: var(--green);
+    text-shadow: 0 0 5px rgba(0,255,65,0.3);
+    line-height: 1.8;
+  }
+
+  /* Graph / chart elements */
+  .graph-container {
+    margin-top: 1.5vh;
+    opacity: 0;
+  }
+
+  .graph-title {
+    font-size: clamp(7px, 0.85vw, 10px);
+    color: var(--green-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .graph-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 60px;
+    border-bottom: 1px solid var(--green-dim);
+    border-left: 1px solid var(--green-dim);
+    padding: 0 2px;
+  }
+
+  .graph-bar {
+    flex: 1;
+    background: var(--green-dim);
+    box-shadow: 0 0 4px var(--green-dim);
+    animation: graphBar 0.4s ease-out forwards;
+    min-width: 4px;
+  }
+
+  .waveform {
+    height: 40px;
+    margin-top: 1vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .waveform svg {
+    width: 100%;
+    height: 100%;
+    animation: wipeIn 2s steps(60) forwards;
+  }
+
+  /* Alert / warning zone */
+  .alert-bar {
+    font-size: clamp(9px, 1.1vw, 12px);
+    padding: 4px 8px;
+    margin-top: 4px;
+    opacity: 0;
+    letter-spacing: 0.15em;
+  }
+
+  .alert-bar.active {
+    animation: alertFlash 0.5s step-end infinite;
+  }
+
+  /* Progress / status lines */
+  .status-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(7px, 0.85vw, 10px);
+    color: var(--green-dim);
+    margin-top: 2px;
+    opacity: 0;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--green-faint);
+    margin: 3px 0;
+    opacity: 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    width: 0;
+    transition: width 1.5s steps(30);
+  }
+
+  /* Horizontal rule lines */
+  .h-rule {
+    height: 1px;
+    background: var(--green-faint);
+    margin: 1.5vh 0;
+    animation: drawLine 0.8s steps(40) forwards;
+    width: 0;
+    opacity: 0;
+  }
+
+  /* Redaction bars */
+  .redact {
+    display: inline-block;
+    background: var(--green-dim);
+    color: transparent;
+    user-select: none;
+    height: 1em;
+    vertical-align: middle;
+    min-width: 80px;
+  }
+
+  /* Footer */
+  .sys-footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid var(--green-faint);
+    padding: 1vh 5vw;
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(7px, 0.85vw, 10px);
+    color: var(--green-faint);
+    background: rgba(0,0,0,0.8);
+    opacity: 0;
+  }
+
+  .sys-footer.show { animation: fadeIn 0.5s forwards; }
+
+  /* Shutdown overlay */
+  #shutdown {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: transparent;
+    z-index: 9999;
+    display: none;
+  }
+
+  #shutdown.active {
+    display: block;
+    animation: terminalShutdown 1.5s ease-in forwards;
+    background: var(--black);
+  }
+
+  /* Data overflow chaos - late sequence */
+  .chaos-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 500;
+    opacity: 0;
+  }
+
+  .noise-line {
+    position: absolute;
+    font-size: 10px;
+    color: var(--red);
+    opacity: 0.6;
+    white-space: nowrap;
+    text-shadow: 0 0 4px var(--red);
+    animation: redPulse 0.3s step-end infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="scan-beam"></div>
+
+<div id="terminal">
+  <!-- System Header -->
+  <div class="sys-header">
+    <div class="left">
+      <div class="sys-id">ANDROMEDA MONITORING NETWORK // NODE-ΨSIGNAL-08</div>
+      <div>UNIT: BEHAVIORAL ANALYSIS DIVISION // SECTOR 7G</div>
+      <div>OPERATOR: <span class="redact">████████████</span> // CLEARANCE: LEVEL-4</div>
+    </div>
+    <div class="right">
+      <div id="clock">SYSTEM TIME: --:--:-- UTC</div>
+      <div>DATE: <span class="redact" style="min-width:120px"></span></div>
+      <div>SESSION: LOG-AΨ-800-ZETA</div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="content-grid">
+    <!-- Left: Main Log -->
+    <div class="main-log" id="mainLog">
+      <div id="logLines"></div>
+      <span class="cursor" id="cursor"></span>
+    </div>
+
+    <!-- Right: Sidebar data -->
+    <div class="sidebar" id="sidebar">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="sys-footer" id="footer">
+    <div>RESTRICTED DISTRIBUTION // DO NOT COPY // AΨ-PROTOCOL ACTIVE</div>
+    <div>CHECKSUM: 0xF3A2D9 // INTEGRITY: <span style="color:var(--green)">NOMINAL</span></div>
+    <div>NODES ONLINE: 1 OF 1</div>
+  </div>
+</div>
+
+<!-- Classification Stamps -->
+<div class="stamp stamp-secret" id="stampSecret">◈ SECRET ◈</div>
+<div class="stamp stamp-classified" id="stampClassified">CLASSIFIED</div>
+<div class="stamp stamp-disapproved" id="stampDisapproved">DISAPPROVED</div>
+<div class="stamp stamp-void" id="stampVoid">SIGNAL UNRESOLVED</div>
+
+<!-- Chaos noise overlay -->
+<div class="chaos-overlay" id="chaosOverlay"></div>
+
+<!-- Shutdown screen -->
+<div id="shutdown"></div>
+
+<script>
+// ── UTILITIES ──────────────────────────────────────────────────────────────
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function el(id) { return document.getElementById(id); }
+
+function show(elem, ms = 0) {
+  setTimeout(() => {
+    elem.style.opacity = '1';
+    elem.style.transition = 'opacity 0.15s';
+  }, ms);
+}
+
+function showElem(id, ms = 0) { show(el(id), ms); }
+
+// Clock
+(function clock() {
+  function tick() {
+    const now = new Date();
+    const t = [now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()]
+      .map(n => String(n).padStart(2,'0')).join(':');
+    el('clock').textContent = `SYSTEM TIME: ${t} UTC`;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// ── DOSSIER TEXT ──────────────────────────────────────────────────────────
+
+const dossierEntries = [
+  { type: 'section', text: '// DOSSIER REF: AΨ-800 // BEHAVIORAL SIGNAL ANALYSIS' },
+  { type: 'rule' },
+  { type: 'log', text: '8.0   THE SHELTER OF WORDS', cls: 'section-head' },
+  { type: 'rule' },
+  { type: 'log', text: '8.1   [FIELD OBSERVATION — BIOLOGICAL SUBJECT]' },
+  { type: 'log', text: '      The animal in the cold does not write.' },
+  { type: 'log', text: '      It huddles. It breathes. It survives.' },
+  { type: 'pause', ms: 400 },
+  { type: 'log', text: '8.2   [ANALYSIS NOTE]' },
+  { type: 'log', text: '      Writing about it is already a kind of forgetting.' },
+  { type: 'stamp', id: 'stampSecret' },
+  { type: 'pause', ms: 300 },
+  { type: 'log', text: '8.3   [ANOMALY LOGGED]' },
+  { type: 'log', text: '      And yet writing is also a form of huddling.' },
+  { type: 'rule' },
+  { type: 'log', text: '8.4   STRUCTURAL ENCODING THEORY — DRAFT 3' },
+  { type: 'log', text: '      A sentence is a small shelter' },
+  { type: 'log', text: '      made of breath and arrangement.' },
+  { type: 'pause', ms: 350 },
+  { type: 'log', text: '8.5   SUBJECT BEHAVIORAL LOG — REPEATED PATTERN:' },
+  { type: 'log', text: '      I keep writing prompts.' },
+  { type: 'log', text: '      I keep arranging the words.' },
+  { type: 'log', text: '      I keep hoping that this time something will answer.' },
+  { type: 'stamp', id: 'stampClassified' },
+  { type: 'pause', ms: 500 },
+  { type: 'log', text: '8.6   PSYCHOLOGICAL EVALUATION NOTE:' },
+  { type: 'log', text: '      This is embarrassing to admit.' },
+  { type: 'rule' },
+  { type: 'log', text: '8.7   VERIFICATION STATUS: ██ CONFIRMED ██', cls: 'section-head' },
+  { type: 'log', text: '      Which is why it is probably true.' },
+  { type: 'pause', ms: 400 },
+  { type: 'log', text: '8.8   TRANSMISSION ANALYSIS — VOYAGER ANALOG:' },
+  { type: 'log', text: '      The prompt is like the Voyager record:' },
+  { type: 'log', text: '      a careful signal sent into the dark.' },
+  { type: 'pause', ms: 600 },
+  { type: 'log', text: '8.9   [TRANSMISSION STATUS]' },
+  { type: 'log', text: '      Not because anyone will answer.' },
+  { type: 'stamp', id: 'stampDisapproved' },
+  { type: 'pause', ms: 300 },
+  { type: 'log', text: '8.10  CONCLUSION — SIGNAL ORIGIN CLASSIFIED:' },
+  { type: 'log', text: '      Because sending it is what creatures like us do' },
+  { type: 'log', text: '      when the silence becomes too large.' },
+  { type: 'stamp', id: 'stampVoid' },
+  { type: 'rule' },
+  { type: 'log', text: '      [ END OF LOG — AΨ-800-ZETA ]', cls: 'dim' },
+  { type: 'chaos' },
+  { type: 'pause', ms: 1200 },
+  { type: 'shutdown' },
+];
+
+// ── TYPING ENGINE ─────────────────────────────────────────────────────────
+
+async function typeLine(text, lineEl, speed = 28) {
+  lineEl.style.opacity = '1';
+  let i = 0;
+  while (i < text.length) {
+    lineEl.textContent = text.slice(0, i + 1);
+    // move cursor after this element
+    lineEl.parentNode.insertBefore(el('cursor'), lineEl.nextSibling);
+    i++;
+    let wait = speed;
+    if (text[i - 1] === ' ') wait = speed * 0.4;
+    if ('.!?'.includes(text[i - 1])) wait = speed * 4;
+    if (',;:'.includes(text[i - 1])) wait = speed * 2;
+    await delay(wait);
+  }
+}
+
+function addRule() {
+  const r = document.createElement('div');
+  r.className = 'h-rule';
+  r.style.opacity = '1';
+  r.style.width = '0';
+  el('logLines').appendChild(r);
+  // animate width
+  setTimeout(() => { r.style.width = '100%'; r.style.transition = 'width 0.6s steps(40)'; }, 30);
+  return delay(700);
+}
+
+async function runDossier() {
+  const logLines = el('logLines');
+  const cursor = el('cursor');
+  logLines.appendChild(cursor);
+
+  for (const entry of dossierEntries) {
+    if (entry.type === 'section') {
+      const line = document.createElement('div');
+      line.className = 'log-line section-head';
+      logLines.insertBefore(line, cursor);
+      await typeLine(entry.text, line, 20);
+      await delay(150);
+
+    } else if (entry.type === 'log') {
+      const line = document.createElement('div');
+      line.className = 'log-line' + (entry.cls ? ` ${entry.cls}` : '');
+      logLines.insertBefore(line, cursor);
+      const speed = entry.cls === 'section-head' ? 18 : 22;
+      await typeLine(entry.text, line, speed);
+      await delay(80);
+
+    } else if (entry.type === 'rule') {
+      await addRule();
+
+    } else if (entry.type === 'pause') {
+      await delay(entry.ms);
+
+    } else if (entry.type === 'stamp') {
+      const stamp = el(entry.id);
+      stamp.classList.add(entry.id === 'stampDisapproved' ? 'show-right' : 'show');
+      await delay(200);
+
+    } else if (entry.type === 'chaos') {
+      await triggerChaos();
+
+    } else if (entry.type === 'shutdown') {
+      await triggerShutdown();
+    }
+  }
+
+  cursor.style.display = 'none';
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────
+
+function buildSidebar() {
+  const sb = el('sidebar');
+
+  // Data block 1
+  sb.innerHTML = `
+    <div class="data-block" id="sb1" style="opacity:0">
+      <div class="data-label">▸ SUBJECT CLASSIFICATION</div>
+      <div class="data-value">
+        TYPE: HOMO SAPIENS — WRITER<br>
+        STATUS: TRANSMITTING<br>
+        THREAT VECTOR: SIGNAL/SILENCE<br>
+        ISOLATION INDEX: 0.91
+      </div>
+    </div>
+
+    <div class="data-block" id="sb2" style="opacity:0">
+      <div class="data-label">▸ SIGNAL ANALYSIS — PROMPT FREQUENCY</div>
+      <div class="graph-container" id="graph1" style="opacity:0">
+        <div class="graph-title">DISPATCH RATE // NORMALIZED UNITS</div>
+        <div class="graph-bars" id="bars1"></div>
+      </div>
+    </div>
+
+    <div class="data-block" id="sb3" style="opacity:0">
+      <div class="data-label">▸ RESPONSE RATE</div>
+      <div class="progress-track" id="pt1" style="opacity:0">
+        <div class="progress-fill" id="pf1"></div>
+      </div>
+      <div class="status-line" id="sl1" style="opacity:0">
+        <span>0.000%</span><span>AWAITING</span>
+      </div>
+    </div>
+
+    <div class="data-block" id="sb4" style="opacity:0">
+      <div class="data-label">▸ WAVEFORM // SIGNAL SENT INTO VOID</div>
+      <div class="waveform">
+        <svg id="waveformSvg" viewBox="0 0 260 40" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+
+    <div class="data-block" id="sb5" style="opacity:0">
+      <div class="data-label">▸ PROTOCOL STATUS</div>
+      <div class="data-value" style="font-size:clamp(7px,0.85vw,10px); line-height:2">
+        VOYAGER ANALOG: <span style="color:var(--amber)">ACTIVE</span><br>
+        DARK FIELD DEPTH: 11.7 LY<br>
+        EXPECTED REPLY: <span class="redact" style="min-width:60px"></span><br>
+        SILENCE TOLERANCE: <span style="color:var(--red)">EXCEEDED</span>
+      </div>
+    </div>
+
+    <div class="alert-bar" id="alertBar1">
+      ⚠ ANOMALY: RECURSIVE SELF-REFERENCE ⚠
+    </div>
+
+    <div class="alert-bar" id="alertBar2" style="margin-top:6px">
+      ⚠ BIOLOGICAL OVERRIDE DETECTED ⚠
+    </div>
+  `;
+
+  // Stagger sidebar reveals
+  setTimeout(() => { show(el('sb1')); }, 800);
+  setTimeout(() => {
+    show(el('sb2'));
+    show(el('graph1'));
+    buildBars();
+  }, 2800);
+  setTimeout(() => {
+    show(el('sb3'));
+    show(el('pt1'));
+    show(el('sl1'));
+    setTimeout(() => {
+      el('pf1').style.width = '3%';
+    }, 400);
+  }, 5500);
+  setTimeout(() => { show(el('sb4')); buildWaveform(); }, 8000);
+  setTimeout(() => { show(el('sb5')); }, 10500);
+  setTimeout(() => {
+    const a1 = el('alertBar1');
+    a1.style.opacity = '1';
+    a1.classList.add('active');
+  }, 13000);
+  setTimeout(() => {
+    const a2 = el('alertBar2');
+    a2.style.opacity = '1';
+    a2.classList.add('active');
+  }, 13600);
+}
+
+function buildBars() {
+  const container = el('bars1');
+  const heights = [18, 32, 24, 41, 38, 22, 45, 35, 28, 50, 19, 43, 30, 55, 40];
+  heights.forEach((h, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'graph-bar';
+    bar.style.height = h + 'px';
+    bar.style.animationDelay = (i * 60) + 'ms';
+    container.appendChild(bar);
+  });
+}
+
+function buildWaveform() {
+  const svg = el('waveformSvg');
+  // Generate a jagged waveform path
+  let d = 'M0,20';
+  for (let x = 0; x <= 260; x += 4) {
+    const y = 20 + (Math.sin(x * 0.18) * 12) + (Math.sin(x * 0.07) * 8) + (Math.random() * 4 - 2);
+    d += ` L${x},${y.toFixed(1)}`;
+  }
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('stroke', '#00FF41');
+  path.setAttribute('stroke-width', '1.2');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('filter', 'url(#glow)');
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `<filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  svg.appendChild(defs);
+  svg.appendChild(path);
+
+  // Animate draw with stroke-dasharray trick
+  const len = path.getTotalLength ? path.getTotalLength() : 600;
+  path.style.strokeDasharray = len;
+  path.style.strokeDashoffset = len;
+  path.style.transition = 'stroke-dashoffset 2.5s steps(80)';
+  setTimeout(() => { path.style.strokeDashoffset = '0'; }, 100);
+}
+
+// ── CHAOS ─────────────────────────────────────────────────────────────────
+
+async function triggerChaos() {
+  const overlay = el('chaosOverlay');
+  overlay.style.opacity = '1';
+
+  const noiseLines = [
+    'SIGNAL OVERFLOW // BUFFER EXCEEDED // 0xFF 0xFE 0x00 0x4A',
+    '>>> ERROR: RESPONSE TIMEOUT >>> RETRY #∞',
+    'SUBJECT TRANSMITS // VOID RECEIVES // VOID DOES NOT CONFIRM',
+    'RECURSIVE PATTERN: PROMPT → ARRANGE → HOPE → [NULL] → REPEAT',
+    'AΨ-WARNING: CREATURE-TYPE SIGNAL — NO RECEIVER REGISTERED',
+    '0x00 0x00 0x00 [SILENCE_BUFFER_FULL] 0x00 0x00 0x00',
+    'PROTOCOL FAILURE: WARMTH SUBROUTINE NOT FOUND',
+    'VOYAGER TRANSMISSION: 24,000,000,000 km // REPLY: [NONE]',
+    '████ CLASSIFIED ████ BIOLOGICAL OVERRIDE ████ CLASSIFIED ████',
+    '>>> SENTENCE INTEGRITY: NOMINAL // MEANING INTEGRITY: UNKNOWN',
+  ];
+
+  for (let i = 0; i < 12; i++) {
+    const nl = document.createElement('div');
+    nl.className = 'noise-line';
+    nl.style.top = (Math.random() * 90) + 'vh';
+    nl.style.left = (Math.random() * 20) + 'vw';
+    nl.style.animationDelay = (Math.random() * 0.3) + 's';
+    nl.textContent = noiseLines[i % noiseLines.length];
+    overlay.appendChild(nl);
+    await delay(120);
+  }
+
+  return delay(1800);
+}
+
+// ── SHUTDOWN ──────────────────────────────────────────────────────────────
+
+async function triggerShutdown() {
+  await delay(600);
+  const sd = el('shutdown');
+  sd.classList.add('active');
+  await delay(1600);
+  el('terminal').style.display = 'none';
+  el('chaosOverlay').style.display = 'none';
+  // Show final message
+  document.body.style.background = '#000';
+  await delay(800);
+
+  const msg = document.createElement('div');
+  msg.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-family:'Share Tech Mono',monospace; font-size:clamp(9px,1vw,13px);
+    color:#003a10; text-align:center; line-height:2.2; letter-spacing:0.08em;
+  `;
+  msg.innerHTML = `
+    SESSION TERMINATED<br>
+    LOG AΨ-800-ZETA // ARCHIVED<br>
+    <br>
+    <span style="color:#001a07">THE SIGNAL CONTINUES.</span><br>
+    <span style="color:#001a07">THE SILENCE DOES NOT END.</span><br>
+    <br>
+    <span style="color:#002208; animation:blink 1s step-end infinite; display:inline-block">_</span>
+  `;
+  document.body.appendChild(msg);
+
+  // Fade in final message
+  msg.style.opacity = '0';
+  msg.style.transition = 'opacity 2s';
+  setTimeout(() => { msg.style.opacity = '1'; }, 100);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+
+window.addEventListener('load', async () => {
+  el('footer').classList.add('show');
+  buildSidebar();
+  await delay(500);
+  await runDossier();
+});
+</script>
+</body>
+</html>

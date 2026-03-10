@@ -3,161 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Title Sequence Embeds</title>
-  <style>
-    :root {
-      --bg: #0f1115;
-      --panel: #171b22;
-      --line: #2a303a;
-      --text: #f5f7fb;
-      --muted: #a9b1c0;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
-    }
-
-    main {
-      width: min(980px, 100%);
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    h1 {
-      margin: 0 0 0.25rem;
-      font-size: clamp(1.35rem, 3vw, 2rem);
-      line-height: 1.15;
-    }
-
-    .meta {
-      margin: 0 0 1rem;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .top-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-bottom: 0.9rem;
-    }
-
-    .top-links a {
-      text-decoration: none;
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 0.24rem 0.62rem;
-      font-size: 0.75rem;
-      background: #12161d;
-    }
-
-    .grid {
-      display: grid;
-      gap: 0.85rem;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 0.75rem;
-    }
-
-    .card h2 {
-      margin: 0;
-      font-size: 0.98rem;
-      line-height: 1.35;
-      font-weight: 600;
-    }
-
-    .status {
-      margin: 0.35rem 0 0.7rem;
-      color: var(--muted);
-      font-size: 0.84rem;
-    }
-
-    iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border: 0;
-      border-radius: 8px;
-      display: block;
-      background: #0b0d10;
-    }
-
-    @media (max-width: 640px) {
-      main { padding: 0.7rem; }
-      .grid { grid-template-columns: 1fr; }
-    }
-  </style>
+  <title>Minimal Embeds</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main>
-    <nav class="top-links" aria-label="Site links">
-      <a href="index.html">Home</a>
-      <a href="film-view.html">Film Viewer</a>
-      <a href="prompt.md" target="_blank" rel="noopener noreferrer">prompt.md</a>
-      <a href="titles.md" target="_blank" rel="noopener noreferrer">titles.md</a>
-      <a href="bass.md" target="_blank" rel="noopener noreferrer">bass.md</a>
-    </nav>
-    <h1>Title Sequence Embeds</h1>
-    <p class="meta">8 selected videos</p>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="kicker">GAZE</p>
+      <h1>Minimal Embed Set</h1>
+      <p class="meta">8 selected title sequences, ready for iframe viewing and embed reuse.</p>
+      <nav class="quick-links" aria-label="Site links">
+        <a href="index.html">Home</a>
+        <a href="film-view.html">Film Viewer</a>
+        <a href="bass.html">Bass Viewer</a>
+        <a href="title-operator.html">Title Operator</a>
+        <a href="graph-operator.html">Graph Operator</a>
+        <a href="graph-operator-creatureliness.html">Graph Operator Experiment</a>
+        <a href="title-crispr.md" target="_blank" rel="noopener noreferrer">title-crispr.md</a>
+        <a href="decon.md" target="_blank" rel="noopener noreferrer">decon.md</a>
+        <a href="prompt.md" target="_blank" rel="noopener noreferrer">prompt.md</a>
+        <a href="titles.md" target="_blank" rel="noopener noreferrer">titles.md</a>
+        <a href="bass.md" target="_blank" rel="noopener noreferrer">bass.md</a>
+      </nav>
+    </div>
+  </header>
 
-    <section class="grid">
+  <main class="main">
+    <section class="cards">
       <article class="card">
-        <h2>Westworld Season 1 (2016) – Main Title Sequence</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/elkHuRROPfk?rel=0" title="Westworld Season 1 (2016) – Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">Westworld Season 1 (2016) - Main Title Sequence</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/elkHuRROPfk?rel=0" title="Westworld Season 1 (2016) - Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>The Man in the High Castle (2015) – Main Title Sequence</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/jW5JdppVUnk?rel=0" title="The Man in the High Castle (2015) – Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">The Man in the High Castle (2015) - Main Title Sequence</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/jW5JdppVUnk?rel=0" title="The Man in the High Castle (2015) - Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>True Detective (Season 1, 2014) – Main Title Sequence</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/FxXRkqXfhYM?rel=0" title="True Detective (Season 1, 2014) – Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">True Detective (Season 1, 2014) - Main Title Sequence</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/FxXRkqXfhYM?rel=0" title="True Detective (Season 1, 2014) - Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>Alien (1979) – Opening Titles</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/DkTAk73OLgs?rel=0" title="Alien (1979) – Opening Titles" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">Alien (1979) - Opening Titles</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/DkTAk73OLgs?rel=0" title="Alien (1979) - Opening Titles" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>The Andromeda Strain (1971) – Main Title Sequence</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/kEp-ftrmuKU?rel=0" title="The Andromeda Strain (1971) – Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">The Andromeda Strain (1971) - Main Title Sequence</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/kEp-ftrmuKU?rel=0" title="The Andromeda Strain (1971) - Main Title Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>Sphere (1998) – Opening Credits</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/lTrA-u3Xtlc?rel=0" title="Sphere (1998) – Opening Credits" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">Sphere (1998) - Opening Credits</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/lTrA-u3Xtlc?rel=0" title="Sphere (1998) - Opening Credits" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>Ghost in the Shell (1995) – Opening Sequence</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/Uf7Pn8GB_jI?rel=0" title="Ghost in the Shell (1995) – Opening Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">Ghost in the Shell (1995) - Opening Sequence</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/Uf7Pn8GB_jI?rel=0" title="Ghost in the Shell (1995) - Opening Sequence" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
 
       <article class="card">
-        <h2>Bicentennial Man (1999) – Opening Titles</h2>
-        <p class="status">Ready to watch in iframe and embed elsewhere.</p>
-        <iframe src="https://www.youtube.com/embed/fajcWOaZ4Yw?rel=0" title="Bicentennial Man (1999) – Opening Titles" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <header class="card-header">
+          <h2 class="card-title">Bicentennial Man (1999) - Opening Titles</h2>
+          <p class="card-status">Ready to watch in iframe and embed elsewhere.</p>
+        </header>
+        <div class="player-wrap">
+          <iframe src="https://www.youtube.com/embed/fajcWOaZ4Yw?rel=0" title="Bicentennial Man (1999) - Opening Titles" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
       </article>
     </section>
   </main>

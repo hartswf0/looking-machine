@@ -1,359 +1,313 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film Viewer Library</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0a0a;
-            color: #e5e5e5;
-        }
-        
-        h1, h2 {
-            font-family: 'Playfair Display', serif;
-        }
-
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 8px;
-            background: #1a1a1a;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .scene-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-left: 3px solid transparent;
-        }
-
-        .scene-card:hover {
-            background: #1f1f1f;
-            transform: translateX(8px);
-            border-left-color: #e50914;
-        }
-
-        .scene-card.active {
-            background: #2a2a2a;
-            border-left-color: #e50914;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-
-        .status-badge {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Film Viewer Library</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="h-screen overflow-hidden flex flex-col">
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="kicker">GAZE</p>
+      <h1>Film Viewer Library</h1>
+      <p class="meta">Select a scene from the left panel to play it in the embedded viewer.</p>
+      <nav class="quick-links" aria-label="Site links">
+        <a href="index.html">Home</a>
+        <a href="minimal-embeds.html">Minimal Embeds</a>
+        <a href="bass.html">Bass Viewer</a>
+        <a href="title-operator.html">Title Operator</a>
+        <a href="graph-operator.html">Graph Operator</a>
+        <a href="graph-operator-creatureliness.html">Graph Operator Experiment</a>
+        <a href="title-crispr.md" target="_blank" rel="noopener noreferrer">title-crispr.md</a>
+        <a href="decon.md" target="_blank" rel="noopener noreferrer">decon.md</a>
+        <a href="prompt.md" target="_blank" rel="noopener noreferrer">prompt.md</a>
+        <a href="titles.md" target="_blank" rel="noopener noreferrer">titles.md</a>
+        <a href="bass.md" target="_blank" rel="noopener noreferrer">bass.md</a>
+      </nav>
+    </div>
+  </header>
 
-    <!-- Header -->
-    <header class="p-6 border-b border-white/10 flex items-center justify-between bg-black/50 backdrop-blur-md z-10">
-        <div class="flex items-center gap-4">
-            <div class="bg-red-600 p-2 rounded">
-                <i class="fas fa-film text-white text-xl"></i>
-            </div>
+  <main class="main">
+    <section class="viewer-layout">
+      <aside class="panel list-pane" aria-label="Scene list">
+        <div class="panel-head">
+          <h2 class="panel-title">Scenes</h2>
+          <p class="panel-meta"><span id="count">0</span> clips in view</p>
+        </div>
+        <div class="search-wrap">
+          <input id="search" class="search-input" type="search" placeholder="Filter by title, film, or actor">
+        </div>
+        <div id="scene-list" class="scene-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="panel viewer-pane" aria-label="Video viewer">
+        <div class="viewer-body">
+          <div id="viewer-placeholder" class="viewer-placeholder">
+            <p>Choose a scene to start playback.</p>
+          </div>
+
+          <div id="viewer-missing" class="viewer-missing hidden">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Cinematic Scenes Archive</h1>
-                <p class="text-xs text-gray-500 uppercase tracking-widest">Film Viewer Library</p>
+              <p id="missing-title">Scene not available</p>
+              <p class="meta">This clip is marked missing in the current library.</p>
+              <button id="clear-selection" class="btn" type="button">Clear Selection</button>
             </div>
+          </div>
+
+          <div id="viewer-content" class="viewer-content hidden">
+            <div class="player-wrap">
+              <iframe id="player" loading="lazy" title="Selected scene" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <h2 id="viewing-title" class="viewer-title"></h2>
+            <p id="viewing-description" class="viewer-description"></p>
+
+            <div class="viewer-kv">
+              <div class="kv-item">
+                <span class="kv-label">Film</span>
+                <span id="viewing-film" class="kv-value"></span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-label">Year</span>
+                <span id="viewing-year" class="kv-value"></span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-label">Actor</span>
+                <span id="viewing-actor" class="kv-value"></span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="text-right">
-            <p class="text-sm text-gray-400">Total Curated Scenes: <span id="count" class="text-white font-mono">0</span></p>
-            <nav class="mt-2 flex flex-wrap justify-end gap-2 text-xs">
-                <a href="index.html" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition">Home</a>
-                <a href="minimal-embeds.html" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition">Minimal Embeds</a>
-                <a href="prompt.md" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition">prompt.md</a>
-                <a href="titles.md" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition">titles.md</a>
-                <a href="bass.md" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition">bass.md</a>
-            </nav>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const scenes = [
+      {
+        id: 2,
+        title: "How Little We Know",
+        film: "To Have and Have Not",
+        year: "1944",
+        actor: "Lauren Bacall",
+        desc: "Bacall singing live vocal, with Hoagy Carmichael at piano.",
+        ytId: "mFfuUu5xmMA",
+        status: "available"
+      },
+      {
+        id: 3,
+        title: "Am I Blue?",
+        film: "To Have and Have Not",
+        year: "1944",
+        actor: "Lauren Bacall",
+        desc: "Live scene featuring Bacall and Hoagy Carmichael in a smoky bar atmosphere.",
+        ytId: "YnuCCcXPRSM",
+        status: "available"
+      },
+      {
+        id: 6,
+        title: "The Final Sacrifice",
+        film: "Dishonored",
+        year: "1931",
+        actor: "Marlene Dietrich",
+        desc: "Colonel Kranau remains callous as Magda/Katherine (Dietrich) exits for the final time.",
+        ytId: "lZUdons9m5g",
+        status: "available"
+      },
+      {
+        id: 7,
+        title: "Scottie Follows Madeleine",
+        film: "Vertigo",
+        year: "1958",
+        actor: "James Stewart / Kim Novak",
+        desc: "James Stewart's character trails Novak's Madeleine through the hills of San Francisco.",
+        ytId: "kyQJe-zZaQ4",
+        status: "available"
+      },
+      {
+        id: 8,
+        title: "Judy's Transformation",
+        film: "Vertigo",
+        year: "1958",
+        actor: "Kim Novak",
+        desc: "The haunting salon sequence where Judy styles her hair to match the deceased Madeleine.",
+        ytId: "oo9xIG4yTUk",
+        status: "available"
+      },
+      {
+        id: 9,
+        title: "Lisa Fremont's Entrance",
+        film: "Rear Window",
+        year: "1954",
+        actor: "Grace Kelly",
+        desc: "Grace Kelly crossing the courtyard and entering the apartment building in spectacular fashion.",
+        ytId: "n0ocqdAnKiw",
+        status: "available"
+      },
+      {
+        id: 10,
+        title: "Through the Lens of Suspicion",
+        film: "Rear Window",
+        year: "1954",
+        actor: "James Stewart",
+        desc: "Jeffries peering into neighbors' windows through his telephoto camera-classic voyeuristic POV.",
+        ytId: "UmLGyK8PCQY",
+        status: "available"
+      },
+      {
+        id: 11,
+        title: "The Parachute Jump",
+        film: "The Tarnished Angels",
+        year: "1957",
+        actor: "Dorothy Malone",
+        desc: "Laverne's parachute jump, announced as a special added attraction by the ringmaster.",
+        ytId: "L1UCTFsPJbo",
+        status: "available"
+      },
+      {
+        id: 13,
+        title: "Iconic Close-ups",
+        film: "Sternberg Years Montage",
+        year: "1930-1935",
+        actor: "Marlene Dietrich",
+        desc: "A dedicated clip reel of Dietrich's expressive close-ups from the seven Dietrich-Sternberg collaborations.",
+        ytId: "JwRStOeR3zE",
+        status: "available"
+      },
+      {
+        id: 14,
+        title: "35 Films in 2 Minutes",
+        film: "Garbo Tribute",
+        year: "Various",
+        actor: "Greta Garbo",
+        desc: "Fast-cut tribute showing Garbo's most famous looks and cinematic close-ups.",
+        ytId: "O9e84AW5Ojw",
+        status: "available"
+      }
+    ];
+
+    const sceneList = document.getElementById("scene-list");
+    const count = document.getElementById("count");
+    const search = document.getElementById("search");
+
+    const placeholder = document.getElementById("viewer-placeholder");
+    const viewerContent = document.getElementById("viewer-content");
+    const viewerMissing = document.getElementById("viewer-missing");
+    const clearSelection = document.getElementById("clear-selection");
+
+    const player = document.getElementById("player");
+    const titleEl = document.getElementById("viewing-title");
+    const descriptionEl = document.getElementById("viewing-description");
+    const filmEl = document.getElementById("viewing-film");
+    const yearEl = document.getElementById("viewing-year");
+    const actorEl = document.getElementById("viewing-actor");
+    const missingTitle = document.getElementById("missing-title");
+
+    let activeId = null;
+
+    function renderScenes(query) {
+      const q = String(query || "").trim().toLowerCase();
+      const filtered = scenes.filter((scene) => {
+        if (!q) {
+          return true;
+        }
+
+        return [scene.title, scene.film, scene.actor]
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      });
+
+      count.textContent = String(filtered.length);
+      sceneList.innerHTML = "";
+
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No scenes matched this filter.";
+        sceneList.appendChild(empty);
+        return;
+      }
+
+      for (const scene of filtered) {
+        sceneList.appendChild(createSceneRow(scene));
+      }
+    }
+
+    function createSceneRow(scene) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "scene-item";
+      if (scene.id === activeId) {
+        item.classList.add("active");
+      }
+
+      item.innerHTML = `
+        <div class="scene-item-top">
+          <span class="scene-item-actor">${escapeHtml(scene.actor)}</span>
+          <span class="status-pill ${scene.status}">${scene.status}</span>
         </div>
-    </header>
+        <div class="scene-item-title">${escapeHtml(scene.title)}</div>
+        <div class="scene-item-meta">${escapeHtml(scene.film)} (${escapeHtml(scene.year)})</div>
+      `;
 
-    <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden">
-        
-        <!-- Sidebar: List of Titles -->
-        <aside class="w-full md:w-96 border-r border-white/10 flex flex-col bg-black">
-            <div class="p-4 border-b border-white/10">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    <input type="text" id="search" placeholder="Filter by actor or film..." 
-                           class="w-full bg-[#1a1a1a] border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-red-500 outline-none">
-                </div>
-            </div>
-            
-            <div id="scene-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
-                <!-- Scenes will be injected here -->
-            </div>
-        </aside>
+      item.addEventListener("click", () => {
+        activeId = scene.id;
+        renderScenes(search.value);
+        loadScene(scene);
+      });
 
-        <!-- Viewer Section -->
-        <section class="flex-1 bg-[#050505] p-6 flex flex-col relative">
-            <div id="viewer-placeholder" class="flex-1 flex flex-col items-center justify-center text-center">
-                <i class="fas fa-play-circle text-6xl text-white/10 mb-4"></i>
-                <h2 class="text-xl text-gray-400">Select a scene to begin viewing</h2>
-                <p class="text-sm text-gray-600 mt-2">Choose from the library on the left</p>
-            </div>
+      return item;
+    }
 
-            <div id="viewer-content" class="hidden flex-1 flex flex-col">
-                <div class="video-container mb-6">
-                    <div id="player-target"></div>
-                </div>
-                
-                <div class="flex-1">
-                    <h2 id="viewing-title" class="text-3xl font-bold mb-2"></h2>
-                    <p id="viewing-description" class="text-gray-400 leading-relaxed max-w-3xl"></p>
-                    
-                    <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-white/5 p-4 rounded-lg">
-                            <span class="text-[10px] text-gray-500 uppercase block mb-1">Year</span>
-                            <span id="viewing-year" class="font-semibold"></span>
-                        </div>
-                        <div class="bg-white/5 p-4 rounded-lg">
-                            <span class="text-[10px] text-gray-500 uppercase block mb-1">Cast</span>
-                            <span id="viewing-cast" class="font-semibold text-sm"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    function loadScene(scene) {
+      if (scene.status !== "available" || !scene.ytId) {
+        player.src = "";
+        placeholder.classList.add("hidden");
+        viewerContent.classList.add("hidden");
+        viewerMissing.classList.remove("hidden");
+        missingTitle.textContent = `${scene.film} (${scene.year})`;
+        return;
+      }
 
-            <!-- Missing Content Alert -->
-            <div id="missing-alert" class="hidden flex-1 flex flex-col items-center justify-center text-center p-12">
-                <div class="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6">
-                    <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl"></i>
-                </div>
-                <h2 id="missing-title" class="text-2xl font-bold mb-2">Scene Not Available</h2>
-                <p class="text-gray-400 max-w-md italic">This clip is currently not available in our digital library.</p>
-                <button onclick="resetViewer()" class="mt-8 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition text-sm">Return to Library</button>
-            </div>
-        </section>
-    </main>
+      viewerMissing.classList.add("hidden");
+      placeholder.classList.add("hidden");
+      viewerContent.classList.remove("hidden");
 
-    <script>
-        const scenes = [
-            {
-                id: 2,
-                title: "How Little We Know",
-                film: "To Have and Have Not",
-                year: "1944",
-                actor: "Lauren Bacall",
-                desc: "Bacall singing live vocal, with Hoagy Carmichael at piano.",
-                ytId: "mFfuUu5xmMA",
-                status: "available"
-            },
-            {
-                id: 3,
-                title: "Am I Blue?",
-                film: "To Have and Have Not",
-                year: "1944",
-                actor: "Lauren Bacall",
-                desc: "Live scene featuring Bacall and Hoagy Carmichael in a smoky bar atmosphere.",
-                ytId: "YnuCCcXPRSM",
-                status: "available"
-            },
-            {
-                id: 6,
-                title: "The Final Sacrifice",
-                film: "Dishonored",
-                year: "1931",
-                actor: "Marlene Dietrich",
-                desc: "Colonel Kranau remains callous as Magda/Katherine (Dietrich) exits for the final time.",
-                ytId: "lZUdons9m5g",
-                status: "available"
-            },
-            {
-                id: 7,
-                title: "Scottie Follows Madeleine",
-                film: "Vertigo",
-                year: "1958",
-                actor: "James Stewart / Kim Novak",
-                desc: "James Stewart's character trails Novak's Madeleine through the hills of San Francisco.",
-                ytId: "kyQJe-zZaQ4",
-                status: "available"
-            },
-            {
-                id: 8,
-                title: "Judy's Transformation",
-                film: "Vertigo",
-                year: "1958",
-                actor: "Kim Novak",
-                desc: "The haunting salon sequence where Judy styles her hair to match the deceased Madeleine.",
-                ytId: "oo9xIG4yTUk",
-                status: "available"
-            },
-            {
-                id: 9,
-                title: "Lisa Fremont's Entrance",
-                film: "Rear Window",
-                year: "1954",
-                actor: "Grace Kelly",
-                desc: "Grace Kelly crossing the courtyard and entering the apartment building in spectacular fashion.",
-                ytId: "n0ocqdAnKiw",
-                status: "available"
-            },
-            {
-                id: 10,
-                title: "Through the Lens of Suspicion",
-                film: "Rear Window",
-                year: "1954",
-                actor: "James Stewart",
-                desc: "Jeffries peering into neighbors’ windows through his telephoto camera—classic voyeuristic POV.",
-                ytId: "UmLGyK8PCQY",
-                status: "available"
-            },
-            {
-                id: 11,
-                title: "The Parachute Jump",
-                film: "The Tarnished Angels",
-                year: "1957",
-                actor: "Dorothy Malone",
-                desc: "Laverne’s parachute jump, announced as a 'special added attraction' by the ringmaster.",
-                ytId: "L1UCTFsPJbo",
-                status: "available"
-            },
-            {
-                id: 13,
-                title: "Iconic Close-ups",
-                film: "Sternberg Years Montage",
-                year: "1930-1935",
-                actor: "Marlene Dietrich",
-                desc: "A dedicated clip reel of Dietrich’s expressive close-ups from the seven Dietrich–Sternberg collaborations.",
-                ytId: "JwRStOeR3zE",
-                status: "available"
-            },
-            {
-                id: 14,
-                title: "35 Films in 2 Minutes",
-                film: "Garbo Tribute",
-                year: "Various",
-                actor: "Greta Garbo",
-                desc: "Fast-cut tribute showing Garbo’s most famous looks and cinematic close-ups.",
-                ytId: "O9e84AW5Ojw",
-                status: "available"
-            }
-        ];
+      titleEl.textContent = scene.title;
+      descriptionEl.textContent = scene.desc;
+      filmEl.textContent = scene.film;
+      yearEl.textContent = scene.year;
+      actorEl.textContent = scene.actor;
+      player.src = `https://www.youtube.com/embed/${scene.ytId}?autoplay=1&rel=0&modestbranding=1`;
+      player.title = scene.title;
+    }
 
-        const sceneList = document.getElementById('scene-list');
-        const countDisplay = document.getElementById('count');
-        const searchInput = document.getElementById('search');
+    function clearActiveScene() {
+      activeId = null;
+      player.src = "";
+      viewerContent.classList.add("hidden");
+      viewerMissing.classList.add("hidden");
+      placeholder.classList.remove("hidden");
+      renderScenes(search.value);
+    }
 
-        const viewerPlaceholder = document.getElementById('viewer-placeholder');
-        const viewerContent = document.getElementById('viewer-content');
-        const missingAlert = document.getElementById('missing-alert');
-        const playerTarget = document.getElementById('player-target');
-        
-        const vTitle = document.getElementById('viewing-title');
-        const vDesc = document.getElementById('viewing-description');
-        const vYear = document.getElementById('viewing-year');
-        const vCast = document.getElementById('viewing-cast');
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
 
-        function renderScenes(filter = '') {
-            sceneList.innerHTML = '';
-            const filtered = scenes.filter(s => 
-                s.film.toLowerCase().includes(filter.toLowerCase()) || 
-                s.actor.toLowerCase().includes(filter.toLowerCase()) ||
-                s.title.toLowerCase().includes(filter.toLowerCase())
-            );
-            
-            countDisplay.innerText = filtered.length;
+    search.addEventListener("input", () => {
+      renderScenes(search.value);
+    });
 
-            filtered.forEach(scene => {
-                const div = document.createElement('div');
-                div.className = `scene-card p-4 rounded-r-lg cursor-pointer ${scene.status === 'missing' ? 'opacity-60' : ''}`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs text-red-500 font-bold uppercase tracking-tighter">${scene.actor}</span>
-                        <span class="status-badge ${scene.status === 'available' ? 'bg-green-900/40 text-green-400' : 'bg-gray-800 text-gray-500'}">
-                            ${scene.status}
-                        </span>
-                    </div>
-                    <h3 class="font-bold text-sm text-white mt-1">${scene.title}</h3>
-                    <p class="text-[11px] text-gray-500 italic mt-0.5">${scene.film} (${scene.year})</p>
-                `;
-                div.onclick = () => loadScene(scene, div);
-                sceneList.appendChild(div);
-            });
-        }
+    clearSelection.addEventListener("click", clearActiveScene);
 
-        function loadScene(scene, element) {
-            // Update Active State
-            document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-
-            if (scene.status === 'missing') {
-                viewerContent.classList.add('hidden');
-                viewerPlaceholder.classList.add('hidden');
-                missingAlert.classList.remove('hidden');
-                document.getElementById('missing-title').innerText = scene.film + " (" + scene.year + ")";
-                return;
-            }
-
-            // Show Viewer
-            missingAlert.classList.add('hidden');
-            viewerPlaceholder.classList.add('hidden');
-            viewerContent.classList.remove('hidden');
-
-            // Populate Info
-            vTitle.innerText = scene.title;
-            vDesc.innerText = scene.desc;
-            vYear.innerText = scene.year;
-            vCast.innerText = scene.actor;
-
-            // Load Iframe
-            playerTarget.innerHTML = `
-                <iframe 
-                    src="https://www.youtube.com/embed/${scene.ytId}?autoplay=1&rel=0&modestbranding=1" 
-                    title="${scene.title}" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            `;
-        }
-
-        function resetViewer() {
-            viewerContent.classList.add('hidden');
-            missingAlert.classList.add('hidden');
-            viewerPlaceholder.classList.remove('hidden');
-            document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
-        }
-
-        searchInput.oninput = (e) => renderScenes(e.target.value);
-
-        // Initial Render
-        renderScenes();
-    </script>
+    renderScenes("");
+  </script>
 </body>
 </html>

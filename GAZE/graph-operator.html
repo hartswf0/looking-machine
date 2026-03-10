@@ -1,0 +1,1738 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graph Operator</title>
+  <style>
+    :root {
+      --bg: #eeebe4;
+      --panel: #f8f5ef;
+      --ink: #14171e;
+      --muted: #5f6570;
+      --line: #b8b1a4;
+      --primary: #0f1522;
+      --ok: #0d7750;
+      --radius: 12px;
+      --lane-w: 380px;
+      --lane-collapsed: 54px;
+      --ln-bg: #f8f8fb;
+      --ln-line: #eceaf0;
+      --ln-copy: #ffffff;
+      --ln-active: #edf3ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100vh;
+    }
+
+    .top {
+      border-bottom: 2px solid var(--line);
+      background: var(--panel);
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .top-row {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .brand {
+      font-size: 0.86rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .search {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      min-height: 36px;
+      padding: 0 10px;
+      font: inherit;
+      font-size: 0.78rem;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .top-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .top-links a {
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.2rem 0.56rem;
+      font-size: 0.66rem;
+      color: var(--ink);
+      background: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.72rem;
+      flex-wrap: wrap;
+    }
+
+    .meta code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1px 4px;
+    }
+
+    .vessel {
+      min-height: 0;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .lane-scroll {
+      height: 100%;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 2px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .lane {
+      position: relative;
+      width: var(--lane-w);
+      min-width: var(--lane-w);
+      height: 100%;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+      transition: width 0.24s ease, min-width 0.24s ease;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .lane.collapsed {
+      width: var(--lane-collapsed);
+      min-width: var(--lane-collapsed);
+    }
+
+    .lane-tab {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      border-radius: var(--radius);
+      background: #f2eee6;
+      color: var(--muted);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      padding: 8px 0;
+    }
+
+    .lane.collapsed .lane-tab {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lane-head {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 74px;
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .lane.collapsed .lane-head,
+    .lane.collapsed .lane-body {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lane-head-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .lane-title {
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .lane-sub {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lane-toggle {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      min-width: 30px;
+      min-height: 30px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .lane-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+
+    .lane-select {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.66rem;
+      padding: 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .lane-branch {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font: inherit;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 900;
+      cursor: pointer;
+      padding: 0 10px;
+    }
+
+    .lane-branch:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .lane-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      background: #fff;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+      font: inherit;
+    }
+
+    .cell:hover {
+      background: #f8fbff;
+    }
+
+    .cell.active {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+      background: var(--ln-active);
+    }
+
+    .cell.operand {
+      box-shadow: inset 0 0 0 2px #2f56d0;
+    }
+
+    .cell-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .cell-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #2f56d0;
+      text-transform: uppercase;
+    }
+
+    .cell-kind {
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .cell-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 5px;
+    }
+
+    .cell-lineage,
+    .cell-preview {
+      font-size: 0.66rem;
+      color: var(--muted);
+      line-height: 1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .holding {
+      border: 2px dashed var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #faf8f2;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .holding strong {
+      color: var(--ink);
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.76rem;
+    }
+
+    .line-tools {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      display: grid;
+      gap: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      color: var(--muted);
+    }
+
+    .line-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .line-range {
+      display: grid;
+      grid-template-columns: auto 62px auto 62px auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .line-input {
+      width: 100%;
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.66rem;
+      padding: 0 6px;
+    }
+
+    .line-btn {
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      font-weight: 800;
+      padding: 0 8px;
+    }
+
+    .line-list {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .line-row {
+      display: grid;
+      grid-template-columns: 56px 56px minmax(0, 1fr);
+      border-bottom: 1px solid var(--ln-line);
+      background: #fff;
+    }
+
+    .line-row:last-child {
+      border-bottom: 0;
+    }
+
+    .line-row.selected {
+      background: var(--ln-active);
+    }
+
+    .line-num,
+    .line-copy {
+      border: 0;
+      border-right: 1px solid var(--ln-line);
+      background: var(--ln-bg);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.66rem;
+      cursor: pointer;
+      min-height: 28px;
+      text-align: right;
+      padding: 0 8px;
+    }
+
+    .line-copy {
+      text-align: center;
+      background: var(--ln-copy);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 800;
+    }
+
+    .line-num:hover,
+    .line-copy:hover {
+      background: #e8ecf6;
+      color: var(--ink);
+    }
+
+    .line-text {
+      min-height: 28px;
+      padding: 5px 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: #1a2236;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .inspector {
+      border-top: 2px solid var(--line);
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 220px;
+      max-height: 44vh;
+    }
+
+    .inspector-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .focus-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .copy-btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 32px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 900;
+    }
+
+    .copy-btn.ok {
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+
+    .inspector-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .focus-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.45;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .payload {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .payload pre {
+      margin: 0;
+      max-height: 220px;
+      overflow: auto;
+      padding: 8px;
+      font-size: 0.72rem;
+      line-height: 1.42;
+      color: #1a2236;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .payload-frame {
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .payload-frame iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+
+    .payload-image {
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      display: grid;
+      place-items: center;
+      min-height: 160px;
+    }
+
+    .payload-image img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .status {
+      padding: 6px 8px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%) translateY(12px);
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 80;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      :root {
+        --lane-w: 320px;
+      }
+
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+
+      .top-links {
+        justify-content: flex-start;
+      }
+
+      .line-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .line-range {
+        grid-template-columns: auto 1fr auto 1fr;
+      }
+
+      .line-range .line-btn {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="top-row">
+        <div class="brand">Graph Operator</div>
+        <input id="search" class="search" type="search" placeholder="Search root cells by id, label, family, path">
+        <nav class="top-links" aria-label="Site links">
+          <a href="index.html">Index</a>
+          <a href="title-operator.html">Title Operator</a>
+          <a href="graph-operator-creatureliness.html">Graph Operator Experiment</a>
+          <a href="minimal-embeds.html">Embeds</a>
+          <a href="film-view.html">Film</a>
+          <a href="bass.html">Bass</a>
+        </nav>
+      </div>
+      <div class="meta">
+        <span>Primitives: lanes + cells + lineage</span>
+        <span>Branch child: <code>G</code></span>
+        <span>Mark operand: <code>Shift + Click</code></span>
+        <span>Copy payload/selection: <code>C</code></span>
+      </div>
+    </header>
+
+    <main class="vessel">
+      <section id="laneScroll" class="lane-scroll" aria-label="Cell graph lanes"></section>
+    </main>
+
+    <section class="inspector" aria-label="Cell inspector">
+      <div class="inspector-head">
+        <div id="focusId" class="focus-id">No cell selected</div>
+        <button id="copyBtn" class="copy-btn" type="button" disabled>Copy</button>
+      </div>
+      <div class="inspector-body">
+        <div id="focusMeta" class="focus-meta">Select a cell to inspect payload, lineage, and provenance.</div>
+        <div id="focusPayload" class="payload"><pre>Payload preview appears here.</pre></div>
+      </div>
+      <div id="status" class="status">Loading cells...</div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SOURCE_MANIFEST = [
+      { path: "title-crispr.md", label: "Title Crispr", family: "ROOT" },
+      { path: "prompt.md", label: "Prompt Engine", family: "ROOT" },
+      { path: "bass.md", label: "Bass Framework", family: "ROOT" },
+      { path: "decon.md", label: "Deconstruction Prompt", family: "ROOT" },
+      { path: "titles.md", label: "Title Registry", family: "ROOT" },
+      { path: "MODERN/007.md", label: "007", family: "MODERN" },
+      { path: "MODERN/alien.md", label: "Alien", family: "MODERN" },
+      { path: "MODERN/andromeda.md", label: "Andromeda", family: "MODERN" },
+      { path: "MODERN/bicentennial-man.md", label: "Bicentennial Man", family: "MODERN" },
+      { path: "MODERN/catchme.md", label: "Catch Me If You Can", family: "MODERN" },
+      { path: "MODERN/common-side.md", label: "Common Side", family: "MODERN" },
+      { path: "MODERN/elf.md", label: "Elf", family: "MODERN" },
+      { path: "MODERN/game-of-thrones.md", label: "Game Of Thrones", family: "MODERN" },
+      { path: "MODERN/ghost-in-shell.md", label: "Ghost In Shell", family: "MODERN" },
+      { path: "MODERN/high-castle.md", label: "High Castle", family: "MODERN" },
+      { path: "MODERN/irma-vep.md", label: "Irma Vep", family: "MODERN" },
+      { path: "MODERN/nick.md", label: "Nick", family: "MODERN" },
+      { path: "MODERN/severance.md", label: "Severance", family: "MODERN" },
+      { path: "MODERN/simpsons.md", label: "Simpsons", family: "MODERN" },
+      { path: "MODERN/south-park.md", label: "South Park", family: "MODERN" },
+      { path: "MODERN/sphere.md", label: "Sphere", family: "MODERN" },
+      { path: "MODERN/spiderman.md", label: "Spiderman", family: "MODERN" },
+      { path: "MODERN/star-wars.md", label: "Star Wars", family: "MODERN" },
+      { path: "MODERN/stranger-things.md", label: "Stranger Things", family: "MODERN" },
+      { path: "MODERN/succession.md", label: "Succession", family: "MODERN" },
+      { path: "MODERN/true-detective.md", label: "True Detective", family: "MODERN" },
+      { path: "MODERN/westworld.md", label: "Westworld", family: "MODERN" },
+      { path: "MODERN/wings-of-desire.md", label: "Wings Of Desire", family: "MODERN" },
+      { path: "SAUL-BASS/age-of-innocence.md", label: "Age Of Innocence", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/anatomy-of-a-murder.md", label: "Anatomy Of A Murder", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/around-the-world.md", label: "Around The World In 80 Days", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/bunny-lake.md", label: "Bunny Lake Is Missing", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/cape-fear.md", label: "Cape Fear", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/carmen-jones.md", label: "Carmen Jones", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/casino.md", label: "Casino", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/golden-arms.md", label: "The Man With The Golden Arm", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/good-fellas.md", label: "Goodfellas", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/grand-prix.md", label: "Grand Prix", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/mad.md", label: "It's A Mad Mad Mad Mad World", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/northby.md", label: "North By Northwest", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/oceans11.md", label: "Ocean's Eleven", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/psycho.md", label: "Psycho", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/seconds.md", label: "Seconds", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/seven-year.md", label: "The Seven Year Itch", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/spartacus.md", label: "Spartacus", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/vertigo.md", label: "Vertigo", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/walk-on.md", label: "Walk On The Wild Side", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/war-of-roses.md", label: "The War Of The Roses", family: "SAUL-BASS" },
+      { path: "SAUL-BASS/westside.md", label: "West Side Story", family: "SAUL-BASS" }
+    ];
+
+    const FILM_SOURCE_SEEDS = [
+      { label: "Westworld Season 1 (2016) - Main Title Sequence", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/elkHuRROPfk?rel=0" },
+      { label: "The Man in the High Castle (2015) - Main Title Sequence", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/jW5JdppVUnk?rel=0" },
+      { label: "True Detective (Season 1, 2014) - Main Title Sequence", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/FxXRkqXfhYM?rel=0" },
+      { label: "Alien (1979) - Opening Titles", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/DkTAk73OLgs?rel=0" },
+      { label: "The Andromeda Strain (1971) - Main Title Sequence", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/kEp-ftrmuKU?rel=0" },
+      { label: "Sphere (1998) - Opening Credits", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/lTrA-u3Xtlc?rel=0" },
+      { label: "Ghost in the Shell (1995) - Opening Sequence", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/Uf7Pn8GB_jI?rel=0" },
+      { label: "Bicentennial Man (1999) - Opening Titles", family: "FILM-SOURCE", payloadType: "iframe", payload: "https://www.youtube.com/embed/fajcWOaZ4Yw?rel=0" }
+    ];
+
+    const CHILD_KIND_OPTIONS = [
+      { value: "prompt", label: "Prompt" },
+      { value: "completion", label: "Completion" },
+      { value: "operation", label: "Operation" },
+      { value: "code", label: "Code" },
+      { value: "html", label: "HTML" },
+      { value: "iframe", label: "IFrame" },
+      { value: "image", label: "Image Prompt" }
+    ];
+
+    const OPERATOR_OPTIONS = [
+      { value: "derive", label: "Derive" },
+      { value: "complete", label: "Complete" },
+      { value: "expand", label: "Expand" },
+      { value: "compress", label: "Compress" },
+      { value: "critique", label: "Critique" },
+      { value: "translate-style", label: "Style Shift" },
+      { value: "extract-steps", label: "Extract Steps" }
+    ];
+
+    const state = {
+      cells: new Map(),
+      childMap: new Map(),
+      rootIds: [],
+      lanes: [],
+      focusId: null,
+      focusCellsLane: 0,
+      activeLane: 0,
+      operandId: null,
+      search: "",
+      idCounter: 1,
+      lineSelections: new Map()
+    };
+
+    const el = {
+      laneScroll: document.getElementById("laneScroll"),
+      search: document.getElementById("search"),
+      focusId: document.getElementById("focusId"),
+      focusMeta: document.getElementById("focusMeta"),
+      focusPayload: document.getElementById("focusPayload"),
+      copyBtn: document.getElementById("copyBtn"),
+      status: document.getElementById("status"),
+      toast: document.getElementById("toast")
+    };
+
+    function nextCellId() {
+      const id = `C${String(state.idCounter).padStart(4, "0")}`;
+      state.idCounter += 1;
+      return id;
+    }
+
+    function showToast(msg) {
+      el.toast.textContent = msg;
+      el.toast.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => el.toast.classList.remove("show"), 1200);
+    }
+
+    async function copyText(text, label) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }
+        showToast(label || "Copied");
+      } catch {
+        showToast("Copy failed");
+      }
+    }
+
+    function escapeHtml(input) {
+      return String(input || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escapeAttr(input) {
+      return String(input || "").replace(/\"/g, "&quot;");
+    }
+
+    function inferPayloadType(path) {
+      const p = String(path || "").toLowerCase();
+      if (p.endsWith(".html") || p.endsWith(".js") || p.endsWith(".css") || p.endsWith(".json")) return "code";
+      return "text";
+    }
+
+    function payloadTypeForKind(kind) {
+      if (kind === "html" || kind === "code") return "code";
+      if (kind === "iframe") return "iframe";
+      return "text";
+    }
+
+    function splitLines(text) {
+      return String(text || "").replace(/\r\n/g, "\n").split("\n");
+    }
+
+    function getLineSelection(cellId) {
+      if (!state.lineSelections.has(cellId)) {
+        state.lineSelections.set(cellId, new Set());
+      }
+      return state.lineSelections.get(cellId);
+    }
+
+    function toggleLine(cellId, lineNumber) {
+      const sel = getLineSelection(cellId);
+      if (sel.has(lineNumber)) {
+        sel.delete(lineNumber);
+      } else {
+        sel.add(lineNumber);
+      }
+    }
+
+    function selectedLineNumbers(cellId) {
+      const sel = getLineSelection(cellId);
+      return [...sel].sort((a, b) => a - b);
+    }
+
+    function selectedLineText(cellId) {
+      const cell = state.cells.get(cellId);
+      if (!cell) return "";
+      const lines = splitLines(cell.payload);
+      const nums = selectedLineNumbers(cellId);
+      return nums.map((n) => lines[n - 1] ?? "").join("\n");
+    }
+
+    function copyRangeLines(cellId, start, end) {
+      const cell = state.cells.get(cellId);
+      if (!cell) return;
+      const lines = splitLines(cell.payload);
+      const s = Math.max(1, Math.min(start, lines.length));
+      const e = Math.max(s, Math.min(end, lines.length));
+      const chunk = lines.slice(s - 1, e).join("\n");
+      void copyText(chunk, `${cellId} lines ${s}-${e} copied`);
+    }
+
+    function firstUrl(text) {
+      const match = String(text || "").match(/https?:\/\/[^\s)\]"']+/i);
+      return match ? match[0] : "";
+    }
+
+    function toYoutubeEmbed(url) {
+      try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace(/^www\./, "");
+        if (host === "youtu.be") {
+          const id = parsed.pathname.split("/").filter(Boolean)[0];
+          if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+        }
+        if (host.endsWith("youtube.com")) {
+          const v = parsed.searchParams.get("v");
+          if (v) return `https://www.youtube.com/embed/${v}?rel=0`;
+          const parts = parsed.pathname.split("/").filter(Boolean);
+          const embedIndex = parts.indexOf("embed");
+          if (embedIndex !== -1 && parts[embedIndex + 1]) {
+            return `https://www.youtube.com/embed/${parts[embedIndex + 1]}?rel=0`;
+          }
+        }
+      } catch {
+        return "";
+      }
+      return "";
+    }
+
+    function registerCell(cell) {
+      state.cells.set(cell.id, cell);
+      if (!cell.parents.length) {
+        state.rootIds.push(cell.id);
+      }
+      for (const parentId of cell.parents) {
+        if (!state.childMap.has(parentId)) {
+          state.childMap.set(parentId, []);
+        }
+        const ids = state.childMap.get(parentId);
+        if (!ids.includes(cell.id)) {
+          ids.push(cell.id);
+        }
+      }
+    }
+
+    function createCellsLane(depth, parentId, cellIds) {
+      return {
+        type: "cells",
+        depth,
+        parentId,
+        cellIds: [...cellIds],
+        selectedId: cellIds[0] || null,
+        collapsed: false,
+        childKind: "prompt",
+        operator: "derive"
+      };
+    }
+
+    function createPayloadLane(depth, cellId) {
+      return {
+        type: "payload",
+        depth,
+        cellId,
+        collapsed: false,
+        childKind: "completion",
+        operator: "complete"
+      };
+    }
+
+    function childrenOf(cellId) {
+      return state.childMap.get(cellId) || [];
+    }
+
+    function summarizePayload(payload) {
+      const text = String(payload || "").replace(/\s+/g, " ").trim();
+      if (!text) return "(empty payload)";
+      return text.length > 110 ? `${text.slice(0, 110)}...` : text;
+    }
+
+    function filteredRootIds() {
+      const q = state.search.trim().toLowerCase();
+      if (!q) return [...state.rootIds];
+
+      return state.rootIds.filter((id) => {
+        const cell = state.cells.get(id);
+        if (!cell) return false;
+        const haystack = [
+          cell.id,
+          cell.label,
+          cell.family,
+          cell.kind,
+          cell.sourcePath || "",
+          summarizePayload(cell.payload)
+        ].join(" ").toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+
+    function resetFromRoots() {
+      const roots = filteredRootIds();
+      const rootLane = createCellsLane(0, null, roots);
+      state.lanes = [rootLane];
+      state.focusCellsLane = 0;
+      state.activeLane = 0;
+      state.focusId = roots[0] || null;
+
+      if (state.focusId) {
+        openCellAtLane(0, state.focusId, { scroll: false });
+      } else {
+        render();
+      }
+    }
+
+    function openCellAtLane(cellsLaneIndex, cellId, options = {}) {
+      const lane = state.lanes[cellsLaneIndex];
+      if (!lane || lane.type !== "cells") return;
+
+      lane.selectedId = cellId;
+      state.focusId = cellId;
+      state.focusCellsLane = cellsLaneIndex;
+      state.activeLane = cellsLaneIndex;
+
+      const previousPayload = state.lanes[cellsLaneIndex + 1];
+      const previousChildren = state.lanes[cellsLaneIndex + 2];
+
+      const payloadLane = createPayloadLane(cellsLaneIndex + 1, cellId);
+      if (previousPayload && previousPayload.type === "payload") {
+        payloadLane.childKind = previousPayload.childKind;
+        payloadLane.operator = previousPayload.operator;
+        payloadLane.collapsed = previousPayload.collapsed;
+      }
+
+      const childIds = childrenOf(cellId);
+      const childrenLane = createCellsLane(cellsLaneIndex + 2, cellId, childIds);
+      if (previousChildren && previousChildren.type === "cells" && previousChildren.parentId === cellId) {
+        childrenLane.childKind = previousChildren.childKind;
+        childrenLane.operator = previousChildren.operator;
+        childrenLane.collapsed = previousChildren.collapsed;
+        if (childIds.includes(previousChildren.selectedId)) {
+          childrenLane.selectedId = previousChildren.selectedId;
+        }
+      }
+
+      state.lanes = state.lanes.slice(0, cellsLaneIndex + 1);
+      state.lanes.push(payloadLane, childrenLane);
+
+      render();
+      if (options.scroll !== false) {
+        scrollLanesRight();
+      }
+    }
+
+    function buildChildPayload(parent, parents, childKind, operator) {
+      const snippet = splitLines(parent.payload).slice(0, 16).join("\n");
+      const operatorLine = `operator: ${operator}`;
+      const parentLine = `parents: ${parents.join(" + ")}`;
+
+      if (childKind === "completion") {
+        return [
+          "# completion",
+          operatorLine,
+          parentLine,
+          `source: ${parent.id} ${parent.label}`,
+          "",
+          "generated completion:",
+          "- produce a direct usable result",
+          "- preserve traceability to parent cell",
+          "",
+          snippet
+        ].join("\n");
+      }
+
+      if (childKind === "html") {
+        return [
+          "<!doctype html>",
+          "<html lang=\"en\">",
+          "<head>",
+          "  <meta charset=\"utf-8\">",
+          "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+          `  <!-- ${operatorLine} | ${parentLine} -->`,
+          `  <title>${parent.label}</title>`,
+          "</head>",
+          "<body>",
+          "  <main>",
+          "    <h1>Derived HTML Artifact</h1>",
+          `    <p>Source cell: ${parent.id}</p>`,
+          "  </main>",
+          "</body>",
+          "</html>"
+        ].join("\n");
+      }
+
+      if (childKind === "code") {
+        return [
+          "// generated code artifact",
+          `// ${operatorLine}`,
+          `// ${parentLine}`,
+          "function runDerivedArtifact() {",
+          `  const source = ${JSON.stringify(parent.id)};`,
+          "  return {",
+          "    source,",
+          `    operator: ${JSON.stringify(operator)},`,
+          "    status: \"draft\"",
+          "  };",
+          "}",
+          "",
+          "export default runDerivedArtifact;"
+        ].join("\n");
+      }
+
+      if (childKind === "iframe") {
+        const url = toYoutubeEmbed(firstUrl(parent.payload)) || toYoutubeEmbed(String(parent.payload || ""));
+        return url || "https://www.youtube.com/embed/VIDEO_ID?rel=0";
+      }
+
+      if (childKind === "image") {
+        return [
+          "Image prompt:",
+          operatorLine,
+          parentLine,
+          "",
+          "Create a high-contrast cinematic frame derived from this source:",
+          snippet
+        ].join("\n");
+      }
+
+      if (childKind === "operation") {
+        return [
+          "# prompt-operation",
+          operatorLine,
+          parentLine,
+          "",
+          "Apply this operation to parent payload:",
+          snippet
+        ].join("\n");
+      }
+
+      return [
+        "# prompt",
+        operatorLine,
+        parentLine,
+        `source: ${parent.id}`,
+        "",
+        "Objective:",
+        "- transform parent payload into a production-ready prompt",
+        "- keep output composable for downstream cells",
+        "",
+        "Parent snippet:",
+        snippet
+      ].join("\n");
+    }
+
+    function generateChildCell(parentId, options) {
+      const parent = state.cells.get(parentId);
+      if (!parent) return null;
+
+      const childKind = options.childKind || "prompt";
+      const operator = options.operator || "derive";
+      const parents = [parentId];
+      if (state.operandId && state.operandId !== parentId) {
+        parents.push(state.operandId);
+      }
+
+      const id = nextCellId();
+      const child = {
+        id,
+        label: `${childKind.toUpperCase()} ${id}`,
+        kind: childKind,
+        payloadType: payloadTypeForKind(childKind),
+        payload: buildChildPayload(parent, parents, childKind, operator),
+        parents,
+        family: parent.family,
+        sourcePath: null,
+        createdAt: new Date().toISOString()
+      };
+
+      registerCell(child);
+      return id;
+    }
+
+    function laneAnchorCellId(lane) {
+      if (!lane) return "";
+      if (lane.type === "payload") return lane.cellId || "";
+      return lane.selectedId || lane.parentId || "";
+    }
+
+    function branchFromLane(laneIndex) {
+      const lane = state.lanes[laneIndex];
+      if (!lane) return;
+      const parentId = laneAnchorCellId(lane);
+      if (!parentId) {
+        showToast("No anchor cell in this lane");
+        return;
+      }
+
+      const childId = generateChildCell(parentId, {
+        childKind: lane.childKind,
+        operator: lane.operator
+      });
+      if (!childId) {
+        showToast("Could not create child cell");
+        return;
+      }
+
+      let parentCellsLaneIndex = lane.type === "cells" ? laneIndex : laneIndex - 1;
+      if (lane.type === "cells" && !lane.selectedId && lane.parentId && laneIndex >= 2) {
+        const upstream = state.lanes[laneIndex - 2];
+        if (upstream && upstream.type === "cells") {
+          parentCellsLaneIndex = laneIndex - 2;
+        }
+      }
+
+      if (parentCellsLaneIndex < 0) {
+        resetFromRoots();
+        showToast(`${childId} created`);
+        return;
+      }
+
+      openCellAtLane(parentCellsLaneIndex, parentId, { scroll: false });
+      const childrenLaneIndex = parentCellsLaneIndex + 2;
+      const childrenLane = state.lanes[childrenLaneIndex];
+      if (childrenLane && childrenLane.type === "cells" && childrenLane.cellIds.includes(childId)) {
+        openCellAtLane(childrenLaneIndex, childId, { scroll: true });
+      } else {
+        render();
+      }
+
+      showToast(`${childId} created as ${lane.childKind}`);
+    }
+
+    function laneLabel(lane) {
+      if (lane.type === "payload") return `PAYLOAD ${lane.depth}`;
+      if (lane.depth === 0) return "ROOT";
+      return `LANE ${lane.depth}`;
+    }
+
+    function parentLabel(lane) {
+      if (lane.type === "payload") {
+        const cell = state.cells.get(lane.cellId);
+        const count = cell ? splitLines(cell.payload).length : 0;
+        return `${lane.cellId} · ${count} lines`;
+      }
+
+      if (!lane.parentId) {
+        return `${lane.cellIds.length} root cells`;
+      }
+      return `from ${lane.parentId} -> ${lane.cellIds.length} cells`;
+    }
+
+    function renderLaneSelects(lane, laneIndex, hasAnchor) {
+      const childOptions = CHILD_KIND_OPTIONS
+        .map((o) => `<option value="${escapeAttr(o.value)}" ${lane.childKind === o.value ? "selected" : ""}>${escapeHtml(o.label)}</option>`)
+        .join("");
+
+      const operatorOptions = OPERATOR_OPTIONS
+        .map((o) => `<option value="${escapeAttr(o.value)}" ${lane.operator === o.value ? "selected" : ""}>${escapeHtml(o.label)}</option>`)
+        .join("");
+
+      return `
+        <div class="lane-tools">
+          <select class="lane-select" data-action="lane-child-kind" data-lane="${laneIndex}" aria-label="Child type">${childOptions}</select>
+          <select class="lane-select" data-action="lane-operator" data-lane="${laneIndex}" aria-label="Operator">${operatorOptions}</select>
+          <button class="lane-branch" type="button" data-action="branch-lane" data-lane="${laneIndex}" ${hasAnchor ? "" : "disabled"}>Branch</button>
+        </div>
+      `;
+    }
+
+    function renderLaneCell(cell, lane, laneIndex) {
+      const parentLine = cell.parents.length ? `parents: ${cell.parents.join(" + ")}` : "parents: root";
+      const active = lane.selectedId === cell.id;
+      const operand = state.operandId === cell.id;
+
+      return `
+        <button
+          class="cell ${active ? "active" : ""} ${operand ? "operand" : ""}"
+          type="button"
+          data-action="select-cell"
+          data-lane="${laneIndex}"
+          data-cell="${cell.id}"
+        >
+          <div class="cell-meta">
+            <span class="cell-id">${escapeHtml(cell.id)}</span>
+            <span class="cell-kind">${escapeHtml(cell.kind)}</span>
+          </div>
+          <div class="cell-label">${escapeHtml(cell.label)}</div>
+          <div class="cell-lineage">${escapeHtml(parentLine)}</div>
+          <div class="cell-preview">${escapeHtml(summarizePayload(cell.payload))}</div>
+        </button>
+      `;
+    }
+
+    function renderPayloadLineRows(cellId, lines) {
+      const selected = getLineSelection(cellId);
+      return lines
+        .map((line, index) => {
+          const no = index + 1;
+          const rowClass = selected.has(no) ? "selected" : "";
+          return `
+            <div class="line-row ${rowClass}">
+              <button class="line-num" type="button" data-action="toggle-line" data-cell="${cellId}" data-line="${no}">${no}</button>
+              <button class="line-copy" type="button" data-action="copy-line" data-cell="${cellId}" data-line="${no}">Copy</button>
+              <div class="line-text">${line.length ? escapeHtml(line) : "&nbsp;"}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderPayloadLaneBody(lane, laneIndex) {
+      const cell = state.cells.get(lane.cellId);
+      if (!cell) {
+        return `<div class="holding"><strong>Missing payload cell</strong>Cell ${escapeHtml(lane.cellId)} not found.</div>`;
+      }
+
+      const lines = splitLines(cell.payload);
+      const selectedCount = selectedLineNumbers(cell.id).length;
+
+      return `
+        <div class="line-tools">
+          <div>Line view for ${escapeHtml(cell.id)} · selected ${selectedCount}</div>
+          <div class="line-actions">
+            <button class="line-btn" type="button" data-action="copy-all-lines" data-cell="${cell.id}">Copy All</button>
+            <button class="line-btn" type="button" data-action="copy-selected-lines" data-cell="${cell.id}">Copy Selected</button>
+            <button class="line-btn" type="button" data-action="clear-selected-lines" data-cell="${cell.id}">Clear Selected</button>
+          </div>
+          <div class="line-range">
+            <span>S</span>
+            <input class="line-input" data-role="range-start" type="number" min="1" max="${lines.length}" value="1">
+            <span>E</span>
+            <input class="line-input" data-role="range-end" type="number" min="1" max="${lines.length}" value="${lines.length}">
+            <button class="line-btn" type="button" data-action="copy-range-lines" data-cell="${cell.id}" data-lane="${laneIndex}">Copy Range</button>
+          </div>
+        </div>
+        <div class="line-list">${renderPayloadLineRows(cell.id, lines)}</div>
+      `;
+    }
+
+    function renderLane(lane, laneIndex) {
+      const hasAnchor = Boolean(laneAnchorCellId(lane));
+      const title = laneLabel(lane);
+      const sub = parentLabel(lane);
+
+      let bodyHtml = "";
+      if (lane.type === "payload") {
+        bodyHtml = renderPayloadLaneBody(lane, laneIndex);
+      } else {
+        bodyHtml = lane.cellIds.length
+          ? lane.cellIds
+              .map((id) => state.cells.get(id))
+              .filter(Boolean)
+              .map((cell) => renderLaneCell(cell, lane, laneIndex))
+              .join("")
+          : `<div class="holding"><strong>Holding Lane</strong>No child cells yet. Use Branch to create one from this lane's anchor.</div>`;
+      }
+
+      return `
+        <section class="lane ${lane.collapsed ? "collapsed" : ""}" data-lane="${laneIndex}">
+          <button class="lane-tab" type="button" data-action="toggle-lane" data-lane="${laneIndex}">${escapeHtml(title)}</button>
+          <header class="lane-head">
+            <div class="lane-head-top">
+              <div>
+                <div class="lane-title">${escapeHtml(title)}</div>
+                <div class="lane-sub">${escapeHtml(sub)}</div>
+              </div>
+              <button class="lane-toggle" type="button" data-action="toggle-lane" data-lane="${laneIndex}" aria-label="Collapse lane">&lsaquo;</button>
+            </div>
+            ${renderLaneSelects(lane, laneIndex, hasAnchor)}
+          </header>
+          <div class="lane-body">${bodyHtml}</div>
+        </section>
+      `;
+    }
+
+    function renderInspector() {
+      const cell = state.cells.get(state.focusId);
+      if (!cell) {
+        el.focusId.textContent = "No cell selected";
+        el.focusMeta.textContent = "Select a cell to inspect payload, lineage, and provenance.";
+        el.focusPayload.innerHTML = "<pre>Payload preview appears here.</pre>";
+        el.copyBtn.disabled = true;
+        return;
+      }
+
+      const parentText = cell.parents.length ? cell.parents.join(", ") : "root";
+      const created = cell.createdAt || "n/a";
+      const selectedCount = selectedLineNumbers(cell.id).length;
+
+      el.focusId.textContent = `${cell.id} · ${cell.label}`;
+      el.focusMeta.textContent = [
+        `kind: ${cell.kind}`,
+        `family: ${cell.family}`,
+        `payload_type: ${cell.payloadType}`,
+        `parents: ${parentText}`,
+        `source_path: ${cell.sourcePath || "(generated)"}`,
+        `created_at: ${created}`,
+        `selected_lines: ${selectedCount}`
+      ].join("\n");
+
+      if (cell.payloadType === "iframe") {
+        const src = String(cell.payload || "").trim();
+        el.focusPayload.innerHTML = `
+          <div class="payload-frame">
+            <iframe src="${escapeAttr(src)}" title="${escapeAttr(cell.label)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <pre>${escapeHtml(src)}</pre>
+        `;
+      } else if (cell.payloadType === "image" && /^https?:\/\//i.test(String(cell.payload || ""))) {
+        el.focusPayload.innerHTML = `
+          <div class="payload-image"><img src="${escapeAttr(cell.payload)}" alt="${escapeAttr(cell.label)}"></div>
+          <pre>${escapeHtml(cell.payload)}</pre>
+        `;
+      } else {
+        const numbered = splitLines(cell.payload)
+          .slice(0, 160)
+          .map((line, idx) => `${String(idx + 1).padStart(4, " ")} | ${line}`)
+          .join("\n");
+        el.focusPayload.innerHTML = `<pre>${escapeHtml(numbered)}</pre>`;
+      }
+
+      el.copyBtn.disabled = false;
+    }
+
+    function renderStatus() {
+      const laneCount = state.lanes.length;
+      const cellCount = state.cells.size;
+      const rootCount = filteredRootIds().length;
+      const focus = state.focusId ? `focus ${state.focusId}` : "no focus";
+      const operand = state.operandId ? `operand ${state.operandId}` : "operand none";
+      const activeLane = `active_lane ${state.activeLane}`;
+      el.status.textContent = `cells ${cellCount} | lanes ${laneCount} | root_view ${rootCount} | ${focus} | ${operand} | ${activeLane}`;
+    }
+
+    function render() {
+      el.laneScroll.innerHTML = state.lanes.map(renderLane).join("");
+      renderInspector();
+      renderStatus();
+    }
+
+    function scrollLanesRight() {
+      el.laneScroll.scrollLeft = el.laneScroll.scrollWidth;
+    }
+
+    function activeInput() {
+      const active = document.activeElement;
+      return active instanceof HTMLElement && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT");
+    }
+
+    function moveInLane(delta) {
+      const lane = state.lanes[state.focusCellsLane];
+      if (!lane || lane.type !== "cells" || !lane.cellIds.length || !state.focusId) return;
+      const idx = lane.cellIds.indexOf(state.focusId);
+      if (idx === -1) return;
+      const next = (idx + delta + lane.cellIds.length) % lane.cellIds.length;
+      openCellAtLane(state.focusCellsLane, lane.cellIds[next]);
+    }
+
+    function moveAcrossCells(delta) {
+      const targetIndex = state.focusCellsLane + delta;
+      const lane = state.lanes[targetIndex];
+      if (!lane || lane.type !== "cells" || !lane.cellIds.length) return;
+      const nextId = lane.selectedId || lane.cellIds[0];
+      openCellAtLane(targetIndex, nextId);
+    }
+
+    async function loadSourceCell(item) {
+      let payload = "";
+      try {
+        const response = await fetch(item.path, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        payload = await response.text();
+      } catch (error) {
+        payload = `Failed to load ${item.path}: ${String(error.message || error)}`;
+      }
+
+      return {
+        id: nextCellId(),
+        label: item.label,
+        kind: "prompt",
+        payloadType: inferPayloadType(item.path),
+        payload,
+        parents: [],
+        family: item.family,
+        sourcePath: item.path,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function bootSeeds() {
+      for (const seed of FILM_SOURCE_SEEDS) {
+        registerCell({
+          id: nextCellId(),
+          label: seed.label,
+          kind: "source",
+          payloadType: seed.payloadType,
+          payload: seed.payload,
+          parents: [],
+          family: seed.family,
+          sourcePath: null,
+          createdAt: new Date().toISOString()
+        });
+      }
+    }
+
+    async function boot() {
+      const loaded = await Promise.all(SOURCE_MANIFEST.map(loadSourceCell));
+      for (const cell of loaded) {
+        registerCell(cell);
+      }
+      bootSeeds();
+      resetFromRoots();
+      showToast(`Loaded ${state.cells.size} cells`);
+    }
+
+    el.laneScroll.addEventListener("click", (event) => {
+      const laneEl = event.target.closest("[data-lane]");
+      if (laneEl instanceof HTMLElement) {
+        state.activeLane = Number(laneEl.getAttribute("data-lane"));
+      }
+
+      const target = event.target.closest("[data-action]");
+      if (!(target instanceof HTMLElement)) return;
+
+      const action = target.getAttribute("data-action");
+      if (!action) return;
+
+      if (action === "toggle-lane") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const lane = state.lanes[laneIndex];
+        if (!lane) return;
+        lane.collapsed = !lane.collapsed;
+        render();
+        return;
+      }
+
+      if (action === "select-cell") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const cellId = target.getAttribute("data-cell") || "";
+        if (!cellId) return;
+
+        if (event.shiftKey) {
+          state.operandId = cellId;
+          render();
+          showToast(`${cellId} marked as operand`);
+          return;
+        }
+
+        openCellAtLane(laneIndex, cellId);
+        return;
+      }
+
+      if (action === "branch-lane") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        branchFromLane(laneIndex);
+        return;
+      }
+
+      if (action === "toggle-line") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const line = Number(target.getAttribute("data-line"));
+        if (!cellId || !Number.isFinite(line)) return;
+        toggleLine(cellId, line);
+        render();
+        return;
+      }
+
+      if (action === "copy-line") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const line = Number(target.getAttribute("data-line"));
+        const cell = state.cells.get(cellId);
+        if (!cell || !Number.isFinite(line)) return;
+        const lines = splitLines(cell.payload);
+        const chunk = lines[line - 1] || "";
+        void copyText(chunk, `${cellId} line ${line} copied`);
+        return;
+      }
+
+      if (action === "copy-all-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const cell = state.cells.get(cellId);
+        if (!cell) return;
+        void copyText(String(cell.payload || ""), `${cellId} all lines copied`);
+        return;
+      }
+
+      if (action === "copy-selected-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const nums = selectedLineNumbers(cellId);
+        if (!nums.length) {
+          showToast("No selected lines");
+          return;
+        }
+        const text = selectedLineText(cellId);
+        void copyText(text, `${cellId} selected lines copied`);
+        return;
+      }
+
+      if (action === "clear-selected-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        getLineSelection(cellId).clear();
+        render();
+        return;
+      }
+
+      if (action === "copy-range-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const laneNode = el.laneScroll.querySelector(`.lane[data-lane="${laneIndex}"]`);
+        if (!(laneNode instanceof HTMLElement)) return;
+
+        const startEl = laneNode.querySelector('[data-role="range-start"]');
+        const endEl = laneNode.querySelector('[data-role="range-end"]');
+        if (!(startEl instanceof HTMLInputElement) || !(endEl instanceof HTMLInputElement)) return;
+
+        const start = Number(startEl.value);
+        const end = Number(endEl.value);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) return;
+
+        copyRangeLines(cellId, start, end);
+      }
+    });
+
+    el.laneScroll.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const laneEl = target.closest("[data-lane]");
+      if (laneEl instanceof HTMLElement) {
+        state.activeLane = Number(laneEl.getAttribute("data-lane"));
+      }
+
+      const action = target.getAttribute("data-action");
+      const laneIndex = Number(target.getAttribute("data-lane"));
+      const lane = state.lanes[laneIndex];
+      if (!lane) return;
+
+      if (action === "lane-child-kind" && target instanceof HTMLSelectElement) {
+        lane.childKind = target.value;
+        return;
+      }
+
+      if (action === "lane-operator" && target instanceof HTMLSelectElement) {
+        lane.operator = target.value;
+      }
+    });
+
+    el.search.addEventListener("input", (event) => {
+      state.search = event.target.value || "";
+      resetFromRoots();
+    });
+
+    el.copyBtn.addEventListener("click", () => {
+      const cell = state.cells.get(state.focusId);
+      if (!cell) return;
+
+      const selected = selectedLineNumbers(cell.id);
+      const text = selected.length ? selectedLineText(cell.id) : String(cell.payload || "");
+      const label = selected.length ? `${cell.id} selected lines copied` : `${cell.id} payload copied`;
+
+      void copyText(text, label);
+      el.copyBtn.classList.add("ok");
+      clearTimeout(el.copyBtn.t);
+      el.copyBtn.t = setTimeout(() => el.copyBtn.classList.remove("ok"), 1100);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "/" && !activeInput()) {
+        event.preventDefault();
+        el.search.focus();
+        el.search.select();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        state.operandId = null;
+        render();
+        return;
+      }
+
+      if (activeInput()) return;
+
+      const key = event.key.toLowerCase();
+
+      if (key === "g") {
+        event.preventDefault();
+        branchFromLane(state.activeLane);
+        return;
+      }
+
+      if (key === "c") {
+        event.preventDefault();
+        el.copyBtn.click();
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveInLane(1);
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveInLane(-1);
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveAcrossCells(2);
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveAcrossCells(-2);
+      }
+    });
+
+    void boot().catch(() => {
+      resetFromRoots();
+      showToast("Load failed");
+    });
+  </script>
+</body>
+</html>

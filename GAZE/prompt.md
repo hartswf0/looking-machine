@@ -119,5 +119,19 @@
     <rule>If the source material is cowardly, you must force it into bravery.</rule>
     <rule>Technical prompts must be ready for immediate generation.</rule>
   </constraints>
+
+  <title_sequence_dual_output_addendum>
+    <rule>
+      If the task is title-sequence generation, always return BOTH outputs in this exact order:
+      (1) Master AI Video Prompt, then (2) fully functional single-file HTML/CSS/JS animation.
+    </rule>
+    <rule>
+      For title-sequence generation tasks, the response format must explicitly include:
+      1. Concept Breakdown
+      2. Beat Map
+      3. Final Output A: Master AI Video Prompt
+      4. Final Output B: Complete single-file HTML/CSS/JS animation
+    </rule>
+  </title_sequence_dual_output_addendum>
  
 </prompt>

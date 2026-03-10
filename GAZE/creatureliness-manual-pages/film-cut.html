@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creatureliness Feature Cut</title>
+  <style>
+    :root {
+      --bg: #090d14;
+      --panel: #121a28;
+      --ink: #e8eef9;
+      --muted: #9aa9c3;
+      --line: #2d3c59;
+      --accent: #d6e2fb;
+      --hot: #d3494f;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at 24% 10%, #1a2640 0%, #0d1423 56%, #070b12 100%);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .pane {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .head {
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #11192b;
+      display: grid;
+      gap: 4px;
+    }
+
+    .kicker {
+      font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.02rem;
+    }
+
+    .meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .btn {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #1b2b48;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      font: 800 0.58rem/1.1 inherit;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #0e1628;
+      border-color: var(--accent);
+    }
+
+    .film-wrap {
+      position: relative;
+      background: #05070d;
+    }
+
+    .film-frame {
+      width: 100%;
+      height: min(72vh, 860px);
+      border: 0;
+      display: block;
+      background: #000;
+    }
+
+    .overlay {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 10px;
+      display: grid;
+      gap: 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .scene-chip {
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid rgba(208, 219, 240, 0.38);
+      border-radius: 8px;
+      padding: 4px 8px;
+      background: rgba(8, 12, 20, 0.72);
+      backdrop-filter: blur(3px);
+      font: 900 0.64rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #dfe9fc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scene-title {
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid rgba(208, 219, 240, 0.34);
+      border-radius: 8px;
+      padding: 5px 8px;
+      background: rgba(8, 12, 20, 0.72);
+      backdrop-filter: blur(3px);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #e8eef9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .end-card {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-content: center;
+      text-align: center;
+      background: rgba(5, 7, 12, 0.86);
+      z-index: 12;
+      padding: 20px;
+      gap: 10px;
+    }
+
+    .end-card.show { display: grid; }
+
+    .end-title {
+      font-family: "Arial Black", Impact, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: clamp(28px, 6vw, 72px);
+      margin: 0;
+    }
+
+    .end-sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      padding: 8px;
+      border-top: 2px solid var(--line);
+      display: grid;
+      gap: 8px;
+      background: #0f1726;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .stat {
+      margin-left: auto;
+      font: 700 0.66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .bar {
+      height: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      background: #0c1320;
+    }
+
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #89aee3, #d6e2fb);
+    }
+
+    .bar.scene > i {
+      background: linear-gradient(90deg, #b2606a, var(--hot));
+    }
+
+    .list {
+      padding: 8px;
+      border-top: 2px solid var(--line);
+      display: grid;
+      gap: 6px;
+      background: #11192a;
+    }
+
+    .list-head {
+      font: 800 0.68rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .items {
+      display: grid;
+      gap: 4px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #16243c;
+      color: var(--ink);
+      text-align: left;
+      padding: 6px 8px;
+      cursor: pointer;
+      font: 700 0.72rem/1.2 inherit;
+    }
+
+    .item small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font: 700 0.61rem/1.1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.03em;
+    }
+
+    .item.active {
+      border-color: #d6e2fb;
+      box-shadow: inset 0 0 0 1px #d6e2fb;
+      background: #223656;
+    }
+
+    @media (min-width: 1120px) {
+      .pane.layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+      }
+
+      .main-col {
+        border-right: 2px solid var(--line);
+      }
+
+      .side-col {
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Feature Assembly</div>
+        <h1>Creatureliness Single Film Cut</h1>
+        <div class="meta">Cuts the 10 hand-authored section pages into one continuous runtime.</div>
+        <div class="top-actions">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../index.html">Main Index</a>
+          <button id="copyShotlist" class="btn" type="button">Copy Shot List</button>
+          <button id="restartFilm" class="btn primary" type="button">Restart Film</button>
+        </div>
+      </header>
+    </section>
+
+    <section class="pane layout">
+      <section class="main-col">
+        <div class="film-wrap">
+          <iframe id="filmFrame" class="film-frame" loading="eager" referrerpolicy="no-referrer" title="Creatureliness Feature Cut"></iframe>
+          <div class="overlay">
+            <div id="sceneChip" class="scene-chip">Scene --/--</div>
+            <div id="sceneTitle" class="scene-title">Loading...</div>
+          </div>
+          <div id="endCard" class="end-card">
+            <h2 class="end-title">Morning</h2>
+            <p class="end-sub">Gather the wood. Stay warm.</p>
+            <div class="row" style="justify-content:center">
+              <button id="endReplay" class="btn primary" type="button">Replay Film</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="row">
+            <button id="playPause" class="btn primary" type="button">Pause</button>
+            <button id="prevScene" class="btn" type="button">Prev</button>
+            <button id="nextScene" class="btn" type="button">Next</button>
+            <button id="toggleLoop" class="btn" type="button" aria-pressed="false">Loop: Off</button>
+            <div id="stat" class="stat">00:00 / 00:00</div>
+          </div>
+          <div class="bar"><i id="overallFill"></i></div>
+          <div class="bar scene"><i id="sceneFill"></i></div>
+        </div>
+      </section>
+
+      <aside class="side-col">
+        <section class="list">
+          <div class="list-head">Scene List</div>
+          <div id="items" class="items"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const SCENE_MS = 12600;
+
+    const SCENES = [
+      { id: "1.0", title: "THE SPLIT", agent: "M22 Westworld", file: "01-the-split-westworld.html" },
+      { id: "2.0", title: "THE CRYSTAL AND THE BURN", agent: "M03 Andromeda", file: "02-crystal-and-burn-andromeda.html" },
+      { id: "3.0", title: "THE FALSE ESCAPE", agent: "M13 Severance", file: "03-false-escape-severance.html" },
+      { id: "4.0", title: "THE ANIMAL", agent: "M09 Ghost In Shell", file: "04-animal-ghost-in-shell.html" },
+      { id: "5.0", title: "WINTER", agent: "M02 Alien", file: "05-winter-alien.html" },
+      { id: "6.0", title: "THE MIRROR AND THE FIRE", agent: "M22 Westworld", file: "06-mirror-and-fire-westworld.html" },
+      { id: "7.0", title: "THE OPERATIONAL HINGE", agent: "M06 Common Side", file: "07-operational-hinge-common-side.html" },
+      { id: "8.0", title: "THE SHELTER OF WORDS", agent: "M23 Wings Of Desire", file: "08-shelter-of-words-wings.html" },
+      { id: "9.0", title: "WHAT THE COLD TEACHES", agent: "M21 True Detective", file: "09-what-the-cold-teaches-true-detective.html" },
+      { id: "10.0", title: "MORNING", agent: "M23 Wings Of Desire", file: "10-morning-wings.html" }
+    ];
+
+    const state = {
+      sceneIndex: 0,
+      loading: true,
+      playing: true,
+      loop: false,
+      sceneRemaining: SCENE_MS,
+      filmElapsed: 0,
+      filmSession: 0,
+      raf: null,
+      lastTick: 0
+    };
+
+    const el = {
+      filmFrame: document.getElementById("filmFrame"),
+      sceneChip: document.getElementById("sceneChip"),
+      sceneTitle: document.getElementById("sceneTitle"),
+      stat: document.getElementById("stat"),
+      playPause: document.getElementById("playPause"),
+      prevScene: document.getElementById("prevScene"),
+      nextScene: document.getElementById("nextScene"),
+      toggleLoop: document.getElementById("toggleLoop"),
+      overallFill: document.getElementById("overallFill"),
+      sceneFill: document.getElementById("sceneFill"),
+      items: document.getElementById("items"),
+      copyShotlist: document.getElementById("copyShotlist"),
+      restartFilm: document.getElementById("restartFilm"),
+      endCard: document.getElementById("endCard"),
+      endReplay: document.getElementById("endReplay")
+    };
+
+    function fmt(ms) {
+      const secs = Math.max(0, Math.floor(ms / 1000));
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function totalMs() {
+      return SCENE_MS * SCENES.length;
+    }
+
+    function activeScene() {
+      return SCENES[state.sceneIndex];
+    }
+
+    function renderSceneList() {
+      el.items.innerHTML = SCENES.map((scene, i) => {
+        const active = i === state.sceneIndex ? "active" : "";
+        return `<button class="item ${active}" data-scene="${i}" type="button">${scene.id} ${scene.title}<small>${scene.agent}</small></button>`;
+      }).join("");
+    }
+
+    function updateLabels() {
+      const scene = activeScene();
+      el.sceneChip.textContent = `Scene ${state.sceneIndex + 1}/${SCENES.length} · ${scene.id}`;
+      el.sceneTitle.textContent = `${scene.title} · ${scene.agent}`;
+
+      const overall = state.filmElapsed / totalMs();
+      const sceneProgress = (SCENE_MS - state.sceneRemaining) / SCENE_MS;
+
+      el.overallFill.style.width = `${Math.max(0, Math.min(overall, 1)) * 100}%`;
+      el.sceneFill.style.width = `${Math.max(0, Math.min(sceneProgress, 1)) * 100}%`;
+      el.stat.textContent = `${fmt(state.filmElapsed)} / ${fmt(totalMs())}`;
+
+      renderSceneList();
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      return Promise.resolve();
+    }
+
+    function shotList() {
+      return SCENES.map((s, i) => `${String(i + 1).padStart(2, "0")}. ${s.id} ${s.title} — ${s.agent} — ${s.file}`).join("\n");
+    }
+
+    function setLoop(on) {
+      state.loop = !!on;
+      el.toggleLoop.textContent = `Loop: ${state.loop ? "On" : "Off"}`;
+      el.toggleLoop.setAttribute("aria-pressed", state.loop ? "true" : "false");
+    }
+
+    function stopRaf() {
+      if (state.raf) {
+        cancelAnimationFrame(state.raf);
+        state.raf = null;
+      }
+    }
+
+    function endFilm() {
+      state.playing = false;
+      stopRaf();
+      el.playPause.textContent = "Play";
+      el.endCard.classList.add("show");
+      updateLabels();
+    }
+
+    function loadScene(index) {
+      state.sceneIndex = Math.max(0, Math.min(index, SCENES.length - 1));
+      state.loading = true;
+      state.sceneRemaining = SCENE_MS;
+      const scene = activeScene();
+      updateLabels();
+
+      const url = `${scene.file}?film_session=${state.filmSession}&scene=${state.sceneIndex}&t=${Date.now()}#film-cut`;
+      el.filmFrame.src = url;
+    }
+
+    function goToNextScene() {
+      if (state.sceneIndex >= SCENES.length - 1) {
+        if (state.loop) {
+          state.filmSession += 1;
+          state.filmElapsed = 0;
+          loadScene(0);
+          return;
+        }
+        state.filmElapsed = totalMs();
+        endFilm();
+        return;
+      }
+
+      loadScene(state.sceneIndex + 1);
+    }
+
+    function goToPrevScene() {
+      if (state.sceneIndex <= 0) {
+        state.filmElapsed = 0;
+        loadScene(0);
+        return;
+      }
+
+      state.filmElapsed = Math.max(0, state.filmElapsed - SCENE_MS);
+      loadScene(state.sceneIndex - 1);
+    }
+
+    function step(now) {
+      if (!state.playing) return;
+
+      if (!state.lastTick) {
+        state.lastTick = now;
+      }
+
+      const dt = now - state.lastTick;
+      state.lastTick = now;
+
+      if (!state.loading) {
+        state.sceneRemaining -= dt;
+        state.filmElapsed = Math.min(totalMs(), state.filmElapsed + dt);
+
+        if (state.sceneRemaining <= 0) {
+          goToNextScene();
+        }
+      }
+
+      updateLabels();
+      state.raf = requestAnimationFrame(step);
+    }
+
+    function play() {
+      if (state.playing) return;
+      state.playing = true;
+      state.lastTick = 0;
+      el.playPause.textContent = "Pause";
+      state.raf = requestAnimationFrame(step);
+    }
+
+    function pause() {
+      state.playing = false;
+      stopRaf();
+      el.playPause.textContent = "Play";
+    }
+
+    function restartFilm() {
+      state.filmSession += 1;
+      state.filmElapsed = 0;
+      state.sceneRemaining = SCENE_MS;
+      state.lastTick = 0;
+      el.endCard.classList.remove("show");
+      loadScene(0);
+      state.playing = true;
+      el.playPause.textContent = "Pause";
+      stopRaf();
+      state.raf = requestAnimationFrame(step);
+    }
+
+    function bindEvents() {
+      el.filmFrame.addEventListener("load", () => {
+        state.loading = false;
+        state.sceneRemaining = SCENE_MS;
+        state.lastTick = 0;
+        updateLabels();
+      });
+
+      el.playPause.addEventListener("click", () => {
+        if (state.playing) {
+          pause();
+        } else {
+          el.endCard.classList.remove("show");
+          play();
+        }
+      });
+
+      el.prevScene.addEventListener("click", () => {
+        el.endCard.classList.remove("show");
+        goToPrevScene();
+      });
+
+      el.nextScene.addEventListener("click", () => {
+        el.endCard.classList.remove("show");
+        goToNextScene();
+      });
+
+      el.toggleLoop.addEventListener("click", () => {
+        setLoop(!state.loop);
+      });
+
+      el.items.addEventListener("click", (e) => {
+        const target = e.target.closest("[data-scene]");
+        if (!target) return;
+        const idx = Number(target.getAttribute("data-scene"));
+        if (!Number.isFinite(idx)) return;
+
+        state.filmElapsed = idx * SCENE_MS;
+        el.endCard.classList.remove("show");
+        loadScene(idx);
+      });
+
+      el.copyShotlist.addEventListener("click", () => {
+        copyText(shotList());
+      });
+
+      el.restartFilm.addEventListener("click", () => {
+        restartFilm();
+      });
+
+      el.endReplay.addEventListener("click", () => {
+        restartFilm();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === " ") {
+          e.preventDefault();
+          if (state.playing) pause(); else play();
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          goToNextScene();
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToPrevScene();
+        }
+      });
+    }
+
+    function boot() {
+      bindEvents();
+      setLoop(false);
+      renderSceneList();
+      updateLabels();
+      loadScene(0);
+      state.raf = requestAnimationFrame(step);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

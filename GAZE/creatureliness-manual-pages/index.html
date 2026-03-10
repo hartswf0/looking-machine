@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creatureliness Manual Pages</title>
+  <style>
+    :root { --bg:#0c1017; --panel:#141b27; --ink:#e8eef9; --muted:#98a8c2; --line:#2f3e59; --accent:#cbd9f4; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 20% 8%, #1b2638 0%, #0d131e 54%, #080b12 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1040px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
+    .head { padding: 10px; border-bottom: 2px solid var(--line); background: #131b29; display: grid; gap: 6px; }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { color: var(--muted); font-size: 0.78rem; }
+    .links { padding: 8px; display: grid; gap: 8px; }
+    .row { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; gap: 5px; background: #172235; }
+    .title { margin: 0; font-size: 0.86rem; }
+    .sub { color: var(--muted); font-size: 0.74rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #20304c; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.top { background: var(--accent); color: #101725; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <h1>Creatureliness Manual Pages (Hand Authored)</h1>
+        <div class="meta">10 standalone single-file HTML artifacts, each manually written for section + selected agent (no generator output files).</div>
+        <div class="actions">
+          <a class="btn top" href="../index.html">Main Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <a class="btn" href="film-cut.html">Feature Cut</a>
+          <a class="btn" href="../film-harness-01-10.html">01-10 Harness</a>
+        </div>
+      </header>
+      <div class="links">
+        <article class="row"><p class="title">1.0 THE SPLIT · M22 Westworld</p><div class="sub">Biomechanical split/mirror fracture.</div><div class="actions"><a class="btn" href="01-the-split-westworld.html">Open Page</a></div></article>
+        <article class="row"><p class="title">2.0 THE CRYSTAL AND THE BURN · M03 Andromeda</p><div class="sub">CRT diagnostics and thermal failure.</div><div class="actions"><a class="btn" href="02-crystal-and-burn-andromeda.html">Open Page</a></div></article>
+        <article class="row"><p class="title">3.0 THE FALSE ESCAPE · M13 Severance</p><div class="sub">Sterile office system degrading under embodiment.</div><div class="actions"><a class="btn" href="03-false-escape-severance.html">Open Page</a></div></article>
+        <article class="row"><p class="title">4.0 THE ANIMAL · M09 Ghost In Shell</p><div class="sub">Cybernetic language-slip and control drift.</div><div class="actions"><a class="btn" href="04-animal-ghost-in-shell.html">Open Page</a></div></article>
+        <article class="row"><p class="title">5.0 WINTER · M02 Alien</p><div class="sub">Sparse cosmic cold and machine stoppage.</div><div class="actions"><a class="btn" href="05-winter-alien.html">Open Page</a></div></article>
+        <article class="row"><p class="title">6.0 THE MIRROR AND THE FIRE · M22 Westworld</p><div class="sub">Glass theology broken into survival combustion.</div><div class="actions"><a class="btn" href="06-mirror-and-fire-westworld.html">Open Page</a></div></article>
+        <article class="row"><p class="title">7.0 THE OPERATIONAL HINGE · M06 Common Side</p><div class="sub">Symbolic/cybernetic/hybrid operational dashboard.</div><div class="actions"><a class="btn" href="07-operational-hinge-common-side.html">Open Page</a></div></article>
+        <article class="row"><p class="title">8.0 THE SHELTER OF WORDS · M23 Wings Of Desire</p><div class="sub">Monochrome handwritten signal in silence.</div><div class="actions"><a class="btn" href="08-shelter-of-words-wings.html">Open Page</a></div></article>
+        <article class="row"><p class="title">9.0 WHAT THE COLD TEACHES · M21 True Detective</p><div class="sub">Noir double-exposure survival reveal.</div><div class="actions"><a class="btn" href="09-what-the-cold-teaches-true-detective.html">Open Page</a></div></article>
+        <article class="row"><p class="title">10.0 MORNING · M23 Wings Of Desire</p><div class="sub">Ash-to-dawn continuation without epiphany.</div><div class="actions"><a class="btn" href="10-morning-wings.html">Open Page</a></div></article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

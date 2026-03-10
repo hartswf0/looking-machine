@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.0 — WHAT THE COLD TEACHES</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Raleway:wght@100;200;300&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #f5f2ec;
+    --off-white: #ede9e0;
+    --pale: #e8e2d5;
+    --mud: #3a2e1e;
+    --ochre: #7a6040;
+    --swamp: #4a5238;
+    --frost: #c8d4d0;
+    --ash: #9a9188;
+    --shadow: rgba(30,20,10,0.85);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--white);
+    overflow: hidden;
+    font-family: 'Raleway', sans-serif;
+    cursor: none;
+  }
+
+  /* ── MAIN STAGE ── */
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--white);
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  #grain {
+    position: fixed; inset: -50%;
+    width: 200%; height: 200%;
+    pointer-events: none; z-index: 100;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grainShift 0.15s steps(1) infinite;
+  }
+  @keyframes grainShift {
+    0%   { transform: translate(0,0); }
+    25%  { transform: translate(-1%,-2%); }
+    50%  { transform: translate(2%,1%); }
+    75%  { transform: translate(-2%,2%); }
+    100% { transform: translate(1%,-1%); }
+  }
+
+  /* ── VIGNETTE ── */
+  #vignette {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 50;
+    background: radial-gradient(ellipse at center,
+      transparent 45%,
+      rgba(30,20,8,0.25) 80%,
+      rgba(20,12,4,0.55) 100%);
+  }
+
+  /* ── SILHOUETTE SCENE ── */
+  #silhouette-wrap {
+    position: relative;
+    width: min(480px, 80vw);
+    height: min(580px, 85vh);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* The SVG silhouette container */
+  #figure {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    animation: figureIn 3s ease-out 0.5s forwards;
+  }
+  @keyframes figureIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  #figure svg {
+    width: 100%; height: 100%;
+    animation: slowBreath 20s ease-in-out 3.5s infinite alternate;
+  }
+  @keyframes slowBreath {
+    from { transform: scale(1); }
+    to   { transform: scale(1.04); }
+  }
+
+  /* landscape rendered as SVG pattern fill — the double-exposure core */
+  .landscape-fill {
+    fill: url(#landscapeGrad);
+    mix-blend-mode: multiply;
+  }
+
+  /* ── LIGHT LEAK ── */
+  #lightleak {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 60% 40% at 70% 20%,
+      rgba(220, 195, 140, 0.18) 0%,
+      transparent 70%);
+    animation: leakPulse 12s ease-in-out 2s infinite alternate;
+  }
+  @keyframes leakPulse {
+    from { opacity: 0.4; transform: scale(1) translate(0,0); }
+    to   { opacity: 0.9; transform: scale(1.1) translate(-3%,2%); }
+  }
+
+  /* ── HORIZONTAL SCAN LINE (subtle) ── */
+  #scanline {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 60;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 3px,
+      rgba(200,185,160,0.015) 3px,
+      rgba(200,185,160,0.015) 4px
+    );
+  }
+
+  /* ── TEXT LAYER ── */
+  #text-layer {
+    position: fixed; inset: 0;
+    z-index: 30;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: flex-end;
+    padding: 0 min(6vw, 60px) min(6vh, 50px);
+    pointer-events: none;
+  }
+
+  .text-beat {
+    opacity: 0;
+    transform: translateY(6px);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 200;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mud);
+    line-height: 2;
+    white-space: nowrap;
+  }
+
+  .text-beat.section-num {
+    font-size: clamp(8px, 1.1vw, 11px);
+    letter-spacing: 0.45em;
+    color: var(--ash);
+    margin-bottom: 0.4em;
+  }
+
+  .text-beat.title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(18px, 3.5vw, 36px);
+    letter-spacing: 0.18em;
+    color: var(--mud);
+  }
+
+  .text-beat.body {
+    font-size: clamp(8px, 1.2vw, 12px);
+    color: var(--ochre);
+    letter-spacing: 0.28em;
+    white-space: normal;
+    max-width: min(480px, 70vw);
+    line-height: 2.2;
+  }
+
+  .text-beat.coda {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(11px, 1.6vw, 16px);
+    color: var(--mud);
+    letter-spacing: 0.14em;
+    max-width: min(560px, 72vw);
+    white-space: normal;
+    line-height: 2;
+    opacity: 0;
+  }
+
+  .text-beat.dash {
+    font-size: clamp(7px, 0.9vw, 9px);
+    letter-spacing: 0.55em;
+    color: var(--ash);
+    margin-bottom: 1.2em;
+  }
+
+  /* ── FADE-OUT BLACK ── */
+  #blackout {
+    position: fixed; inset: 0; z-index: 200;
+    background: #0d0a06;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── RESTART HINT ── */
+  #restart {
+    position: fixed; bottom: 28px; right: 36px;
+    z-index: 300;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 200;
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ash);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.4s, color 0.3s;
+  }
+  #restart:hover { color: var(--mud); }
+
+  /* ── PROGRESS BAR ── */
+  #progress {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 1px; z-index: 250;
+    background: rgba(120,100,70,0.15);
+  }
+  #progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--ochre), var(--swamp));
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="silhouette-wrap">
+
+    <!-- SVG double-exposure figure -->
+    <div id="figure">
+      <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs>
+
+          <!-- Animated landscape gradient — evokes frozen field / bare trees / winter dusk -->
+          <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#d4cfc5"/>
+            <stop offset="40%"  stop-color="#bbb5a5"/>
+            <stop offset="100%" stop-color="#8a7e68"/>
+          </linearGradient>
+
+          <!-- Ground band -->
+          <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#6a6050"/>
+            <stop offset="100%" stop-color="#3a3020"/>
+          </linearGradient>
+
+          <!-- Winter tree silhouette as a mask pattern -->
+          <pattern id="landscapePattern" x="0" y="0" width="400" height="500" patternUnits="userSpaceOnUse">
+            <!-- Sky wash -->
+            <rect width="400" height="500" fill="url(#sky)"/>
+            <!-- Horizon ground -->
+            <rect y="310" width="400" height="190" fill="url(#ground)"/>
+            <!-- Bare winter tree (center) -->
+            <g fill="#3a3028" opacity="0.75">
+              <!-- trunk -->
+              <rect x="195" y="240" width="10" height="80"/>
+              <!-- main branches -->
+              <line x1="200" y1="260" x2="155" y2="215" stroke="#3a3028" stroke-width="4"/>
+              <line x1="200" y1="255" x2="248" y2="205" stroke="#3a3028" stroke-width="4"/>
+              <line x1="200" y1="275" x2="135" y2="250" stroke="#3a3028" stroke-width="3"/>
+              <line x1="200" y1="270" x2="265" y2="245" stroke="#3a3028" stroke-width="3"/>
+              <!-- sub branches -->
+              <line x1="155" y1="215" x2="138" y2="195" stroke="#3a3028" stroke-width="2"/>
+              <line x1="155" y1="215" x2="168" y2="193" stroke="#3a3028" stroke-width="2"/>
+              <line x1="248" y1="205" x2="240" y2="184" stroke="#3a3028" stroke-width="2"/>
+              <line x1="248" y1="205" x2="262" y2="192" stroke="#3a3028" stroke-width="2"/>
+              <line x1="135" y1="250" x2="120" y2="238" stroke="#3a3028" stroke-width="1.5"/>
+              <line x1="265" y1="245" x2="280" y2="232" stroke="#3a3028" stroke-width="1.5"/>
+              <!-- twigs -->
+              <line x1="138" y1="195" x2="130" y2="183" stroke="#3a3028" stroke-width="1"/>
+              <line x1="138" y1="195" x2="144" y2="181" stroke="#3a3028" stroke-width="1"/>
+              <line x1="168" y1="193" x2="162" y2="178" stroke="#3a3028" stroke-width="1"/>
+              <line x1="168" y1="193" x2="176" y2="179" stroke="#3a3028" stroke-width="1"/>
+            </g>
+            <!-- Distant treeline -->
+            <g fill="#5a5040" opacity="0.4">
+              <rect x="0"   y="290" width="40" height="25" rx="12"/>
+              <rect x="30"  y="285" width="35" height="30" rx="14"/>
+              <rect x="310" y="288" width="40" height="27" rx="13"/>
+              <rect x="345" y="283" width="55" height="32" rx="15"/>
+              <rect x="80"  y="295" width="25" height="18" rx="8"/>
+              <rect x="270" y="293" width="28" height="20" rx="9"/>
+            </g>
+            <!-- Cold mist band -->
+            <rect y="298" width="400" height="20" fill="rgba(215,210,200,0.3)"/>
+            <!-- Snow on ground suggestion -->
+            <rect y="310" width="400" height="8" fill="rgba(235,232,225,0.45)"/>
+            <!-- Faint breath / exhale plume -->
+            <ellipse cx="200" cy="235" rx="18" ry="8" fill="rgba(230,226,218,0.5)"/>
+            <ellipse cx="200" cy="222" rx="12" ry="6" fill="rgba(230,226,218,0.3)"/>
+            <ellipse cx="201" cy="211" rx="7" ry="4" fill="rgba(230,226,218,0.2)"/>
+          </pattern>
+
+          <!-- The silhouette mask shape: a standing figure, head bowed slightly -->
+          <clipPath id="figureClip">
+            <path d="
+              M200,30
+              C215,30 228,42 230,58
+              C232,74 225,90 218,100
+              C226,106 234,115 236,128
+              C238,142 230,155 225,165
+              L228,175
+              C238,178 252,185 258,198
+              C265,212 262,230 260,248
+              L255,310
+              L262,400
+              L270,480
+              L248,482
+              L245,400
+              L238,315
+              L235,310
+              L225,340
+              L220,400
+              L218,482
+              L182,482
+              L180,400
+              L175,340
+              L165,310
+              L162,315
+              L155,400
+              L152,482
+              L130,480
+              L138,400
+              L145,310
+              L140,248
+              C138,230 135,212 142,198
+              C148,185 162,178 172,175
+              L175,165
+              C170,155 162,142 164,128
+              C166,115 174,106 182,100
+              C175,90 168,74 170,58
+              C172,42 185,30 200,30
+              Z
+            "/>
+          </clipPath>
+
+          <!-- Soft inner shadow for depth -->
+          <filter id="figureBlur">
+            <feGaussianBlur stdDeviation="2.5"/>
+          </filter>
+          <filter id="softEdge">
+            <feGaussianBlur stdDeviation="1.5"/>
+          </filter>
+
+        </defs>
+
+        <!-- ── BACKGROUND: overexposed white ── -->
+        <rect width="400" height="500" fill="#f5f2ec"/>
+
+        <!-- ── DOUBLE-EXPOSURE: landscape clipped to silhouette ── -->
+        <g clip-path="url(#figureClip)">
+          <!-- landscape fill -->
+          <rect width="400" height="500" fill="url(#landscapePattern)" opacity="0.88"/>
+          <!-- multiply overlay for depth -->
+          <rect width="400" height="500" fill="rgba(90,75,50,0.12)" style="mix-blend-mode:multiply"/>
+        </g>
+
+        <!-- ── SILHOUETTE EDGE: thin dark outline ── -->
+        <path d="
+          M200,30
+          C215,30 228,42 230,58
+          C232,74 225,90 218,100
+          C226,106 234,115 236,128
+          C238,142 230,155 225,165
+          L228,175
+          C238,178 252,185 258,198
+          C265,212 262,230 260,248
+          L255,310
+          L262,400
+          L270,480
+          L248,482
+          L245,400
+          L238,315
+          L235,310
+          L225,340
+          L220,400
+          L218,482
+          L182,482
+          L180,400
+          L175,340
+          L165,310
+          L162,315
+          L155,400
+          L152,482
+          L130,480
+          L138,400
+          L145,310
+          L140,248
+          C138,230 135,212 142,198
+          C148,185 162,178 172,175
+          L175,165
+          C170,155 162,142 164,128
+          C166,115 174,106 182,100
+          C175,90 168,74 170,58
+          C172,42 185,30 200,30
+          Z
+        "
+        fill="none"
+        stroke="rgba(40,30,18,0.18)"
+        stroke-width="0.8"
+        />
+
+        <!-- ── INTERNAL LIGHT LEAK over figure ── -->
+        <g clip-path="url(#figureClip)">
+          <ellipse cx="240" cy="80" rx="80" ry="60"
+            fill="rgba(220,200,155,0.15)"
+            style="mix-blend-mode:screen"/>
+        </g>
+
+        <!-- ── BREATH / EXHALE ── -->
+        <ellipse cx="200" cy="24" rx="14" ry="6"
+          fill="rgba(210,205,195,0.6)"
+          id="breathEl"/>
+
+      </svg>
+    </div>
+
+    <div id="lightleak"></div>
+  </div>
+</div>
+
+<!-- Grain + vignette -->
+<div id="grain"></div>
+<div id="scanline"></div>
+<div id="vignette"></div>
+
+<!-- Text layer -->
+<div id="text-layer">
+  <div class="text-beat dash"   id="t-dash">———</div>
+  <div class="text-beat section-num" id="t-num">9.0</div>
+  <div class="text-beat title"  id="t-title">What the Cold Teaches</div>
+  <div class="text-beat body"   id="t-b1">The cold teaches more than the mirror.</div>
+  <div class="text-beat body"   id="t-b2">The mirror shows you an image.</div>
+  <div class="text-beat body"   id="t-b3">The cold shows you what you are willing to do<br>to continue.</div>
+  <div class="text-beat body"   id="t-b4">Perhaps what survives the winter<br>is the only purity there is.</div>
+  <div class="text-beat body"   id="t-b5">Only the breath that keeps coming,<br>white against the dark.</div>
+  <div class="text-beat body"   id="t-b6">The machine will not save us from creatureliness.</div>
+  <div class="text-beat body"   id="t-b7">It will throw creatureliness into sharper outline.</div>
+  <div class="text-beat coda"   id="t-coda">One cannot say clearly whether the machine fails us,<br>or whether it reveals the wish in us that was already false.</div>
+</div>
+
+<div id="blackout"></div>
+<div id="restart" onclick="restartSequence()">↺ &nbsp; replay</div>
+<div id="progress"><div id="progress-fill"></div></div>
+
+<script>
+/* ─────────────────────────────────────────────
+   BEAT SEQUENCER
+   Total duration: ~68s (slow, meditative)
+   Each beat: { id, fadeIn, stay, fadeOut }
+   All times in ms
+──────────────────────────────────────────────*/
+const TOTAL_MS = 70000;
+const beats = [
+  // Opening — number + dash
+  { id: 't-dash',  fadeIn: 800,  delay: 1200,  stay: 4000, fadeOut: 1200 },
+  { id: 't-num',   fadeIn: 1000, delay: 1800,  stay: 4500, fadeOut: 1000 },
+  { id: 't-title', fadeIn: 1400, delay: 2800,  stay: 8000, fadeOut: 1400 },
+  // Verse 1
+  { id: 't-b1',    fadeIn: 1200, delay: 9500,  stay: 5500, fadeOut: 1200 },
+  { id: 't-b2',    fadeIn: 1200, delay: 17000, stay: 4500, fadeOut: 1000 },
+  { id: 't-b3',    fadeIn: 1400, delay: 22500, stay: 6000, fadeOut: 1200 },
+  // Verse 2
+  { id: 't-b4',    fadeIn: 1400, delay: 30500, stay: 6000, fadeOut: 1200 },
+  // Breath line
+  { id: 't-b5',    fadeIn: 1400, delay: 38500, stay: 6000, fadeOut: 1200 },
+  // Machine lines
+  { id: 't-b6',    fadeIn: 1200, delay: 46000, stay: 5000, fadeOut: 1000 },
+  { id: 't-b7',    fadeIn: 1200, delay: 52000, stay: 5000, fadeOut: 1000 },
+  // Coda — lingers longest
+  { id: 't-coda',  fadeIn: 2000, delay: 58000, stay: 8000, fadeOut: 2500 },
+];
+
+let animationStartTime = null;
+let allTimers = [];
+
+function easeInOut(t) {
+  return t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+}
+
+function animateOpacity(el, from, to, duration, delay, onDone) {
+  const tid = setTimeout(() => {
+    const start = performance.now();
+    function step(now) {
+      const raw = Math.min((now - start) / duration, 1);
+      const t = easeInOut(raw);
+      el.style.opacity = from + (to - from) * t;
+      el.style.transform = `translateY(${(1-t) * 6 * (from < to ? 1 : -0.5)}px)`;
+      if (raw < 1) requestAnimationFrame(step);
+      else { el.style.opacity = to; if (onDone) onDone(); }
+    }
+    requestAnimationFrame(step);
+  }, delay);
+  allTimers.push(tid);
+}
+
+function scheduleBeat(beat) {
+  const el = document.getElementById(beat.id);
+  if (!el) return;
+  // Fade in
+  animateOpacity(el, 0, 1, beat.fadeIn, beat.delay, null);
+  // Fade out
+  animateOpacity(el, 1, 0, beat.fadeOut, beat.delay + beat.fadeIn + beat.stay, null);
+}
+
+function updateProgress(startTime) {
+  function frame() {
+    const elapsed = performance.now() - startTime;
+    const pct = Math.min((elapsed / TOTAL_MS) * 100, 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function startSequence() {
+  animationStartTime = performance.now();
+
+  // Reset all text
+  beats.forEach(b => {
+    const el = document.getElementById(b.id);
+    if (el) { el.style.opacity = 0; el.style.transform = 'translateY(6px)'; }
+  });
+
+  // Schedule all beats
+  beats.forEach(scheduleBeat);
+
+  // Animate breath ellipse
+  const breathEl = document.getElementById('breathEl');
+  function animateBreath() {
+    const t = (Date.now() % 5000) / 5000;
+    const s = 0.7 + 0.35 * Math.sin(t * Math.PI * 2);
+    const op = 0.3 + 0.35 * Math.sin(t * Math.PI * 2);
+    if (breathEl) {
+      breathEl.setAttribute('rx', 14 * s);
+      breathEl.setAttribute('ry', 6 * s);
+      breathEl.setAttribute('fill', `rgba(210,205,195,${op})`);
+    }
+    requestAnimationFrame(animateBreath);
+  }
+  animateBreath();
+
+  // Landscape slow scroll inside figure — animate pattern
+  let landscapeY = 0;
+  function driftLandscape() {
+    landscapeY += 0.008;
+    const p = document.getElementById('landscapePattern');
+    if (p) p.setAttribute('y', -landscapeY % 500);
+    requestAnimationFrame(driftLandscape);
+  }
+  driftLandscape();
+
+  updateProgress(animationStartTime);
+
+  // Final blackout
+  const blackout = document.getElementById('blackout');
+  const restartBtn = document.getElementById('restart');
+  const fadeBlackDelay = 65000;
+  const fadeBTid = setTimeout(() => {
+    animateOpacity(blackout, 0, 1, 2500, 0, () => {
+      restartBtn.style.opacity = '1';
+    });
+  }, fadeBlackDelay);
+  allTimers.push(fadeBTid);
+}
+
+function restartSequence() {
+  // Clear all timers
+  allTimers.forEach(clearTimeout);
+  allTimers = [];
+
+  // Reset blackout + restart btn
+  const blackout = document.getElementById('blackout');
+  blackout.style.opacity = '0';
+  const restartBtn = document.getElementById('restart');
+  restartBtn.style.opacity = '0';
+  document.getElementById('progress-fill').style.width = '0%';
+
+  // Reset figure
+  const figure = document.getElementById('figure');
+  figure.style.animation = 'none';
+  setTimeout(() => {
+    figure.style.animation = '';
+    startSequence();
+  }, 50);
+}
+
+// Boot
+window.addEventListener('load', () => {
+  // Small loading pause for fonts
+  setTimeout(startSequence, 400);
+});
+
+// Click anywhere to skip to restart
+document.getElementById('blackout').addEventListener('click', restartSequence);
+</script>
+</body>
+</html>

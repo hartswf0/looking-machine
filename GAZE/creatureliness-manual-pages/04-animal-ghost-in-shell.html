@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4.0 THE ANIMAL · M09 Ghost In Shell</title>
+  <style>
+    :root {
+      --bg: #02050a;
+      --panel: #07111d;
+      --ink: #c6e7ff;
+      --muted: #78a2c5;
+      --line: #214367;
+      --cy: #53d9ff;
+      --mag: #7b57ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 72% 10%, #152645 0%, #071123 48%, #02060c 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #060d18; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #0b1629; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #101e33; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #53d9ff; color: #04101a; border-color: #53d9ff; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #091428; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #070f1f; padding: 8px; color: #b8def7; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #020914; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #030a13; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #071225; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #rain { position: absolute; inset: 0; pointer-events: none; opacity: 0.45; z-index: 15; font: 12px/1 monospace; color: #53d9ff; white-space: pre; mix-blend-mode: screen; }
+    #rain span { position: absolute; top: -20px; animation: fall linear infinite; opacity: 0.6; }
+    @keyframes fall { to { transform: translateY(110vh); } }
+
+    #words { position: absolute; inset: 0; z-index: 20; pointer-events: none; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transform: scale(0.86); transition: opacity 0.16s ease, transform 0.16s ease; letter-spacing: 0.1em; text-transform: uppercase; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; transform: scale(1); }
+    .w1 { font-size: clamp(34px, 7vw, 96px); color: #d6edff; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #8ad9ff; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #8ad9ff; }
+    .w4 { font-size: clamp(42px, 9vw, 124px); color: #7b57ff; }
+
+    #membrane { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(circle at 28% 32%, rgba(83, 217, 255, 0.16), transparent 46%),
+      radial-gradient(circle at 68% 66%, rgba(123, 87, 255, 0.18), transparent 48%);
+      mix-blend-mode: screen;
+    }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 04/10</div>
+        <h1>4.0 THE ANIMAL · Agent M09 Ghost In Shell</h1>
+        <div class="meta">Leash, prompt, language-slip: control fantasy vs probabilistic weather.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: animality cannot be owned; language itself resists control.</li>
+            <li>Agent lens: cybernetic soul-machine ambiguity, fluid membrane and code-rain.</li>
+            <li>Primary motif: clean command string mutates into prayer text while system keeps parsing.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.7s: neural rain over dark fluid substrate.</li>
+            <li>1.7–3.6s: split pane, command syntax vs moving leash signal.</li>
+            <li>3.6–6.6s: 3x2 cybernetic atlas: eye, cable, field map, language noise.</li>
+            <li>6.6–9.0s: words strike: LANGUAGE / IS NOT / YOURS / EITHER.</li>
+            <li>9.0–11.2s: collapse into one black pupil with code reflection.</li>
+            <li>11.2–12.0s: membrane pulse and reset.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "4.0 THE ANIMAL" in Ghost-in-the-Shell mode.
+Use deep cyan/ultraviolet cybernetic palette, code-rain, fluid membrane overlays.
+Narrative axis: leash as visible wish for control, language as uncontrollable statistical weather.
+Hard-cut rhythm only; no smooth narrative camera.
+Show command strings mutating into pleas, cable anatomy, iris macro, drifting syntax fragments.
+Typography impacts: LANGUAGE / IS NOT / YOURS / EITHER.
+End on a single reflective pupil that contains streaming code.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="grid" class="cfg-single"></div>
+          <div id="rain"></div>
+          <div id="membrane"></div>
+          <div id="words">
+            <span id="w1" class="word w1">LANGUAGE</span>
+            <span id="w2" class="word w2">IS NOT</span>
+            <span id="w3" class="word w3">YOURS</span>
+            <span id="w4" class="word w4">EITHER</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const rain = document.getElementById('rain');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function buildRain() {
+      rain.innerHTML = '';
+      for (let i = 0; i < 48; i++) {
+        const s = document.createElement('span');
+        s.textContent = Array.from({ length: 16 }, () => String.fromCharCode(0x30a0 + Math.floor(Math.random() * 96))).join('');
+        s.style.left = `${Math.random() * 100}%`;
+        s.style.animationDuration = `${4 + Math.random() * 5}s`;
+        s.style.animationDelay = `${-Math.random() * 8}s`;
+        rain.appendChild(s);
+      }
+    }
+
+    function eye(v) {
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#050b16'/><ellipse cx='150' cy='100' rx='96' ry='36' fill='#0a1630' stroke='#7ccfff'/><circle cx='150' cy='100' r='${20 + (v%6)}' fill='#86e1ff'/><circle cx='150' cy='100' r='9' fill='#7b57ff'/><line x1='55' y1='100' x2='245' y2='100' stroke='#4aa5d8'/></svg>`;
+    }
+
+    function leash(v) {
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#071123'/>${Array.from({length:5}).map((_,i)=>`<path d='M 20 ${34+i*30} C ${100+i*4} ${30+i*30+v}, ${170-i*3} ${44+i*30-v}, 280 ${40+i*30}' stroke='${i%2?'#7b57ff':'#53d9ff'}' fill='none' stroke-width='2'/>`).join('')}<text x='20' y='186' fill='#9bd6ff' font-size='11'>CONTROL SIGNAL DRIFT</text></svg>`;
+    }
+
+    function textNoise(v) {
+      const rows = Array.from({length:14}).map((_,i)=>`<text x='10' y='${16+i*13}' fill='${i%3===0?'#7b57ff':'#8ed4ff'}' font-size='10'>sys_prompt_${(i+v)%12} -> ${i%4===0?'pls stay':'constraint'}</text>`).join('');
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#040b19'/>${rows}</svg>`;
+    }
+
+    function setLayout(c) { grid.className = ''; grid.classList.add(c); }
+    function setPanels(arr) { grid.innerHTML = arr.map(svg => `<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords() { words.forEach((w) => w.classList.remove('on')); }
+    function show(i) { words[i].classList.add('on'); }
+
+    let tick = 0;
+    function run() {
+      clearWords();
+      const beats = [
+        { t: 0, fn: () => { setLayout('cfg-single'); setPanels([eye(0)]); } },
+        { t: 1700, fn: () => { setLayout('cfg-2x1'); setPanels([textNoise(0), leash(0)]); } },
+        { t: 3600, fn: () => { setLayout('cfg-3x2'); setPanels([eye(1), leash(1), textNoise(1), leash(2), eye(3), textNoise(2)]); } },
+        { t: 5000, fn: () => show(0) },
+        { t: 6000, fn: () => show(1) },
+        { t: 7000, fn: () => show(2) },
+        { t: 8050, fn: () => show(3) },
+        { t: 9000, fn: () => { setLayout('cfg-single'); setPanels([eye(5)]); } },
+        { t: 12400, fn: run }
+      ];
+      beats.forEach((b) => setTimeout(b.fn, b.t));
+    }
+
+    setInterval(() => {
+      tick += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = eye(tick % 6);
+      if (grid.classList.contains('cfg-3x2') && p.length === 6) {
+        p[0].innerHTML = eye((tick+1)%6);
+        p[1].innerHTML = leash((tick+2)%8);
+        p[2].innerHTML = textNoise((tick+3)%8);
+        p[3].innerHTML = leash((tick+4)%8);
+        p[4].innerHTML = eye((tick+5)%6);
+        p[5].innerHTML = textNoise((tick+6)%8);
+      }
+    }, 160);
+
+    document.getElementById('copyPrompt').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    buildRain();
+    run();
+  </script>
+</body>
+</html>

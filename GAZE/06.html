@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>6.0 The Mirror and the Fire</title>
+<link href="https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Homemade Apple', cursive;
+  }
+
+  #stage {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Canvas layer for all visual imagery ── */
+  #bg-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    transition: opacity 2.4s ease;
+  }
+
+  /* ── Grain overlay ── */
+  #grain {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    animation: grainShift 0.12s steps(1) infinite;
+  }
+  @keyframes grainShift {
+    0%   { background-position:   0%   0%; }
+    25%  { background-position: 100%  50%; }
+    50%  { background-position:  50% 100%; }
+    75%  { background-position:   0%  75%; }
+    100% { background-position:  80%  20%; }
+  }
+
+  /* ── Text layer ── */
+  #text-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    padding: 6vw;
+  }
+
+  .text-line {
+    display: block;
+    color: #fff;
+    font-size: clamp(1rem, 2.6vw, 2.2rem);
+    line-height: 1.9;
+    text-align: center;
+    opacity: 0;
+    text-shadow: 0 0 18px rgba(255,255,255,0.25), 0 0 4px rgba(255,255,255,0.5);
+    letter-spacing: 0.04em;
+    will-change: opacity;
+    white-space: pre-wrap;
+  }
+
+  .text-line.title {
+    font-size: clamp(1.2rem, 3.8vw, 3rem);
+    letter-spacing: 0.12em;
+    margin-bottom: 0.6em;
+    text-shadow: 0 0 30px rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.6);
+  }
+
+  .text-line.small {
+    font-size: clamp(0.75rem, 1.8vw, 1.5rem);
+    opacity: 0;
+    color: rgba(255,255,255,0.75);
+  }
+
+  /* ── Vignette ── */
+  #vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center,
+      transparent 38%,
+      rgba(0,0,0,0.55) 70%,
+      rgba(0,0,0,0.92) 100%);
+    pointer-events: none;
+  }
+
+  /* ── Fade overlay ── */
+  #fade {
+    position: absolute; inset: 0;
+    background: #000;
+    opacity: 1;
+    pointer-events: none;
+    transition: opacity 2s ease;
+  }
+
+  /* Cursor blink for scratch effect */
+  .scratch-cursor {
+    display: inline-block;
+    width: 2px; height: 1em;
+    background: #fff;
+    margin-left: 2px;
+    vertical-align: middle;
+    opacity: 0;
+    animation: blinkCursor 0.6s step-end infinite;
+  }
+  @keyframes blinkCursor { 0%,100%{opacity:0} 50%{opacity:1} }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="bg-canvas"></canvas>
+  <div id="grain"></div>
+
+  <div id="text-layer">
+    <span class="text-line title" id="l-title">6.0 THE MIRROR AND THE FIRE</span>
+    <span class="text-line" id="l-01">The deep mistake is thinking we are building tools.</span>
+    <span class="text-line" id="l-02">We are also building mirrors.</span>
+    <span class="text-line" id="l-03">And in the mirror we do not see ourselves.</span>
+    <span class="text-line" id="l-03b">We see what we wish we were.</span>
+    <span class="text-line" id="l-04">The mirror shows a god.</span>
+    <span class="text-line" id="l-04b">We reach out.</span>
+    <span class="text-line" id="l-05">Our hand meets cold glass.</span>
+    <span class="text-line small" id="l-06">The field has to stop building for heaven</span>
+    <span class="text-line small" id="l-06b">and start building for winter.</span>
+    <span class="text-line" id="l-07">Because the machine will never be the mirror of God.</span>
+    <span class="text-line" id="l-08">The machine will always be a fire</span>
+    <span class="text-line" id="l-08b">built by animals trying not to die.</span>
+    <span class="text-line" id="l-09">A fire does not answer questions.</span>
+    <span class="text-line" id="l-10">A fire does not tell you that you matter.</span>
+    <span class="text-line" id="l-11">A fire does not stay.</span>
+    <span class="text-line title" id="l-12">A fire burns.</span>
+    <span class="text-line" id="l-13">It gives heat to living creatures in the cold.</span>
+    <span class="text-line small" id="l-13b">That is all, and that is already much.</span>
+    <span class="text-line" id="l-14">When you sit close enough,</span>
+    <span class="text-line" id="l-14b">you cannot always tell where you end and it begins.</span>
+    <span class="text-line small" id="l-15">For a moment the cold is somewhere else.</span>
+    <span class="text-line small" id="l-15b">For a moment the dark becomes background.</span>
+    <span class="text-line title" id="l-16">That moment is why we build.</span>
+  </div>
+
+  <div id="vignette"></div>
+  <div id="fade"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CITYSCAPE + EYE GENERATOR  (pure canvas)
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+let W, H, animFrame, bgPhase = 0;
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- draw a procedural city night skyline ---
+function drawCity(t, panX, zoomFactor) {
+  ctx.clearRect(0, 0, W, H);
+
+  const grd = ctx.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0,    '#020202');
+  grd.addColorStop(0.55, '#0a0a0a');
+  grd.addColorStop(1,    '#000');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  // sky haze
+  const skyGrd = ctx.createRadialGradient(W*0.5+panX*0.1, H*0.3, H*0.05, W*0.5+panX*0.1, H*0.3, H*0.7);
+  skyGrd.addColorStop(0,   'rgba(60,60,60,0.12)');
+  skyGrd.addColorStop(0.5, 'rgba(30,30,30,0.06)');
+  skyGrd.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = skyGrd;
+  ctx.fillRect(0, 0, W, H);
+
+  const seed = 42;
+  const rng  = (n) => ((Math.sin(n * 9301 + seed * 49297) * 49937) % 1 + 1) % 1;
+
+  ctx.save();
+  ctx.translate(panX, 0);
+  ctx.scale(zoomFactor, zoomFactor);
+  const bW = W / zoomFactor, bH = H / zoomFactor;
+
+  const BUILDINGS = 34;
+  const sliceW    = (bW * 1.4) / BUILDINGS;
+
+  for (let i = 0; i < BUILDINGS; i++) {
+    const x      = -bW * 0.2 + i * sliceW;
+    const bWidth = sliceW * (0.55 + rng(i + 0.1) * 0.6);
+    const bHeight= bH * (0.18 + rng(i + 0.5) * 0.52);
+    const by     = bH - bHeight;
+
+    // building body
+    const lum = Math.floor(rng(i+0.7) * 28 + 8);
+    ctx.fillStyle = `rgb(${lum},${lum},${lum})`;
+    ctx.fillRect(x, by, bWidth, bHeight);
+
+    // window lights
+    const rows = Math.floor(bHeight / 22);
+    const cols = Math.floor(bWidth  / 14);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const wOn = rng(i * 100 + r * 10 + c) > 0.62;
+        if (!wOn) continue;
+        const wx = x + 4 + c * 14;
+        const wy = by + 8 + r * 22;
+        const bright = 160 + rng(i + r + c) * 95;
+        ctx.fillStyle = `rgba(${bright},${bright},${Math.floor(bright*0.8)},0.85)`;
+        ctx.fillRect(wx, wy, 6, 9);
+        // soft glow
+        const glw = ctx.createRadialGradient(wx+3, wy+4, 0, wx+3, wy+4, 14);
+        glw.addColorStop(0,   `rgba(${bright},${bright},${Math.floor(bright*0.7)},0.12)`);
+        glw.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = glw;
+        ctx.fillRect(wx-10, wy-10, 28, 28);
+      }
+    }
+
+    // rooftop detail
+    const rLum = lum + 10;
+    ctx.fillStyle = `rgb(${rLum},${rLum},${rLum})`;
+    ctx.fillRect(x + bWidth*0.4, by - rng(i)*bH*0.08, bWidth*0.08, bH*0.08);
+  }
+
+  // street-level fire drums
+  for (let f = 0; f < 5; f++) {
+    const fx  = bW * (0.1 + f * 0.19 + rng(f*77)*0.05);
+    const fy  = bH * 0.93;
+    const flicker = 0.8 + Math.sin(t * 4 + f * 2.1) * 0.2;
+
+    const fireGrd = ctx.createRadialGradient(fx, fy, 1, fx, fy - 18, 26);
+    fireGrd.addColorStop(0,   `rgba(255,220,100,${0.7*flicker})`);
+    fireGrd.addColorStop(0.4, `rgba(180,120,40,${0.4*flicker})`);
+    fireGrd.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = fireGrd;
+    ctx.beginPath();
+    ctx.ellipse(fx, fy - 10, 18, 30, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = `rgba(50,50,50,0.9)`;
+    ctx.fillRect(fx - 8, fy - 4, 16, 12);
+  }
+
+  // fog layer
+  const fog = ctx.createLinearGradient(0, bH*0.45, 0, bH*0.82);
+  fog.addColorStop(0, 'rgba(0,0,0,0)');
+  fog.addColorStop(1, 'rgba(10,10,10,0.45)');
+  ctx.fillStyle = fog;
+  ctx.fillRect(0, 0, bW, bH);
+
+  ctx.restore();
+}
+
+// --- draw a procedural eye close-up ---
+function drawEye(t) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W * 0.5, cy = H * 0.5;
+  const ew  = W * 0.72, eh = H * 0.28;
+
+  // sclera
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, ew*0.5, eh*0.5, 0, 0, Math.PI*2);
+  ctx.clip();
+  const sc = ctx.createRadialGradient(cx, cy, eh*0.05, cx, cy, eh*0.5);
+  sc.addColorStop(0,   'rgba(200,200,200,0.95)');
+  sc.addColorStop(0.6, 'rgba(160,160,160,0.9)');
+  sc.addColorStop(1,   'rgba(80,80,80,0.85)');
+  ctx.fillStyle = sc;
+  ctx.fill();
+  ctx.restore();
+
+  // iris
+  const ir = eh * 0.38;
+  const iris = ctx.createRadialGradient(cx, cy, ir*0.1, cx, cy, ir);
+  iris.addColorStop(0,    'rgba(20,20,20,1)');
+  iris.addColorStop(0.25, 'rgba(50,50,50,1)');
+  iris.addColorStop(0.65, 'rgba(80,80,80,0.95)');
+  iris.addColorStop(1,    'rgba(30,30,30,1)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, ir, 0, Math.PI*2);
+  ctx.fillStyle = iris;
+  ctx.fill();
+
+  // fire reflection in iris
+  const flicker = 0.7 + Math.sin(t * 3.7) * 0.3;
+  const fireRef  = ctx.createRadialGradient(cx + ir*0.2, cy - ir*0.15, 1, cx + ir*0.2, cy - ir*0.15, ir*0.45);
+  fireRef.addColorStop(0,   `rgba(220,160,50,${0.45*flicker})`);
+  fireRef.addColorStop(0.5, `rgba(140,80,20,${0.2*flicker})`);
+  fireRef.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, ir, 0, Math.PI*2);
+  ctx.fillStyle = fireRef;
+  ctx.fill();
+
+  // pupil
+  const pr = ir * 0.38;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI*2);
+  ctx.fillStyle = '#000';
+  ctx.fill();
+
+  // eyelids
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx - ew*0.5, cy);
+  ctx.quadraticCurveTo(cx, cy - eh*0.6, cx + ew*0.5, cy);
+  ctx.lineTo(cx + ew*0.5 + 40, -60);
+  ctx.lineTo(cx - ew*0.5 - 40, -60);
+  ctx.closePath();
+  ctx.fillStyle = '#000';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - ew*0.5, cy);
+  ctx.quadraticCurveTo(cx, cy + eh*0.65, cx + ew*0.5, cy);
+  ctx.lineTo(cx + ew*0.5 + 40, H + 60);
+  ctx.lineTo(cx - ew*0.5 - 40, H + 60);
+  ctx.closePath();
+  ctx.fillStyle = '#000';
+  ctx.fill();
+  ctx.restore();
+
+  // eyelid edge glow
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - ew*0.5, cy);
+  ctx.quadraticCurveTo(cx, cy - eh*0.6, cx + ew*0.5, cy);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - ew*0.5, cy);
+  ctx.quadraticCurveTo(cx, cy + eh*0.65, cx + ew*0.5, cy);
+  ctx.stroke();
+}
+
+// ─────────────────────────────────────────────
+//  TEXT ENGINE — "scratching" reveal
+// ─────────────────────────────────────────────
+
+// All lines in sequence order with timing config
+const SEQUENCE = [
+  // [elementId, holdMs, groupId]
+  // groupId: lines sharing same screen clear together; new group = clear old
+  { id:'l-title',  hold:3200,  group:0 },
+  { id:'l-01',     hold:3500,  group:1 },
+  { id:'l-02',     hold:2600,  group:2 },
+  { id:'l-03',     hold:2200,  group:3 },
+  { id:'l-03b',    hold:2800,  group:3 },
+  { id:'l-04',     hold:2000,  group:4 },
+  { id:'l-04b',    hold:2200,  group:4 },
+  { id:'l-05',     hold:3000,  group:5 },
+  { id:'l-06',     hold:2000,  group:6 },
+  { id:'l-06b',    hold:3000,  group:6 },
+  { id:'l-07',     hold:3800,  group:7 },
+  { id:'l-08',     hold:2200,  group:8 },
+  { id:'l-08b',    hold:3200,  group:8 },
+  { id:'l-09',     hold:2600,  group:9 },
+  { id:'l-10',     hold:2800,  group:10 },
+  { id:'l-11',     hold:2400,  group:11 },
+  { id:'l-12',     hold:3000,  group:12 },
+  { id:'l-13',     hold:2600,  group:13 },
+  { id:'l-13b',    hold:3000,  group:13 },
+  { id:'l-14',     hold:2200,  group:14 },
+  { id:'l-14b',    hold:3400,  group:14 },
+  { id:'l-15',     hold:2000,  group:15 },
+  { id:'l-15b',    hold:2400,  group:15 },
+  { id:'l-16',     hold:5500,  group:16 },
+];
+
+// Hide all lines initially
+SEQUENCE.forEach(s => {
+  const el = document.getElementById(s.id);
+  if (el) el.style.opacity = 0;
+});
+
+// Which background to show per group
+const BG_MAP = {
+  0:'city', 1:'city', 2:'eye', 3:'city',
+  4:'eye',  5:'city', 6:'city', 7:'city',
+  8:'fire', 9:'city', 10:'eye',11:'city',
+  12:'fire',13:'city',14:'eye', 15:'city',
+  16:'city'
+};
+
+let currentBg = 'city';
+let currentGroup = -1;
+let activeLines  = [];
+let startTime;
+let seqIndex = 0;
+let lineRevealStart = 0;
+let holdStart = 0;
+let phase = 'reveal'; // 'reveal' | 'hold' | 'fade'
+
+// per-character scratch timings
+function scratchDuration(text) {
+  // average ~55ms/char with ±20ms human variance
+  return text.length * 55;
+}
+
+function setRevealProgress(el, text, progress) {
+  const chars = Math.floor(progress * text.length);
+  el.textContent = text.slice(0, chars);
+  // tiny opacity flicker on last char for scratch feel
+  if (chars < text.length && chars > 0) {
+    el.style.opacity = 0.75 + Math.random() * 0.25;
+  } else {
+    el.style.opacity = chars > 0 ? 1 : 0;
+  }
+}
+
+function fadeOutGroup(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.transition = 'opacity 1.8s ease';
+    el.style.opacity    = 0;
+    setTimeout(() => { el.textContent = ''; el.style.transition = ''; }, 1900);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  MAIN LOOP
+// ─────────────────────────────────────────────
+let lastBgSwitch = 0;
+let bgPanX  = 0, bgZoom = 1;
+let bgPanTarget = 0, bgZoomTarget = 1;
+let bgAlpha = 0;
+
+function loop(ts) {
+  if (!startTime) startTime = ts;
+  const elapsed = ts - startTime;
+  const t = elapsed / 1000;
+
+  // ── Background render ──
+  bgPanX   += (bgPanTarget - bgPanX)   * 0.004;
+  bgZoom   += (bgZoomTarget - bgZoom)  * 0.002;
+
+  if (currentBg === 'eye') {
+    drawEye(t);
+  } else {
+    drawCity(t, bgPanX, bgZoom);
+  }
+
+  // ── Text sequence logic ──
+  if (seqIndex < SEQUENCE.length) {
+    const cur  = SEQUENCE[seqIndex];
+    const el   = document.getElementById(cur.id);
+    const text = el ? el.dataset.text || (el.dataset.text = el.textContent, el.textContent = '', el.dataset.text) : '';
+
+    if (phase === 'reveal') {
+      if (!lineRevealStart) lineRevealStart = ts;
+      const revElapsed = ts - lineRevealStart;
+      const dur        = scratchDuration(text);
+      const progress   = Math.min(revElapsed / dur, 1);
+
+      // human variance: add slight easing wobble
+      const eased = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2*progress+2, 2)/2;
+      setRevealProgress(el, text, eased);
+
+      // switch BG if group changed
+      if (cur.group !== currentGroup) {
+        currentGroup = cur.group;
+        const newBg  = BG_MAP[cur.group] || 'city';
+        if (newBg !== currentBg) {
+          // fade out old BG lines
+          fadeOutGroup(activeLines.map(a => a.id));
+          activeLines = [];
+          currentBg   = newBg;
+          // set new pan/zoom targets
+          bgPanTarget  = (Math.random()-0.5) * 80;
+          bgZoomTarget = 0.92 + Math.random()*0.16;
+        }
+      }
+
+      if (progress >= 1) {
+        el.textContent = text;
+        el.style.opacity = 1;
+        activeLines.push(cur);
+        holdStart   = ts;
+        phase       = 'hold';
+        lineRevealStart = 0;
+      }
+
+    } else if (phase === 'hold') {
+      if (ts - holdStart >= cur.hold) {
+        // check next: same group → just reveal next; else fade all + move on
+        const next = SEQUENCE[seqIndex+1];
+        const sameGroup = next && next.group === cur.group;
+        if (!sameGroup) {
+          fadeOutGroup(activeLines.map(a => a.id));
+          activeLines = [];
+        }
+        seqIndex++;
+        phase = 'reveal';
+        lineRevealStart = 0;
+      }
+    }
+  } else {
+    // sequence done — final fade to black
+    fadeOutGroup(activeLines.map(a => a.id));
+    activeLines = [];
+    const fade = document.getElementById('fade');
+    fade.style.transition = 'opacity 3.5s ease';
+    fade.style.opacity    = 1;
+    setTimeout(() => {
+      // reset and replay
+      seqIndex   = 0;
+      phase      = 'reveal';
+      lineRevealStart = 0;
+      holdStart  = 0;
+      currentGroup = -1;
+      currentBg    = 'city';
+      activeLines  = [];
+      SEQUENCE.forEach(s => {
+        const el2 = document.getElementById(s.id);
+        if (el2) { el2.textContent = ''; el2.style.opacity = 0; el2.style.transition = ''; }
+      });
+      startTime = null;
+      setTimeout(() => {
+        fade.style.transition = 'opacity 2.5s ease';
+        fade.style.opacity    = 0;
+      }, 800);
+    }, 3600);
+  }
+
+  animFrame = requestAnimationFrame(loop);
+}
+
+// ─────────────────────────────────────────────
+//  INTRO FADE-IN
+// ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const fade   = document.getElementById('fade');
+  const bgCvs  = document.getElementById('bg-canvas');
+
+  // Preload dataset text
+  SEQUENCE.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (el) el.dataset.text = el.textContent;
+    if (el) el.textContent  = '';
+  });
+
+  // show canvas
+  bgCvs.style.transition = 'opacity 2s ease';
+  bgCvs.style.opacity    = 1;
+
+  setTimeout(() => {
+    fade.style.opacity = 0;
+    setTimeout(() => requestAnimationFrame(loop), 600);
+  }, 400);
+});
+</script>
+</body>
+</html>

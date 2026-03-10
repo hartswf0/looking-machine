@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>01-10 Film Harness</title>
+  <style>
+    :root {
+      --bg: #0c111a;
+      --panel: #141d2b;
+      --ink: #e8eef8;
+      --muted: #9aa9c2;
+      --line: #2d3c59;
+      --accent: #d6e2fb;
+      --accent2: #a66bf5;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at 24% 9%, #1d2940 0%, #0f1726 54%, #090d14 100%);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .pane {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .head {
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #121b2d;
+      display: grid;
+      gap: 4px;
+    }
+
+    .kicker {
+      font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .btn {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #1d2d48;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      font: 800 0.58rem/1.1 inherit;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0e1627;
+    }
+
+    .btn.alt {
+      background: #30204e;
+      border-color: #4d2f78;
+      color: #ede6ff;
+    }
+
+    .film-wrap {
+      position: relative;
+      background: #060911;
+    }
+
+    .viewport {
+      display: grid;
+      grid-template-columns: 1fr;
+      height: min(72vh, 860px);
+      background: #000;
+    }
+
+    .viewport.compare {
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #000;
+    }
+
+    #secondaryWrap { display: none; }
+    .viewport.compare #secondaryWrap { display: block; }
+
+    .overlay {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 10px;
+      z-index: 10;
+      display: grid;
+      gap: 4px;
+      pointer-events: none;
+    }
+
+    .chip,
+    .title-chip,
+    .file-chip {
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid rgba(214,226,251,0.38);
+      border-radius: 8px;
+      background: rgba(8, 12, 20, 0.72);
+      backdrop-filter: blur(3px);
+      color: #e6eefc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chip { font: 900 0.64rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 8px; }
+    .title-chip { font-size: 0.78rem; font-weight: 700; padding: 5px 8px; }
+    .file-chip { font: 700 0.6rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 4px 8px; color: #b9c9e8; }
+
+    .controls {
+      padding: 8px;
+      border-top: 2px solid var(--line);
+      display: grid;
+      gap: 8px;
+      background: #101829;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .stat {
+      margin-left: auto;
+      font: 700 0.66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .bar {
+      height: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      background: #0b1320;
+    }
+
+    .bar > i {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #8eaee2, #d6e2fb);
+    }
+
+    .bar.scene > i {
+      background: linear-gradient(90deg, #8e64ff, #d6c8ff);
+    }
+
+    .list {
+      padding: 8px;
+      border-top: 2px solid var(--line);
+      display: grid;
+      gap: 6px;
+      background: #121a2c;
+    }
+
+    .list h2 {
+      margin: 0;
+      font: 800 0.68rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .items {
+      display: grid;
+      gap: 4px;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #172640;
+      color: var(--ink);
+      text-align: left;
+      padding: 6px 8px;
+      cursor: pointer;
+      font: 700 0.72rem/1.2 inherit;
+    }
+
+    .item small {
+      display: block;
+      color: var(--muted);
+      margin-top: 2px;
+      font: 700 0.61rem/1.1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .item.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+      background: #223655;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Iframe Harness</div>
+        <h1>01.html → 10.html Sequence Player</h1>
+        <div class="meta">Primary track: root `01..10`. Compare mode adds `creatureliness-manual-pages/01..10` side-by-side.</div>
+        <div class="actions">
+          <a class="btn" href="index.html">Main Index</a>
+          <a class="btn" href="creatureliness-manual-pages/index.html">Manual Set</a>
+          <button id="restart" class="btn primary" type="button">Restart</button>
+          <button id="compare" class="btn alt" type="button" aria-pressed="false">Compare: Off</button>
+        </div>
+      </header>
+    </section>
+
+    <section class="pane">
+      <div class="film-wrap">
+        <div id="viewport" class="viewport">
+          <div id="primaryWrap"><iframe id="primaryFrame" title="Primary Scene"></iframe></div>
+          <div id="secondaryWrap"><iframe id="secondaryFrame" title="Compare Scene"></iframe></div>
+        </div>
+        <div class="overlay">
+          <div id="chip" class="chip">Scene --/--</div>
+          <div id="titleChip" class="title-chip">Loading...</div>
+          <div id="fileChip" class="file-chip">Primary: -- | Compare: --</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="row">
+          <button id="playPause" class="btn primary" type="button">Pause</button>
+          <button id="prev" class="btn" type="button">Prev</button>
+          <button id="next" class="btn" type="button">Next</button>
+          <button id="loop" class="btn" type="button" aria-pressed="false">Loop: Off</button>
+          <div id="stat" class="stat">00:00 / 00:00</div>
+        </div>
+        <div class="bar"><i id="overall"></i></div>
+        <div class="bar scene"><i id="scene"></i></div>
+      </div>
+
+      <section class="list">
+        <h2>Scene List</h2>
+        <div id="items" class="items"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const SCENE_MS = 12600;
+
+    const SCENES = [
+      { id: "1.0", title: "THE SPLIT", primary: "01.html", compare: "creatureliness-manual-pages/01-the-split-westworld.html" },
+      { id: "2.0", title: "THE CRYSTAL AND THE BURN", primary: "02.html", compare: "creatureliness-manual-pages/02-crystal-and-burn-andromeda.html" },
+      { id: "3.0", title: "THE FALSE ESCAPE", primary: "03.html", compare: "creatureliness-manual-pages/03-false-escape-severance.html" },
+      { id: "4.0", title: "THE ANIMAL", primary: "04.html", compare: "creatureliness-manual-pages/04-animal-ghost-in-shell.html" },
+      { id: "5.0", title: "WINTER", primary: "05.html", compare: "creatureliness-manual-pages/05-winter-alien.html" },
+      { id: "6.0", title: "THE MIRROR AND THE FIRE", primary: "06.html", compare: "creatureliness-manual-pages/06-mirror-and-fire-westworld.html" },
+      { id: "7.0", title: "THE OPERATIONAL HINGE", primary: "07.html", compare: "creatureliness-manual-pages/07-operational-hinge-common-side.html" },
+      { id: "8.0", title: "THE SHELTER OF WORDS", primary: "08.html", compare: "creatureliness-manual-pages/08-shelter-of-words-wings.html" },
+      { id: "9.0", title: "WHAT THE COLD TEACHES", primary: "09.html", compare: "creatureliness-manual-pages/09-what-the-cold-teaches-true-detective.html" },
+      { id: "10.0", title: "MORNING", primary: "10.html", compare: "creatureliness-manual-pages/10-morning-wings.html" }
+    ];
+
+    const state = {
+      index: 0,
+      playing: true,
+      loop: false,
+      compare: false,
+      loadingPrimary: true,
+      loadingCompare: true,
+      sceneRemaining: SCENE_MS,
+      totalElapsed: 0,
+      run: 0,
+      lastTick: 0,
+      raf: null
+    };
+
+    const el = {
+      viewport: document.getElementById("viewport"),
+      primaryFrame: document.getElementById("primaryFrame"),
+      secondaryFrame: document.getElementById("secondaryFrame"),
+      chip: document.getElementById("chip"),
+      titleChip: document.getElementById("titleChip"),
+      fileChip: document.getElementById("fileChip"),
+      stat: document.getElementById("stat"),
+      overall: document.getElementById("overall"),
+      scene: document.getElementById("scene"),
+      playPause: document.getElementById("playPause"),
+      prev: document.getElementById("prev"),
+      next: document.getElementById("next"),
+      loop: document.getElementById("loop"),
+      compare: document.getElementById("compare"),
+      restart: document.getElementById("restart"),
+      items: document.getElementById("items")
+    };
+
+    function fmt(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+    }
+
+    function totalMs() {
+      return SCENES.length * SCENE_MS;
+    }
+
+    function activeScene() {
+      return SCENES[state.index];
+    }
+
+    function renderList() {
+      el.items.innerHTML = SCENES.map((s, i) => {
+        const active = i === state.index ? "active" : "";
+        return `<button class="item ${active}" data-scene="${i}" type="button">${s.id} ${s.title}<small>${s.primary}</small></button>`;
+      }).join("");
+    }
+
+    function updateUi() {
+      const s = activeScene();
+      el.chip.textContent = `Scene ${state.index + 1}/${SCENES.length} · ${s.id}`;
+      el.titleChip.textContent = s.title;
+      el.fileChip.textContent = `Primary: ${s.primary} | Compare: ${s.compare}`;
+      el.stat.textContent = `${fmt(state.totalElapsed)} / ${fmt(totalMs())}`;
+
+      const overall = Math.max(0, Math.min(state.totalElapsed / totalMs(), 1));
+      const sceneProgress = Math.max(0, Math.min((SCENE_MS - state.sceneRemaining) / SCENE_MS, 1));
+      el.overall.style.width = `${overall * 100}%`;
+      el.scene.style.width = `${sceneProgress * 100}%`;
+
+      el.loop.textContent = `Loop: ${state.loop ? "On" : "Off"}`;
+      el.loop.setAttribute("aria-pressed", state.loop ? "true" : "false");
+      el.compare.textContent = `Compare: ${state.compare ? "On" : "Off"}`;
+      el.compare.setAttribute("aria-pressed", state.compare ? "true" : "false");
+
+      el.viewport.classList.toggle("compare", state.compare);
+      renderList();
+    }
+
+    function loadScene(index) {
+      state.index = Math.max(0, Math.min(index, SCENES.length - 1));
+      state.sceneRemaining = SCENE_MS;
+      state.loadingPrimary = true;
+      state.loadingCompare = true;
+
+      const s = activeScene();
+      const stamp = `run=${state.run}&scene=${state.index}&t=${Date.now()}`;
+      el.primaryFrame.src = `${s.primary}?${stamp}#harness`;
+      el.secondaryFrame.src = `${s.compare}?${stamp}#harness`;
+      updateUi();
+    }
+
+    function nextScene() {
+      if (state.index >= SCENES.length - 1) {
+        if (!state.loop) {
+          pause();
+          state.totalElapsed = totalMs();
+          updateUi();
+          return;
+        }
+        state.run += 1;
+        state.totalElapsed = 0;
+        loadScene(0);
+        return;
+      }
+      loadScene(state.index + 1);
+    }
+
+    function prevScene() {
+      if (state.index <= 0) {
+        state.totalElapsed = 0;
+        loadScene(0);
+        return;
+      }
+      state.totalElapsed = Math.max(0, state.totalElapsed - SCENE_MS);
+      loadScene(state.index - 1);
+    }
+
+    function tick(now) {
+      if (!state.playing) return;
+      if (!state.lastTick) state.lastTick = now;
+      const dt = now - state.lastTick;
+      state.lastTick = now;
+
+      const canAdvance = !state.loadingPrimary && (!state.compare || !state.loadingCompare);
+      if (canAdvance) {
+        state.sceneRemaining -= dt;
+        state.totalElapsed = Math.min(totalMs(), state.totalElapsed + dt);
+        if (state.sceneRemaining <= 0) {
+          nextScene();
+        }
+      }
+
+      updateUi();
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function play() {
+      if (state.playing) return;
+      state.playing = true;
+      state.lastTick = 0;
+      el.playPause.textContent = "Pause";
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function pause() {
+      state.playing = false;
+      if (state.raf) cancelAnimationFrame(state.raf);
+      state.raf = null;
+      el.playPause.textContent = "Play";
+    }
+
+    function restart() {
+      state.run += 1;
+      state.totalElapsed = 0;
+      state.lastTick = 0;
+      loadScene(0);
+      state.playing = true;
+      el.playPause.textContent = "Pause";
+      if (state.raf) cancelAnimationFrame(state.raf);
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function bind() {
+      el.primaryFrame.addEventListener("load", () => {
+        state.loadingPrimary = false;
+        state.sceneRemaining = SCENE_MS;
+        state.lastTick = 0;
+        updateUi();
+      });
+
+      el.secondaryFrame.addEventListener("load", () => {
+        state.loadingCompare = false;
+        updateUi();
+      });
+
+      el.playPause.addEventListener("click", () => {
+        if (state.playing) pause(); else play();
+      });
+
+      el.prev.addEventListener("click", () => prevScene());
+      el.next.addEventListener("click", () => nextScene());
+      el.loop.addEventListener("click", () => { state.loop = !state.loop; updateUi(); });
+      el.compare.addEventListener("click", () => {
+        state.compare = !state.compare;
+        state.sceneRemaining = SCENE_MS;
+        state.lastTick = 0;
+        updateUi();
+      });
+      el.restart.addEventListener("click", () => restart());
+
+      el.items.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-scene]");
+        if (!b) return;
+        const idx = Number(b.getAttribute("data-scene"));
+        if (!Number.isFinite(idx)) return;
+        state.totalElapsed = idx * SCENE_MS;
+        loadScene(idx);
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === " ") { e.preventDefault(); state.playing ? pause() : play(); }
+        if (e.key === "ArrowRight") { e.preventDefault(); nextScene(); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); prevScene(); }
+      });
+    }
+
+    function boot() {
+      bind();
+      updateUi();
+      loadScene(0);
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

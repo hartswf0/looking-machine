@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.0 THE CRYSTAL AND THE BURN</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --void: #000000;
+    --matrix: #00FF41;
+    --matrix-dim: #00a028;
+    --matrix-faint: #003310;
+    --flesh: #E0F2F1;
+    --flesh-dim: rgba(224,242,241,0.4);
+    --eye-glow: #a0e8ff;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--void);
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: none;
+  }
+
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* RAIN CANVAS */
+  #rain-canvas {
+    position: fixed; inset: 0;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeInRain 1s ease-out 0.1s forwards;
+  }
+
+  @keyframes fadeInRain {
+    to { opacity: 1; }
+  }
+
+  /* CENTRAL COMPOSITION */
+  #center {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(700px, 92vw);
+  }
+
+  /* SVG SKELETON */
+  #skeleton-wrap {
+    position: relative;
+    width: 260px; height: 340px;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: skeletonAppear 0.4s ease-out 1.2s forwards;
+  }
+
+  @keyframes skeletonAppear { to { opacity: 1; } }
+
+  #skeleton {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 0 6px var(--matrix));
+  }
+
+  #skeleton path, #skeleton line, #skeleton circle, #skeleton ellipse, #skeleton rect {
+    stroke: var(--matrix);
+    stroke-width: 1.2;
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  .skel-bone {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: drawBone 2.4s ease-out forwards;
+  }
+
+  @keyframes drawBone {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .skel-bone:nth-child(1)  { animation-delay: 1.3s; }
+  .skel-bone:nth-child(2)  { animation-delay: 1.5s; }
+  .skel-bone:nth-child(3)  { animation-delay: 1.6s; }
+  .skel-bone:nth-child(4)  { animation-delay: 1.7s; }
+  .skel-bone:nth-child(5)  { animation-delay: 1.8s; }
+  .skel-bone:nth-child(6)  { animation-delay: 1.9s; }
+  .skel-bone:nth-child(7)  { animation-delay: 2.0s; }
+  .skel-bone:nth-child(8)  { animation-delay: 2.1s; }
+  .skel-bone:nth-child(9)  { animation-delay: 2.2s; }
+  .skel-bone:nth-child(10) { animation-delay: 2.3s; }
+  .skel-bone:nth-child(11) { animation-delay: 2.4s; }
+  .skel-bone:nth-child(12) { animation-delay: 2.5s; }
+
+  /* MUSCLE LAYER OVERLAY */
+  #muscle-layer {
+    position: absolute; inset: 0;
+    opacity: 0;
+    animation: muscleIn 1.8s ease-out 3.5s forwards;
+  }
+
+  @keyframes muscleIn {
+    0%   { opacity: 0; }
+    30%  { opacity: 0.28; }
+    60%  { opacity: 0.15; }
+    100% { opacity: 0.22; }
+  }
+
+  #muscle-layer path {
+    stroke: var(--flesh-dim);
+    stroke-width: 0.8;
+    fill: none;
+  }
+
+  /* EYE SENSOR */
+  #eye-sensor {
+    position: absolute;
+    top: 42px; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--eye-glow);
+    box-shadow: 0 0 8px var(--eye-glow), 0 0 30px rgba(160,232,255,0.3);
+    opacity: 0;
+    animation: eyeActivate 0.6s ease-out 8.5s forwards;
+  }
+
+  #eye-sensor::after {
+    content: '';
+    position: absolute; inset: 5px;
+    border-radius: 50%;
+    background: var(--eye-glow);
+    opacity: 0.6;
+    animation: eyePulse 1.4s ease-in-out 9s infinite;
+  }
+
+  @keyframes eyeActivate { to { opacity: 1; } }
+  @keyframes eyePulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+  }
+
+  /* DATA ORBIT */
+  #orbit-ring {
+    position: absolute;
+    top: 28px; left: 50%;
+    transform: translateX(-50%);
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0,255,65,0.3);
+    opacity: 0;
+    animation: orbitAppear 0.4s ease 9s forwards, spinOrbit 4s linear 9s infinite;
+  }
+
+  @keyframes orbitAppear { to { opacity: 1; } }
+  @keyframes spinOrbit { to { transform: translateX(-50%) rotate(360deg); } }
+
+  /* TITLE */
+  #title-block {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  #section-num {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(11px, 1.4vw, 13px);
+    color: var(--matrix-dim);
+    letter-spacing: 0.3em;
+    margin-bottom: 6px;
+    opacity: 0;
+    animation: fadeIn 0.3s ease 1.8s forwards;
+  }
+
+  #main-title {
+    display: block;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: clamp(22px, 4.5vw, 42px);
+    color: var(--matrix);
+    letter-spacing: 0.18em;
+    text-shadow: 0 0 12px rgba(0,255,65,0.5);
+    opacity: 0;
+  }
+
+  /* APHORISM LINES */
+  #aphorisms {
+    width: 100%;
+    max-width: 640px;
+    margin-top: 28px;
+  }
+
+  .aph-line {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 11px;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: none;
+  }
+
+  .aph-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(9px, 1.1vw, 11px);
+    color: var(--matrix-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 2.8em;
+  }
+
+  .aph-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 300;
+    font-size: clamp(11px, 1.6vw, 14px);
+    color: var(--flesh);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  .aph-text em {
+    color: var(--matrix);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* NEEDLE / FEEDBACK ELEMENT */
+  #feedback-bar {
+    width: 100%;
+    max-width: 480px;
+    height: 22px;
+    position: relative;
+    margin: 18px auto 0;
+    opacity: 0;
+  }
+
+  #feedback-track {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: var(--matrix-faint);
+    transform: translateY(-50%);
+  }
+
+  #feedback-center {
+    position: absolute;
+    top: 0; left: 50%;
+    width: 1px; height: 100%;
+    background: rgba(0,255,65,0.3);
+  }
+
+  #feedback-needle {
+    position: absolute;
+    top: 50%;
+    width: 2px; height: 14px;
+    background: var(--matrix);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px var(--matrix);
+    left: 50%;
+  }
+
+  /* STATIC OVERLAY */
+  #static-overlay {
+    position: fixed; inset: 0;
+    z-index: 100;
+    background: var(--void);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* SCANLINE */
+  #scanline {
+    position: fixed; inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+    opacity: 0.6;
+  }
+
+  /* CORNER DECORATIONS */
+  .corner {
+    position: fixed;
+    width: 40px; height: 40px;
+    z-index: 20;
+    opacity: 0;
+    animation: fadeIn 0.4s ease 2s forwards;
+  }
+  .corner svg { stroke: var(--matrix-dim); fill: none; }
+  .corner.tl { top: 18px; left: 18px; }
+  .corner.tr { top: 18px; right: 18px; transform: scaleX(-1); }
+  .corner.bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
+  .corner.br { bottom: 18px; right: 18px; transform: scale(-1,-1); }
+
+  /* STATUS READOUT */
+  #status-bar {
+    position: fixed;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--matrix-dim);
+    letter-spacing: 0.25em;
+    opacity: 0;
+    animation: fadeIn 0.3s ease 2.5s forwards;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* GLITCH UTILITY */
+  .glitch-active {
+    animation: glitch 0.12s steps(1) infinite !important;
+  }
+
+  @keyframes glitch {
+    0%   { clip-path: inset(0 0 80% 0); transform: translateX(-3px); }
+    25%  { clip-path: inset(30% 0 50% 0); transform: translateX(3px); }
+    50%  { clip-path: inset(60% 0 20% 0); transform: translateX(-2px); }
+    75%  { clip-path: inset(10% 0 70% 0); transform: translateX(1px); }
+    100% { clip-path: inset(0); transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="rain-canvas"></canvas>
+<div id="scanline"></div>
+
+<!-- Corner brackets -->
+<div class="corner tl"><svg viewBox="0 0 40 40"><polyline points="40,2 2,2 2,40" stroke-width="1.5"/></svg></div>
+<div class="corner tr"><svg viewBox="0 0 40 40"><polyline points="40,2 2,2 2,40" stroke-width="1.5"/></svg></div>
+<div class="corner bl"><svg viewBox="0 0 40 40"><polyline points="40,2 2,2 2,40" stroke-width="1.5"/></svg></div>
+<div class="corner br"><svg viewBox="0 0 40 40"><polyline points="40,2 2,2 2,40" stroke-width="1.5"/></svg></div>
+
+<div id="stage">
+  <div id="center">
+
+    <!-- Title -->
+    <div id="title-block">
+      <span id="section-num">SECTION 2.0 ── PHILOSOPHICAL_CONSTRUCT</span>
+      <span id="main-title"></span>
+    </div>
+
+    <!-- Skeleton figure + eye -->
+    <div id="skeleton-wrap">
+      <svg id="skeleton" viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- skull -->
+        <ellipse class="skel-bone" cx="130" cy="52" rx="34" ry="40"/>
+        <!-- jaw -->
+        <path class="skel-bone" d="M100,72 Q130,92 160,72"/>
+        <!-- spine -->
+        <path class="skel-bone" d="M130,92 C128,120 132,160 130,210"/>
+        <!-- vertebrae ticks -->
+        <path class="skel-bone" d="M123,108 h14 M122,124 h16 M121,140 h18 M122,156 h16 M123,172 h14 M124,188 h12"/>
+        <!-- collarbones -->
+        <path class="skel-bone" d="M130,96 Q104,94 86,102 M130,96 Q156,94 174,102"/>
+        <!-- left arm -->
+        <path class="skel-bone" d="M86,102 L68,150 L58,195"/>
+        <!-- right arm -->
+        <path class="skel-bone" d="M174,102 L192,150 L202,195"/>
+        <!-- left hand-->
+        <path class="skel-bone" d="M58,195 l-6,14 M58,195 l0,16 M58,195 l6,15"/>
+        <!-- right hand -->
+        <path class="skel-bone" d="M202,195 l-6,14 M202,195 l0,16 M202,195 l6,15"/>
+        <!-- pelvis -->
+        <path class="skel-bone" d="M110,210 Q130,220 150,210 Q162,218 158,232 Q144,244 130,240 Q116,244 102,232 Q98,218 110,210Z"/>
+        <!-- left leg upper -->
+        <path class="skel-bone" d="M110,232 L100,282"/>
+        <!-- left leg lower -->
+        <path class="skel-bone" d="M100,282 L96,328"/>
+        <!-- right leg upper -->
+        <path class="skel-bone" d="M150,232 L160,282"/>
+        <!-- right leg lower -->
+        <path class="skel-bone" d="M160,282 L164,328"/>
+        <!-- feet -->
+        <path class="skel-bone" d="M96,328 L82,334 M96,328 L100,336"/>
+        <path class="skel-bone" d="M164,328 L178,334 M164,328 L160,336"/>
+        <!-- rib cage left -->
+        <path class="skel-bone" d="M130,110 Q106,116 104,132 Q106,146 130,148"/>
+        <path class="skel-bone" d="M130,120 Q108,128 106,144 Q110,158 130,158"/>
+        <!-- rib cage right -->
+        <path class="skel-bone" d="M130,110 Q154,116 156,132 Q154,146 130,148"/>
+        <path class="skel-bone" d="M130,120 Q152,128 154,144 Q150,158 130,158"/>
+        <!-- sternum -->
+        <path class="skel-bone" d="M130,100 L130,166"/>
+      </svg>
+
+      <!-- Muscle overlay SVG -->
+      <svg id="muscle-layer" viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
+        <ellipse cx="130" cy="52" rx="38" ry="44" stroke="rgba(224,242,241,0.3)" stroke-width="6" fill="none"/>
+        <path d="M86,102 Q76,140 68,185" stroke="rgba(224,242,241,0.25)" stroke-width="8" fill="none"/>
+        <path d="M174,102 Q184,140 192,185" stroke="rgba(224,242,241,0.25)" stroke-width="8" fill="none"/>
+        <path d="M110,100 Q100,160 104,210" stroke="rgba(224,242,241,0.18)" stroke-width="10" fill="none"/>
+        <path d="M150,100 Q160,160 156,210" stroke="rgba(224,242,241,0.18)" stroke-width="10" fill="none"/>
+        <path d="M110,218 L100,280" stroke="rgba(224,242,241,0.2)" stroke-width="10" fill="none"/>
+        <path d="M150,218 L160,280" stroke="rgba(224,242,241,0.2)" stroke-width="10" fill="none"/>
+      </svg>
+
+      <!-- Eye sensor -->
+      <div id="eye-sensor"></div>
+      <div id="orbit-ring"></div>
+    </div>
+
+    <!-- Aphorisms -->
+    <div id="aphorisms">
+      <div class="aph-line" id="aph-21"><span class="aph-num">2.1</span><span class="aph-text">McCarthy sought the <em>crystal</em>: pure syntax, explicit rules, modular blocks — a mind assembled like a tower.</span></div>
+      <div class="aph-line" id="aph-22"><span class="aph-num">2.2</span><span class="aph-text">He forgot that the mortar is made of <em>human spit</em>. Reality does not hold together by syntax alone.</span></div>
+      <div class="aph-line" id="aph-23"><span class="aph-num">2.3</span><span class="aph-text">The ambition to formalize a poem into logic is the quieter ambition to be rid of the <em>breathing, dying voice</em>.</span></div>
+      <div class="aph-line" id="aph-24"><span class="aph-num">2.4–5</span><span class="aph-text"><em>Artificial Intelligence</em> is a hygienic phrase — a mind cleaned of flesh. It does not breathe, suffer, fail, blush, or wait.</span></div>
+      <div class="aph-line" id="aph-26"><span class="aph-num">2.6</span><span class="aph-text">Wiener began elsewhere. Not with the crystal. With the <em>burn</em>.</span></div>
+      <div class="aph-line" id="aph-27"><span class="aph-num">2.7</span><span class="aph-text">The hand adjusts to the flame only because the flesh burns. <em>Feedback is the philosophy of pain.</em></span></div>
+      <div class="aph-line" id="aph-28"><span class="aph-num">2.8</span><span class="aph-text">A system knows the world only by encountering <em>resistance</em>. A system that never meets resistance does not know where it is.</span></div>
+      <div class="aph-line" id="aph-29"><span class="aph-num">2.9–10</span><span class="aph-text">The logic gate opens and closes. Yes, no. True, false. It knows nothing of <em>twilight</em>.</span></div>
+      <div class="aph-line" id="aph-211"><span class="aph-num">2.11</span><span class="aph-text">Cybernetics lives in the twilight — <em>the trembling of the needle</em> trying to find center in a room that is always shifting.</span></div>
+    </div>
+
+    <!-- Feedback needle visualization -->
+    <div id="feedback-bar">
+      <div id="feedback-track"></div>
+      <div id="feedback-center"></div>
+      <div id="feedback-needle"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Status bar -->
+<div id="status-bar" id="status">
+  <span id="status-text">INITIALIZING BIOMECHANICAL_CONSTRUCT ...</span>
+</div>
+
+<!-- Static flash overlay -->
+<div id="static-overlay"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// MATRIX RAIN
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('rain-canvas');
+const ctx = canvas.getContext('2d');
+let cols, drops;
+
+const CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモ∂∑∏∆ΩΨΦΞΛΓabcdefghijklmnopqrstuvwxyz<>[]{}';
+
+function initRain() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  cols = Math.floor(canvas.width / 14);
+  drops = new Array(cols).fill(0).map(() => Math.random() * -60);
+}
+
+function drawRain() {
+  ctx.fillStyle = 'rgba(0,0,0,0.055)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < cols; i++) {
+    const char = CHARS[Math.floor(Math.random() * CHARS.length)];
+    const brightness = Math.random();
+    if (brightness > 0.93) {
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = '#00FF41';
+    } else if (brightness > 0.7) {
+      ctx.fillStyle = '#00FF41';
+      ctx.shadowBlur = 3;
+      ctx.shadowColor = '#00FF41';
+    } else {
+      ctx.fillStyle = '#003b10';
+      ctx.shadowBlur = 0;
+    }
+    ctx.font = '12px "Share Tech Mono", monospace';
+    ctx.fillText(char, i * 14, drops[i] * 14);
+
+    if (drops[i] * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i] += 0.65;
+  }
+}
+
+initRain();
+window.addEventListener('resize', initRain);
+setInterval(drawRain, 42);
+
+// ─────────────────────────────────────────────
+// GLITCH TITLE
+// ─────────────────────────────────────────────
+const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*<>?/|\\';
+const TARGET = 'THE CRYSTAL AND THE BURN';
+
+function glitchReveal(el, text, duration, onDone) {
+  el.style.opacity = '1';
+  const len = text.length;
+  let resolved = new Array(len).fill(false);
+  let frame = 0;
+  const totalFrames = Math.floor(duration / 40);
+
+  const interval = setInterval(() => {
+    let display = '';
+    for (let i = 0; i < len; i++) {
+      if (resolved[i]) {
+        display += text[i];
+      } else if (Math.random() > 0.55) {
+        display += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+      } else {
+        display += text[i] === ' ' ? ' ' : '░';
+      }
+    }
+    el.textContent = display;
+
+    // progressively resolve characters
+    const resolveCount = Math.floor((frame / totalFrames) * len * 1.1);
+    for (let i = 0; i < Math.min(resolveCount, len); i++) resolved[i] = true;
+
+    frame++;
+    if (frame >= totalFrames + 8) {
+      el.textContent = text;
+      clearInterval(interval);
+      if (onDone) onDone();
+    }
+  }, 40);
+}
+
+// ─────────────────────────────────────────────
+// APHORISM REVEAL
+// ─────────────────────────────────────────────
+const APHS = [
+  { id: 'aph-21',  delay: 3500  },
+  { id: 'aph-22',  delay: 4400  },
+  { id: 'aph-23',  delay: 5200  },
+  { id: 'aph-24',  delay: 6100  },
+  { id: 'aph-26',  delay: 6900  },
+  { id: 'aph-27',  delay: 7500  },
+  { id: 'aph-28',  delay: 8200  },
+  { id: 'aph-29',  delay: 8800  },
+  { id: 'aph-211', delay: 9300  },
+];
+
+function revealAph(id, delay) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    el.style.opacity = '1';
+    el.style.transform = 'translateX(0)';
+  }, delay);
+}
+
+APHS.forEach(a => revealAph(a.id, a.delay));
+
+// ─────────────────────────────────────────────
+// TITLE SEQUENCE
+// ─────────────────────────────────────────────
+setTimeout(() => {
+  const titleEl = document.getElementById('main-title');
+  glitchReveal(titleEl, TARGET, 1400);
+}, 1800);
+
+// ─────────────────────────────────────────────
+// FEEDBACK NEEDLE
+// ─────────────────────────────────────────────
+const feedbackBar = document.getElementById('feedback-bar');
+const needle = document.getElementById('feedback-needle');
+let needlePos = 50; // percent
+let needleTarget = 50;
+let needleVel = 0;
+
+setTimeout(() => {
+  feedbackBar.style.transition = 'opacity 0.6s ease';
+  feedbackBar.style.opacity = '1';
+  animateNeedle();
+}, 7400);
+
+function animateNeedle() {
+  const SPRING = 0.04;
+  const DAMPING = 0.88;
+  const NOISE = 2.8;
+
+  function tick() {
+    // shift target randomly
+    if (Math.random() < 0.025) {
+      needleTarget = 30 + Math.random() * 40;
+    }
+    needleVel += (needleTarget - needlePos) * SPRING;
+    needleVel += (Math.random() - 0.5) * NOISE;
+    needleVel *= DAMPING;
+    needlePos += needleVel;
+    needlePos = Math.max(5, Math.min(95, needlePos));
+    needle.style.left = needlePos + '%';
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// ─────────────────────────────────────────────
+// STATUS MESSAGES
+// ─────────────────────────────────────────────
+const statuses = [
+  { t: 1200,  msg: 'CONSTRUCT_FRAME: LOADING ...' },
+  { t: 2600,  msg: 'SKELETAL_ASSEMBLY: IN PROGRESS' },
+  { t: 3800,  msg: 'SYNTHETIC_TISSUE: LAYERING ...' },
+  { t: 5500,  msg: 'PHILOSOPHICAL_KERNEL: SEEDING' },
+  { t: 7200,  msg: 'FEEDBACK_DAEMON: ACTIVE ▶' },
+  { t: 8600,  msg: 'CYBERNETIC_CONSCIOUSNESS: UPLOADING' },
+  { t: 9400,  msg: 'TWILIGHT_STATE: DETECTED' },
+  { t: 10200, msg: 'GHOST: LOCATED ■■■□□□□□□□' },
+  { t: 11000, msg: 'TRANSMISSION_END ■' },
+];
+
+const statusEl = document.getElementById('status-text');
+statuses.forEach(s => {
+  setTimeout(() => { statusEl.textContent = s.msg; }, s.t);
+});
+
+// ─────────────────────────────────────────────
+// OCCASIONAL GLITCH FLASHES ON TITLE
+// ─────────────────────────────────────────────
+function scheduleGlitchFlash() {
+  const titleEl = document.getElementById('main-title');
+  const interval = 2800 + Math.random() * 4000;
+  setTimeout(() => {
+    titleEl.classList.add('glitch-active');
+    setTimeout(() => titleEl.classList.remove('glitch-active'), 160);
+    scheduleGlitchFlash();
+  }, interval);
+}
+setTimeout(scheduleGlitchFlash, 3200);
+
+// ─────────────────────────────────────────────
+// STATIC BURST + FADE AT END (optional loop)
+// ─────────────────────────────────────────────
+let sequenceDone = false;
+
+function staticBurst(duration, onDone) {
+  const overlay = document.getElementById('static-overlay');
+  const stCanvas = document.createElement('canvas');
+  stCanvas.style.cssText = 'position:fixed;inset:0;z-index:99;width:100%;height:100%;';
+  stCanvas.width = 320; stCanvas.height = 240;
+  document.body.appendChild(stCanvas);
+  const stCtx = stCanvas.getContext('2d');
+
+  let elapsed = 0;
+  const frameMs = 30;
+  const id = setInterval(() => {
+    const img = stCtx.createImageData(320, 240);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random() * 255;
+      img.data[i] = 0; img.data[i+1] = Math.random() < 0.2 ? v * 0.8 : 0; img.data[i+2] = 0;
+      img.data[i+3] = Math.random() < 0.6 ? 200 : 0;
+    }
+    stCtx.putImageData(img, 0, 0);
+    elapsed += frameMs;
+    if (elapsed >= duration) {
+      clearInterval(id);
+      document.body.removeChild(stCanvas);
+      if (onDone) onDone();
+    }
+  }, frameMs);
+}
+
+// ─────────────────────────────────────────────
+// KEYBOARD: SPACE to restart, ESC to pause
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') location.reload();
+});
+</script>
+</body>
+</html>

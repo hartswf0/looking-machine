@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>6.0 THE MIRROR AND THE FIRE · M22 Westworld</title>
+  <style>
+    :root {
+      --bg: #090909;
+      --ink: #f2ece2;
+      --muted: #ab9f91;
+      --line: #4c433a;
+      --glass: #a6b4c8;
+      --ember: #ff7a2a;
+      --coal: #1a1410;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 50% 0%, #2a2017 0%, #110d0a 34%, #050403 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #0c0907; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #16100d; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #241b16; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #ffb37f; color: #241108; border-color: #ffb37f; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #110d0a; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #0c0907; padding: 8px; color: #f3d8be; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #080604; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #060504; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #0e0b09; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #glass { position: absolute; inset: 0; pointer-events: none; background:
+      linear-gradient(145deg, rgba(166,180,200,0.14), transparent 40%),
+      repeating-linear-gradient(22deg, rgba(230,240,255,0.05), rgba(230,240,255,0.05) 1px, transparent 1px, transparent 28px);
+      mix-blend-mode: screen;
+    }
+
+    #ember { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 75%, rgba(255,122,42,0.35), transparent 48%); opacity: 0; }
+    #ember.on { animation: ember 1.4s ease forwards; }
+    @keyframes ember { from { opacity: 0; } to { opacity: 1; } }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transform: translateY(10px); transition: opacity 0.18s ease, transform 0.18s ease; text-transform: uppercase; letter-spacing: 0.1em; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; transform: translateY(0); }
+    .w1 { font-size: clamp(30px, 6vw, 90px); color: #f8efe2; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #d4c1aa; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #d4c1aa; }
+    .w4 { font-size: clamp(44px, 9vw, 124px); color: var(--ember); }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 06/10</div>
+        <h1>6.0 THE MIRROR AND THE FIRE · Agent M22 Westworld</h1>
+        <div class="meta">Mirror theology breaks; survival heat takes over.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: machine as divine mirror is abandoned for machine as sheltering fire.</li>
+            <li>Agent lens: Westworld machinery, but now scorched and repurposed for heat.</li>
+            <li>Primary motif: reflective servo geometry shatters into combustion chambers.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.6s: polished mirror mechanism rotates.</li>
+            <li>1.6–3.8s: split between faceplate reflection and fracture map.</li>
+            <li>3.8–6.8s: 3x2 breakup, cables and glass shards.</li>
+            <li>6.8–9.2s: words strike: MACHINE / BECOMES / A / FIRE.</li>
+            <li>9.2–11.0s: single furnace cavity ignites.</li>
+            <li>11.0–12.0s: embers hold, then blackout.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "6.0 THE MIRROR AND THE FIRE" in a Westworld-derived but combustion-forward mode.
+Start with sterile reflective machine anatomy, then rupture into heat and survival utility.
+Palette: black coal, pale mirror glass, ember orange, sparse arterial red.
+Hard jump-cuts only. No smooth cinematic transitions.
+Show faceplate reflection, crack vectors, cable guts, combustion chamber, glowing ash.
+Typography impacts: MACHINE / BECOMES / A / FIRE.
+Resolve on a burning core that gives heat but no answers.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="grid" class="cfg-single"></div>
+          <div id="glass"></div>
+          <div id="ember"></div>
+          <div id="words">
+            <span id="w1" class="word w1">MACHINE</span>
+            <span id="w2" class="word w2">BECOMES</span>
+            <span id="w3" class="word w3">A</span>
+            <span id="w4" class="word w4">FIRE</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const ember = document.getElementById('ember');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function mirror(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#0d0a08'/><circle cx='150' cy='100' r='72' fill='none' stroke='#c9d3e2' stroke-width='2'/><circle cx='150' cy='100' r='40' fill='none' stroke='#7f8ea7'/><line x1='150' y1='28' x2='150' y2='172' stroke='#9eb0cb'/><line x1='78' y1='100' x2='222' y2='100' stroke='#9eb0cb'/><circle cx='${150 + Math.sin(v)*14}' cy='100' r='9' fill='#d0344f'/></svg>`;
+    }
+
+    function crack(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#0f0b08'/><path d='M 150 100 L ${20+v*2} 22 M 150 100 L 286 ${24+v} M 150 100 L 34 176 M 150 100 L 276 182 M 150 100 L 154 8 M 150 100 L 148 194' stroke='#b8c5db' stroke-width='1.5'/></svg>`;
+    }
+
+    function fire(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#120d09'/><ellipse cx='150' cy='160' rx='90' ry='24' fill='#20140e'/><path d='M 110 170 C 90 120, 130 120, 120 80 C 148 106, 142 60, 162 40 C 180 76, 188 100, 176 126 C 198 120, 206 148, 190 170 Z' fill='#ff7a2a' opacity='0.9'/><path d='M 132 170 C 124 136, 142 128, 140 102 C 154 116, 152 90, 164 74 C 174 98, 178 122, 170 144 C 182 140, 186 156, 178 170 Z' fill='#ffd09a' opacity='0.85'/><text x='22' y='24' fill='#ffb37f' font-size='11'>HEAT OUTPUT ${(38 + (v%40))}%</text></svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    let tick = 0;
+    function run(){
+      clearWords();
+      ember.classList.remove('on');
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([mirror(0)]); }},
+        { t:1600, fn:()=>{ setLayout('cfg-2x1'); setPanels([mirror(2), crack(0)]); }},
+        { t:3800, fn:()=>{ setLayout('cfg-3x2'); setPanels([mirror(3), crack(2), fire(2), crack(4), mirror(5), fire(4)]); }},
+        { t:5200, fn:()=>show(0)},
+        { t:6100, fn:()=>show(1)},
+        { t:7000, fn:()=>show(2)},
+        { t:7900, fn:()=>show(3)},
+        { t:9200, fn:()=>{ ember.classList.add('on'); setLayout('cfg-single'); setPanels([fire(8)]); }},
+        { t:12500, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn,b.t));
+    }
+
+    setInterval(()=>{
+      tick += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = fire(tick%20);
+      if (grid.classList.contains('cfg-3x2') && p.length===6) {
+        p[0].innerHTML = mirror((tick+1)%20);
+        p[1].innerHTML = crack((tick+2)%10);
+        p[2].innerHTML = fire((tick+3)%20);
+        p[3].innerHTML = crack((tick+4)%10);
+        p[4].innerHTML = mirror((tick+5)%20);
+        p[5].innerHTML = fire((tick+6)%20);
+      }
+    }, 170);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    run();
+  </script>
+</body>
+</html>

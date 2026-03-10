@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DUNE Marquee</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden}
+#g{display:grid;position:relative}
+.d{border-radius:50%}
+#b{position:fixed;bottom:16px;right:16px;background:transparent;border:1px solid #b8860b;color:#b8860b;padding:6px 13px;cursor:pointer;font:10px/1 monospace;letter-spacing:2px;opacity:.5}
+#b:hover{opacity:1}
+</style>
+</head>
+<body>
+<div id="g"></div>
+<button id="b" onclick="restart()">↺ REPLAY</button>
+<script>
+const CO=80,RO=40;
+const DS=Math.min(Math.floor(window.innerWidth*.94/(CO*1.13)),Math.floor(window.innerHeight*.94/(RO*1.13)));
+const GP=Math.max(1,Math.floor(DS*.13));
+const C={z:'#080808',go:'#FFB700',am:'#FF8C00',re:'#C0392B',bl:'#1A6EFF',ic:'#4FC3F7',wh:'#FFFFFF',sa:'#E8C97A',ru:'#C0581A'};
+const GL={z:'none',go:'0 0 4px #FFB700,0 0 10px #FF8C00',am:'0 0 4px #FF8C00,0 0 8px #FF6000',ic:'0 0 5px #4FC3F7,0 0 12px #29B6F6',wh:'0 0 6px #fff,0 0 16px #adf',sa:'0 0 4px #E8C97A,0 0 8px #D4A830'};
+const g=document.getElementById('g');
+g.style.gridTemplateColumns=`repeat(${CO},${DS}px)`;
+g.style.gap=`${GP}px`;
+const dt=[];
+for(let r=0;r<RO;r++){dt[r]=[];for(let c=0;c<CO;c++){const d=document.createElement('div');d.className='d';d.style.cssText=`width:${DS}px;height:${DS}px;background:${C.z}`;g.appendChild(d);dt[r][c]=d;}}
+const sd=(r,c,col,gl)=>{if(r<0||r>=RO||c<0||c>=CO)return;dt[r][c].style.background=col;dt[r][c].style.boxShadow=gl||'none';};
+const cl=()=>{for(let r=0;r<RO;r++)for(let c=0;c<CO;c++)sd(r,c,C.z,'none');};
+const F={D:[[1,1,1,0,0],[1,0,0,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,1,0],[1,1,1,0,0]],U:[[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,1,1],[0,1,1,1,0]],N:[[1,0,0,0,1],[1,1,0,0,1],[1,0,1,0,1],[1,0,0,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],E:[[1,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],A:[[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],R:[[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1]],K:[[1,0,0,1,0],[1,0,1,0,0],[1,1,0,0,0],[1,1,0,0,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1]],I:[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1]],S:[[0,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0],[0,1,1,1,0],[0,0,0,0,1],[0,0,0,0,1],[1,1,1,1,0]],' ':[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]};
+const dT=(txt,row,c0,col,gl,p)=>{const sh=Math.ceil(p*txt.length);let c=c0;for(let i=0;i<Math.min(sh,txt.length);i++){const gf=F[txt[i].toUpperCase()]||F[' '];for(let gr=0;gr<7;gr++)for(let gc=0;gc<5;gc++)if(gf[gr][gc])sd(row+gr,c+gc,col,gl);c+=7;}};
+const tw=t=>t.length*7-2;
+const WM=["00000000000000001110","00000000000000110001","00000000000001000011","00000000000010000110","00000000000100001100","01111111111000011000","10000000000000110000","01111111111001100000","00000000000011000000","00000000000110000000","00000000001100000000","00000000001000000000"];
+const dW=(r0,c0,col,gl,p)=>{let n=0;const tot=WM.reduce((s,row)=>s+row.split('').filter(x=>x==='1').length,0);const lim=Math.floor(p*tot);outer:for(let c=0;c<WM[0].length;c++){for(let r=0;r<WM.length;r++){if(WM[r][c]==='1'){if(n>=lim)break outer;sd(r0+r,c0+c,col,gl);n++;}}}};
+const dC=(cx,cy,col,gl,p)=>{const pts=[];for(let a=0;a<360;a+=6){const rd=a*Math.PI/180,r=Math.round(cy+6*Math.sin(rd)),c=Math.round(cx+6*Math.cos(rd)),dx=c-(cx+2),dy=r-cy;if(dx*dx+dy*dy>16)pts.push([r,c]);}const lm=Math.floor(p*pts.length);for(let i=0;i<lm;i++)sd(pts[i][0],pts[i][1],col,gl);};
+const BP=(()=>{const p=[],m=1;for(let c=m;c<CO-m;c++)p.push([m,c]);for(let r=m+1;r<RO-m;r++)p.push([r,CO-m-1]);for(let c=CO-m-2;c>=m;c--)p.push([RO-m-1,c]);for(let r=RO-m-2;r>m;r--)p.push([r,m]);return p;})();
+const nm=(t,a,b)=>Math.max(0,Math.min(1,(t-a)/(b-a)));
+const eo=t=>1-(1-t)*(1-t);
+let aid=null,t0=null;
+function frame(ts){
+  if(!t0)t0=ts;
+  const t=(ts-t0)/1000;
+  cl();
+  const DC=Math.floor((CO-tw('DUNE'))/2),AC=Math.floor((CO-tw('ARRAKIS'))/2);
+  if(t<3){
+    const lm=Math.floor(nm(t,0,2.5)*BP.length),tl=80;
+    for(let i=Math.max(0,lm-tl);i<lm;i++){const ag=(lm-i)/tl;sd(BP[i][0],BP[i][1],ag<.35?C.go:ag<.65?C.am:C.ru,ag<.35?GL.go:ag<.65?GL.am:GL.z);}
+    if(t>1.2)dC(CO/2,8,C.go,GL.go,nm(t,1.2,2.8));
+    if(t>2.0)dT('ARRAKIS',17,AC,C.am,GL.am,nm(t,2.0,3.0));
+  } else if(t<8){
+    for(const[r,c]of BP)sd(r,c,C.ru,GL.z);
+    dC(CO/2,8,C.go,GL.go,1);
+    dW(23,30,C.sa,GL.sa,eo(nm(t,3.0,6.0)));
+    dT('DUNE',13,DC,C.wh,GL.wh,nm(t,4.5,7.5));
+    dT('ARRAKIS',17,AC,C.ic,GL.ic,1);
+  } else if(t<10){
+    const ft=t-8,fl=Math.sin(ft*Math.PI*5)>0;
+    for(const[r,c]of BP)sd(r,c,fl?C.go:C.am,fl?GL.go:GL.am);
+    const sc=nm(t,8.0,8.7),rf=nm(t,8.7,10.0);
+    if(sc<1)for(let i=0;i<Math.floor(sc*220);i++)sd(Math.floor(Math.random()*RO),Math.floor(Math.random()*CO),[C.go,C.am,C.sa,C.re,C.bl][i%5],GL.go);
+    if(rf>0){dT('DUNE',13,DC,fl?C.wh:C.go,fl?GL.wh:GL.go,1);dT('ARRAKIS',17,AC,fl?C.ic:C.bl,fl?GL.ic:GL.z,1);dC(CO/2,8,fl?C.wh:C.go,fl?GL.wh:GL.go,1);dW(23,30,C.sa,GL.sa,1);}
+  } else if(t<13){
+    for(const[r,c]of BP)sd(r,c,C.ru,GL.z);
+    dC(CO/2,8,C.go,GL.go,1);dT('DUNE',13,DC,C.wh,GL.wh,1);dT('ARRAKIS',17,AC,C.ic,GL.ic,1);dW(23,30,C.sa,GL.sa,1);
+    const dead=Math.floor(nm(t,10,13)*RO);
+    for(let r=0;r<dead;r++)for(let c=0;c<CO;c++)sd(r,c,C.z,'none');
+  } else if(t>=15){t0=null;}
+  aid=requestAnimationFrame(frame);
+}
+function restart(){if(aid)cancelAnimationFrame(aid);cl();t0=null;aid=requestAnimationFrame(frame);}
+aid=requestAnimationFrame(frame);
+</script>
+</body>
+</html>

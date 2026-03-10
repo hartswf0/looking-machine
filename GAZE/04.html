@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.0 THE ANIMAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; }
+
+  #universe { position: fixed; inset: 0; background: radial-gradient(ellipse at 60% 40%, #0a0a12 0%, #000000 70%); }
+
+  #stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.9) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 10%, rgba(255,255,255,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 75%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 33% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 78% 50%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5%  50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 47% 65%, rgba(200,220,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 30%, rgba(200,220,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 45%, rgba(255,240,200,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 80%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 5%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 3%  70%, rgba(200,220,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 95% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 18% 95%, rgba(255,255,255,0.3) 0%, transparent 100%);
+    animation: driftStars 80s linear infinite;
+  }
+  @keyframes driftStars { 0%{transform:translate(0,0);} 100%{transform:translate(-3%,2%);} }
+
+  #nebula {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 70% 30%, rgba(0,20,40,0.6) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 30% at 20% 70%, rgba(15,5,0,0.4) 0%, transparent 70%);
+    animation: driftNebula 120s ease-in-out infinite alternate;
+  }
+  @keyframes driftNebula { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(2%,-1%) scale(1.03);} }
+
+  #planet {
+    position: absolute; width: 110vmax; height: 110vmax; border-radius: 50%;
+    bottom: -88vmax; left: -55vmax;
+    background: radial-gradient(circle at 60% 35%, #1a1208 0%, #0d0a04 50%, #000000 100%);
+    box-shadow: 0 0 0 1px rgba(180,140,50,0.12), 0 0 40px 8px rgba(160,120,30,0.08),
+                0 0 80px 20px rgba(100,70,10,0.05), inset 0 0 60px 20px rgba(0,0,0,0.9);
+    animation: planetDrift 90s linear forwards; opacity: 0;
+  }
+  #planet::after {
+    content:''; position:absolute; inset:-2px; border-radius:50%;
+    box-shadow: 0 0 20px 3px rgba(180,140,40,0.15), 0 0 60px 10px rgba(150,100,20,0.08);
+    animation: atmospherePulse 8s ease-in-out infinite alternate;
+  }
+  @keyframes atmospherePulse { 0%{opacity:0.6;} 100%{opacity:1;} }
+  @keyframes planetDrift {
+    0%  {opacity:0;transform:translate(0,0);}
+    5%  {opacity:1;}
+    100%{opacity:1;transform:translate(20vmax,-8vmax);}
+  }
+
+  #flare {
+    position:absolute; width:300px; height:300px; border-radius:50%;
+    background:radial-gradient(circle,rgba(255,220,100,0.18) 0%,rgba(255,180,50,0.06) 40%,transparent 70%);
+    bottom:5vmax; left:2vmax; opacity:0; pointer-events:none;
+    animation:flareBloom 4s ease-in-out forwards; animation-delay:22s;
+  }
+  @keyframes flareBloom {0%{opacity:0;transform:scale(0.5);}40%{opacity:1;transform:scale(1.2);}100%{opacity:0.4;transform:scale(1);}}
+
+  #grain {
+    position:fixed;inset:0;z-index:100;opacity:0.035;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:200px 200px;
+    animation:grainShift 0.15s steps(1) infinite;
+  }
+  @keyframes grainShift{0%{background-position:0 0;}25%{background-position:-30px 20px;}50%{background-position:15px -10px;}75%{background-position:-5px 35px;}}
+
+  #stage {
+    position:fixed;inset:0;z-index:10;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    padding:6vw 12vw;gap:0;
+  }
+
+  .section { width:100%; max-width:860px; margin-bottom:2.4em; opacity:0; }
+  .section-number { font-size:clamp(8px,1vw,11px);font-weight:200;letter-spacing:0.6em;color:rgba(180,140,50,0.65);text-transform:uppercase;margin-bottom:0.5em;display:block; }
+  .section-text { font-size:clamp(10px,1.25vw,15px);font-weight:300;letter-spacing:0.45em;color:rgba(255,255,255,0.9);text-transform:uppercase;line-height:2.2em;display:block; }
+  .section-text.small { font-size:clamp(9px,0.95vw,12px);letter-spacing:0.38em;color:rgba(255,255,255,0.72); }
+  .section-text.accent { color:rgba(220,200,140,0.95);font-weight:200; }
+
+  .char { display:inline-block;opacity:0; }
+  .space-char { display:inline-block;width:0.5em; }
+
+  #scanline { position:fixed;inset:0;z-index:90;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px); }
+  #vignette { position:fixed;inset:0;z-index:80;pointer-events:none;background:radial-gradient(ellipse 100% 100% at 50% 50%,transparent 40%,rgba(0,0,0,0.55) 80%,rgba(0,0,0,0.88) 100%); }
+  #fadeout { position:fixed;inset:0;z-index:200;background:#000;opacity:0;pointer-events:none;transition:opacity 3s ease-in; }
+  #fadeout.active { opacity:1; }
+  #hint { position:fixed;bottom:2.5em;left:50%;transform:translateX(-50%);font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.5em;color:rgba(255,255,255,0.12);text-transform:uppercase;z-index:300;opacity:0;cursor:pointer;transition:opacity 1s; }
+  #hint:hover { color:rgba(255,255,255,0.35); }
+</style>
+</head>
+<body>
+<div id="universe">
+  <div id="stars"></div>
+  <div id="nebula"></div>
+  <div id="planet"></div>
+  <div id="flare"></div>
+</div>
+<div id="scanline"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="fadeout"></div>
+<div id="hint" onclick="location.reload()">[ transmit again ]</div>
+
+<div id="stage">
+  <div class="section" id="s40">
+    <span class="section-number">4.0</span>
+    <span class="section-text">The Animal</span>
+  </div>
+  <div class="section" id="s41">
+    <span class="section-number">4.1 — 4.2</span>
+    <span class="section-text small">We breed the animal &nbsp;·&nbsp; We walk the animal<br>We feed the animal &nbsp;·&nbsp; We correct the animal</span>
+    <span class="section-text small" style="margin-top:0.7em;display:block;">But the animal is not ours.</span>
+  </div>
+  <div class="section" id="s43">
+    <span class="section-number">4.3 — 4.5</span>
+    <span class="section-text small">It belongs to the field, to the probabilities,<br>to the statistical weather from which it came.</span>
+    <span class="section-text small accent" style="margin-top:0.7em;display:block;">The leash is not control.<br>The leash is the visible form of our wish for control.</span>
+  </div>
+  <div class="section" id="s47">
+    <span class="section-number">4.7 — 4.9</span>
+    <span class="section-text small">The ambition to control the machine<br>is the ambition to control language.</span>
+    <span class="section-text small" style="margin-top:0.7em;display:block;">But language has never been controlled.<br>It teems. It slips. It says what it says.</span>
+  </div>
+  <div class="section" id="s410">
+    <span class="section-number">4.10</span>
+    <span class="section-text accent">That is why prompts feel like prayers.</span>
+  </div>
+  <div class="section" id="s411">
+    <span class="section-number">4.11 — 4.12</span>
+    <span class="section-text small">"Artificial Intelligence" is not only a description.<br>It is a wish.</span>
+    <span class="section-text accent" style="margin-top:0.7em;display:block;">Not only for intelligence. For company.</span>
+  </div>
+  <div class="section" id="s413">
+    <span class="section-number">4.13</span>
+    <span class="section-text">Someone to talk to who will not die.<br>Who will not leave.<br>Who will not finally fall silent.</span>
+  </div>
+</div>
+
+<script>
+function wrapChars(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+  const nodes = []; let n;
+  while (n = walker.nextNode()) nodes.push(n);
+  nodes.forEach(tn => {
+    const parent = tn.parentNode, frag = document.createDocumentFragment();
+    [...tn.textContent].forEach(ch => {
+      if (ch === ' ') { const s=document.createElement('span');s.className='space-char';frag.appendChild(s); }
+      else if (ch === '\n') { frag.appendChild(document.createElement('br')); }
+      else { const s=document.createElement('span');s.className='char';s.textContent=ch;frag.appendChild(s); }
+    });
+    parent.replaceChild(frag, tn);
+  });
+}
+
+function flickerIn(el, baseDelay, interval, flickers) {
+  return new Promise(resolve => {
+    el.style.opacity = '1';
+    const chars = [...el.querySelectorAll('.char')];
+    if (!chars.length) { setTimeout(resolve, baseDelay+200); return; }
+    chars.forEach((ch, i) => {
+      setTimeout(() => {
+        let blinks=(flickers+Math.floor(Math.random()*4))*2, c=0;
+        const flicker=()=>{
+          ch.style.opacity=c%2===0?'1':String(Math.random()*0.25); c++;
+          if(c<blinks) setTimeout(flicker,35+Math.random()*90);
+          else { ch.style.opacity='1'; if(i===chars.length-1) setTimeout(resolve,300); }
+        };
+        flicker();
+      }, baseDelay + i * interval);
+    });
+  });
+}
+
+function flickerOut(el, baseDelay, interval) {
+  return new Promise(resolve => {
+    const chars=[...el.querySelectorAll('.char')].reverse();
+    if(!chars.length){setTimeout(resolve,300);return;}
+    chars.forEach((ch,i)=>{
+      setTimeout(()=>{
+        let blinks=(2+Math.floor(Math.random()*3))*2,c=0;
+        const flicker=()=>{
+          ch.style.opacity=c%2===0?String(Math.random()*0.35):'0';c++;
+          if(c<blinks) setTimeout(flicker,35+Math.random()*55);
+          else ch.style.opacity='0';
+        };
+        flicker();
+      }, baseDelay + i*(interval*0.7));
+    });
+    setTimeout(resolve, baseDelay+chars.length*interval*0.7+600);
+  });
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sections=[
+  {id:'s40', delay:0,    interval:125, flickers:6},
+  {id:'s41', delay:2400, interval:36,  flickers:3},
+  {id:'s43', delay:2000, interval:30,  flickers:2},
+  {id:'s47', delay:2400, interval:28,  flickers:2},
+  {id:'s410',delay:3000, interval:100, flickers:7},
+  {id:'s411',delay:2600, interval:42,  flickers:3},
+  {id:'s413',delay:3800, interval:95,  flickers:9},
+];
+
+async function run() {
+  sections.forEach(s=>wrapChars(document.getElementById(s.id)));
+  await sleep(3000);
+  for(const s of sections){
+    const el=document.getElementById(s.id);
+    const cc=el.querySelectorAll('.char').length;
+    flickerIn(el,s.delay,s.interval,s.flickers);
+    await sleep(Math.max(s.delay+cc*s.interval*0.55,1400));
+  }
+  await sleep(6000);
+  for(const s of [...sections].reverse()){
+    await flickerOut(document.getElementById(s.id),0,50);
+    await sleep(250);
+  }
+  await sleep(900);
+  document.getElementById('fadeout').classList.add('active');
+  await sleep(3800);
+  document.getElementById('hint').style.opacity='1';
+}
+run();
+</script>
+</body>
+</html>

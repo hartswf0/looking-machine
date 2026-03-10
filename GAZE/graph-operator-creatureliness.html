@@ -1,0 +1,2229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graph Operator Creatureliness Experiment</title>
+  <style>
+    :root {
+      --bg: #eeebe4;
+      --panel: #f8f5ef;
+      --ink: #14171e;
+      --muted: #5f6570;
+      --line: #b8b1a4;
+      --primary: #0f1522;
+      --ok: #0d7750;
+      --warn: #8d1e1e;
+      --radius: 12px;
+      --lane-w: 390px;
+      --lane-collapsed: 54px;
+      --ln-bg: #f8f8fb;
+      --ln-line: #eceaf0;
+      --ln-active: #edf3ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    }
+
+    body { overflow: hidden; }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .top {
+      background: var(--panel);
+      border-bottom: 2px solid var(--line);
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .brand {
+      font-size: 0.86rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .search {
+      width: 100%;
+      min-height: 36px;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.78rem;
+      padding: 0 10px;
+    }
+
+    .top-links,
+    .setup-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .chip-btn,
+    .top-links a {
+      text-decoration: none;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.64rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .chip-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .chip-btn.warn {
+      border-color: var(--warn);
+      color: var(--warn);
+    }
+
+    .meta {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .meta-text {
+      color: var(--muted);
+      font-size: 0.72rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .meta-text code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1px 4px;
+    }
+
+    .vessel {
+      min-height: 0;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .lane-scroll {
+      height: 100%;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .lane {
+      position: relative;
+      width: var(--lane-w);
+      min-width: var(--lane-w);
+      height: 100%;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      transition: width 0.24s ease, min-width 0.24s ease;
+    }
+
+    .lane.collapsed {
+      width: var(--lane-collapsed);
+      min-width: var(--lane-collapsed);
+    }
+
+    .lane-tab {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      border-radius: var(--radius);
+      background: #f2eee6;
+      color: var(--muted);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      padding: 8px 0;
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+    }
+
+    .lane.collapsed .lane-tab {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lane-head {
+      min-height: 88px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      grid-template-rows: auto auto;
+    }
+
+    .lane.collapsed .lane-head,
+    .lane.collapsed .lane-body {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lane-head-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .lane-title {
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .lane-sub {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lane-toggle {
+      min-width: 30px;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .lane-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+
+    .lane-select {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0 6px;
+    }
+
+    .lane-btn {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+
+    .lane-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .lane-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      background: #fff;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+      font: inherit;
+      padding: 8px;
+    }
+
+    .cell:hover { background: #f8fbff; }
+
+    .cell.active {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+      background: var(--ln-active);
+    }
+
+    .cell.operand {
+      box-shadow: inset 0 0 0 2px #2f56d0;
+    }
+
+    .cell-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .cell-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      font-weight: 800;
+      color: #2f56d0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cell-kind {
+      font-size: 0.58rem;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .cell-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .cell-lineage,
+    .cell-preview {
+      font-size: 0.66rem;
+      color: var(--muted);
+      line-height: 1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .holding {
+      border: 2px dashed var(--line);
+      border-radius: 10px;
+      background: #faf8f2;
+      color: var(--muted);
+      padding: 12px;
+      font-size: 0.72rem;
+      line-height: 1.4;
+    }
+
+    .holding strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-size: 0.76rem;
+    }
+
+    .line-tools {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      color: var(--muted);
+    }
+
+    .line-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .line-range {
+      display: grid;
+      grid-template-columns: auto 62px auto 62px auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .line-input {
+      width: 100%;
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.66rem;
+      padding: 0 6px;
+    }
+
+    .line-btn {
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      font-weight: 800;
+      padding: 0 8px;
+    }
+
+    .line-list {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .line-row {
+      display: grid;
+      grid-template-columns: 56px 56px minmax(0, 1fr);
+      border-bottom: 1px solid var(--ln-line);
+      background: #fff;
+    }
+
+    .line-row:last-child { border-bottom: 0; }
+
+    .line-row.selected { background: var(--ln-active); }
+
+    .line-num,
+    .line-copy {
+      border: 0;
+      border-right: 1px solid var(--ln-line);
+      min-height: 28px;
+      cursor: pointer;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.66rem;
+      color: var(--muted);
+      background: var(--ln-bg);
+      text-align: right;
+      padding: 0 8px;
+    }
+
+    .line-copy {
+      text-align: center;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    .line-num:hover,
+    .line-copy:hover {
+      background: #e8ecf6;
+      color: var(--ink);
+    }
+
+    .line-text {
+      min-height: 28px;
+      padding: 5px 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: #1a2236;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .inspector {
+      border-top: 2px solid var(--line);
+      background: var(--panel);
+      min-height: 220px;
+      max-height: 42vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .inspector-head {
+      background: #fff;
+      border-bottom: 2px solid var(--line);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .focus-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.74rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .copy-btn {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0 10px;
+    }
+
+    .copy-btn.ok {
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+
+    .inspector-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .focus-meta {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .payload {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .payload pre {
+      margin: 0;
+      max-height: 240px;
+      overflow: auto;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      line-height: 1.42;
+      color: #1a2236;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status {
+      border-top: 1px solid var(--line);
+      background: #fff;
+      padding: 6px 8px;
+      color: var(--muted);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%) translateY(12px);
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 80;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      :root { --lane-w: 320px; }
+
+      .top-row { grid-template-columns: 1fr; }
+      .meta { grid-template-columns: 1fr; }
+      .setup-actions,
+      .top-links { justify-content: flex-start; }
+
+      .lane-tools { grid-template-columns: 1fr; }
+      .line-actions { grid-template-columns: 1fr; }
+      .line-range { grid-template-columns: auto 1fr auto 1fr; }
+      .line-range .line-btn { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="top-row">
+        <div class="brand">Graph Operator Experiment</div>
+        <input id="search" class="search" type="search" placeholder="Search sections by id, title, or content">
+        <nav class="top-links" aria-label="Site links">
+          <a href="index.html">Index</a>
+          <a href="graph-operator.html">Graph Operator</a>
+          <a href="title-operator.html">Title Operator</a>
+          <a href="creatureliness-finals/index.html">Finals Manual</a>
+          <a href="creatureliness-manual-flow/index.html">Manual Flow</a>
+          <a href="creatureliness-manual-pages/index.html">Manual Pages</a>
+          <a href="creatureliness-manual-pages/film-cut.html">Feature Cut</a>
+          <a href="film-harness-01-10.html">01-10 Harness</a>
+          <a href="creatureliness-singular-pages/index.html">Singular Pages</a>
+          <a href="creatureliness-cold-delivery.md" target="_blank" rel="noopener noreferrer">creatureliness-cold-delivery.md</a>
+          <a href="creatureliness-10-agent-package.json" target="_blank" rel="noopener noreferrer">creatureliness-10-agent-package.json</a>
+          <a href="MODERN/common-side.md" target="_blank" rel="noopener noreferrer">MODERN/common-side.md</a>
+        </nav>
+      </div>
+
+      <div class="meta">
+        <div id="metaText" class="meta-text">
+          <span>Dataset: <code>creatureliness-cold-delivery.md</code></span>
+          <span>Package: <code>creatureliness-10-agent-package.json</code></span>
+          <span>Run pair: <code>R</code></span>
+          <span>Run split 10: <code>T</code></span>
+          <span>Run section x operators: <code>S</code></span>
+          <span>Run full matrix: <code>M</code></span>
+          <span>Mark operand: <code>Shift+Click</code></span>
+        </div>
+        <div class="setup-actions">
+          <button id="runPairBtn" class="chip-btn" type="button">Run Pair</button>
+          <button id="runSplitBtn" class="chip-btn" type="button">Run 10-Agent Split</button>
+          <button id="runSectionBtn" class="chip-btn" type="button">Run Section</button>
+          <button id="runMatrixBtn" class="chip-btn primary" type="button">Run Matrix</button>
+          <button id="clearRunsBtn" class="chip-btn warn" type="button">Clear Runs</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="vessel">
+      <section id="laneScroll" class="lane-scroll" aria-label="Experiment lanes"></section>
+    </main>
+
+    <section class="inspector" aria-label="Cell inspector">
+      <div class="inspector-head">
+        <div id="focusId" class="focus-id">No cell selected</div>
+        <button id="copyBtn" class="copy-btn" type="button" disabled>Copy</button>
+      </div>
+      <div class="inspector-body">
+        <div id="focusMeta" class="focus-meta">Load package and sections to begin experiment runs.</div>
+        <div id="focusPayload" class="payload"><pre>Payload preview appears here.</pre></div>
+      </div>
+      <div id="status" class="status">Loading experiment setup...</div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DATASET_FILE = "creatureliness-cold-delivery.md";
+    const PACKAGE_FILE = "creatureliness-10-agent-package.json";
+
+    const CHILD_KIND_OPTIONS = [
+      { value: "prompt", label: "Prompt" },
+      { value: "completion", label: "Completion" },
+      { value: "operation", label: "Operation" },
+      { value: "code", label: "Code" },
+      { value: "html", label: "HTML" },
+      { value: "iframe", label: "IFrame" },
+      { value: "image", label: "Image Prompt" }
+    ];
+
+    const OPERATOR_OPTIONS = [
+      { value: "derive", label: "Derive" },
+      { value: "complete", label: "Complete" },
+      { value: "expand", label: "Expand" },
+      { value: "compress", label: "Compress" },
+      { value: "critique", label: "Critique" },
+      { value: "extract-steps", label: "Extract Steps" }
+    ];
+
+    const state = {
+      cells: new Map(),
+      childMap: new Map(),
+      sectionIds: [],
+      operatorIds: [],
+      completionIndex: new Map(),
+      lanes: [],
+      lanePrefs: new Map(),
+      lineSelections: new Map(),
+      genericSelections: new Map(),
+      idCounter: 1,
+      search: "",
+      focusId: null,
+      activeLane: 0,
+      operandId: null,
+      selectedSectionId: null,
+      selectedOperatorId: null,
+      selectedCompletionId: null,
+      genericRootId: null,
+      packageMeta: null
+    };
+
+    const el = {
+      laneScroll: document.getElementById("laneScroll"),
+      search: document.getElementById("search"),
+      metaText: document.getElementById("metaText"),
+      runPairBtn: document.getElementById("runPairBtn"),
+      runSplitBtn: document.getElementById("runSplitBtn"),
+      runSectionBtn: document.getElementById("runSectionBtn"),
+      runMatrixBtn: document.getElementById("runMatrixBtn"),
+      clearRunsBtn: document.getElementById("clearRunsBtn"),
+      focusId: document.getElementById("focusId"),
+      focusMeta: document.getElementById("focusMeta"),
+      focusPayload: document.getElementById("focusPayload"),
+      copyBtn: document.getElementById("copyBtn"),
+      status: document.getElementById("status"),
+      toast: document.getElementById("toast")
+    };
+
+    function nextCellId(prefix = "C") {
+      const id = `${prefix}${String(state.idCounter).padStart(5, "0")}`;
+      state.idCounter += 1;
+      return id;
+    }
+
+    function showToast(msg) {
+      el.toast.textContent = msg;
+      el.toast.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => el.toast.classList.remove("show"), 1300);
+    }
+
+    async function copyText(text, label = "Copied") {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }
+        showToast(label);
+      } catch {
+        showToast("Copy failed");
+      }
+    }
+
+    function escapeHtml(input) {
+      return String(input || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escapeAttr(input) {
+      return String(input || "").replace(/\"/g, "&quot;");
+    }
+
+    function splitLines(text) {
+      return String(text || "").replace(/\r\n/g, "\n").split("\n");
+    }
+
+    function summarizePayload(payload) {
+      const text = String(payload || "").replace(/\s+/g, " ").trim();
+      if (!text) return "(empty payload)";
+      return text.length > 120 ? `${text.slice(0, 120)}...` : text;
+    }
+
+    function inferPayloadType(kind) {
+      if (kind === "html" || kind === "code") return "code";
+      if (kind === "iframe") return "iframe";
+      return "text";
+    }
+
+    function registerCell(cell) {
+      state.cells.set(cell.id, cell);
+      for (const parentId of cell.parents) {
+        if (!state.childMap.has(parentId)) {
+          state.childMap.set(parentId, []);
+        }
+        const ids = state.childMap.get(parentId);
+        if (!ids.includes(cell.id)) {
+          ids.push(cell.id);
+        }
+      }
+    }
+
+    function childrenOf(cellId) {
+      return state.childMap.get(cellId) || [];
+    }
+
+    function getLineSelection(cellId) {
+      if (!state.lineSelections.has(cellId)) {
+        state.lineSelections.set(cellId, new Set());
+      }
+      return state.lineSelections.get(cellId);
+    }
+
+    function toggleLine(cellId, lineNumber) {
+      const selected = getLineSelection(cellId);
+      if (selected.has(lineNumber)) selected.delete(lineNumber);
+      else selected.add(lineNumber);
+    }
+
+    function selectedLineNumbers(cellId) {
+      return [...getLineSelection(cellId)].sort((a, b) => a - b);
+    }
+
+    function selectedLineText(cellId) {
+      const cell = state.cells.get(cellId);
+      if (!cell) return "";
+      const lines = splitLines(cell.payload);
+      return selectedLineNumbers(cellId)
+        .map((n) => lines[n - 1] ?? "")
+        .join("\n");
+    }
+
+    function lanePref(key, defaults) {
+      if (!state.lanePrefs.has(key)) {
+        state.lanePrefs.set(key, { ...defaults });
+      }
+      return state.lanePrefs.get(key);
+    }
+
+    function updateMeta() {
+      const runCount = [...state.completionIndex.values()].reduce((a, b) => a + b.length, 0);
+      const sections = state.sectionIds.length;
+      const operators = state.operatorIds.length;
+      const pkg = state.packageMeta ? state.packageMeta.package_id : "none";
+      el.metaText.innerHTML = [
+        `<span>Dataset: <code>${escapeHtml(DATASET_FILE)}</code></span>`,
+        `<span>Package: <code>${escapeHtml(pkg)}</code></span>`,
+        `<span>Sections: <code>${sections}</code></span>`,
+        `<span>Operators: <code>${operators}</code></span>`,
+        `<span>Runs: <code>${runCount}</code></span>`,
+        `<span>Run pair <code>R</code> · split 10 <code>T</code> · section x operators <code>S</code> · full matrix <code>M</code></span>`
+      ].join("");
+    }
+
+    function parseActBlocks(markdown) {
+      const lines = splitLines(markdown);
+      const sections = [];
+      let current = null;
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        const match = line.match(/^(\d+\.0)\s+(.+)$/);
+        if (match) {
+          if (current) {
+            sections.push(current);
+          }
+          current = {
+            marker: match[1],
+            major: match[2].trim(),
+            text: ""
+          };
+          continue;
+        }
+
+        if (current) {
+          current.text += `${current.text ? "\n" : ""}${lines[i]}`;
+        }
+      }
+
+      if (current) {
+        sections.push(current);
+      }
+
+      return sections.map((section) => ({
+        marker: section.marker,
+        major: section.major,
+        text: String(section.text || "").trim()
+      })).filter((section) => section.text);
+    }
+
+    function parseNumberedSections(markdown) {
+      const lines = splitLines(markdown);
+      const majorTitles = new Map();
+      const sections = [];
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const raw = lines[i];
+        const line = raw.trim();
+        if (!line) continue;
+
+        const numberMatch = line.match(/^(\d+\.\d+)(?:\s+(.*))?$/);
+        if (!numberMatch) continue;
+
+        const marker = numberMatch[1];
+        const inline = (numberMatch[2] || "").trim();
+
+        if (marker.endsWith(".0")) {
+          majorTitles.set(marker.split(".")[0], inline || `Section ${marker}`);
+          continue;
+        }
+
+        const majorKey = marker.split(".")[0];
+        const major = majorTitles.get(majorKey) || `Section ${majorKey}`;
+        const block = [];
+        if (inline) block.push(inline);
+
+        let j = i + 1;
+        while (j < lines.length) {
+          const probe = lines[j].trim();
+          if (probe.match(/^\d+\.\d+(?:\s+.*)?$/)) break;
+          if (probe) block.push(probe);
+          j += 1;
+        }
+
+        i = j - 1;
+
+        sections.push({
+          marker,
+          major,
+          text: block.join("\n")
+        });
+      }
+
+      return sections;
+    }
+
+    function parseCreaturelinessSections(markdown) {
+      const actBlocks = parseActBlocks(markdown);
+      if (actBlocks.length) return actBlocks;
+      return parseNumberedSections(markdown);
+    }
+
+    function sectionCellLabel(section) {
+      const discovery = extractTaggedSection(section.text, "DISCOVERY_REPORT");
+      const seed = extractField(discovery, "The_Seed");
+      const lead = seed || splitLines(section.text)[0] || "(empty section)";
+      const compact = lead.length > 72 ? `${lead.slice(0, 72)}...` : lead;
+      return `${section.marker} ${section.major} · ${compact}`;
+    }
+
+    function extractTaggedSection(sectionText, sectionName) {
+      const rx = new RegExp(`<section\\s+name="${sectionName}">([\\s\\S]*?)<\\/section>`, "i");
+      const match = String(sectionText || "").match(rx);
+      return match ? match[1].trim() : "";
+    }
+
+    function extractField(discoveryText, fieldName) {
+      const rx = new RegExp(`<field\\s+name="${fieldName}">([\\s\\S]*?)<\\/field>`, "i");
+      const match = String(discoveryText || "").match(rx);
+      return match ? match[1].replace(/\s+/g, " ").trim() : "";
+    }
+
+    function compactLine(text, fallback) {
+      const normalized = String(text || "").replace(/\s+/g, " ").trim();
+      return normalized || fallback;
+    }
+
+    function operatorStyleLens(operatorId, operatorLabel) {
+      const key = `${operatorId} ${operatorLabel}`.toLowerCase();
+      if (key.includes("westworld")) return "austere biomechanical precision, porcelain textures, black-and-white structural contrast";
+      if (key.includes("true detective")) return "sulfuric noir, corroded overlays, layered silhouettes, ritual dread";
+      if (key.includes("alien")) return "deep-space negative space, near-dark emergence, typographic suspense";
+      if (key.includes("andromeda")) return "clinical containment grammar, warning interfaces, procedural escalation";
+      if (key.includes("high castle")) return "archival propaganda friction, ideological collage, symbol collisions";
+      if (key.includes("ghost")) return "cybernetic metamorphosis, liquid-body transitions, sacred machine rhythm";
+      if (key.includes("bass")) return "geometric paper-cut economy, high contrast, kinetic typography";
+      if (key.includes("deconstruction")) return "explicit motif decomposition, transition logic, anti-cliche assembly";
+      if (key.includes("dna")) return "motif forensics, strict title-sequence constraints, high-signal composition";
+      if (key.includes("optical")) return "apparatus-aware gaze, interrogation rhythm, dialectical overlays";
+      return "high-contrast editorial motion with physical texture and disciplined pacing";
+    }
+
+    function buildBeatMap(seed, resonance, outline, deliveryLead) {
+      return [
+        `0.0-1.2s  Establish locus: ${seed}`,
+        `1.2-2.4s  Pressure enters: frost, breath, or mechanical instability intrudes.`,
+        `2.4-3.6s  Symbol fracture: ${outline}`,
+        `3.6-4.8s  Contact event: body and apparatus collide under resistance.`,
+        `4.8-6.0s  System response: error pulses, stuttered text, unstable telemetry.`,
+        `6.0-7.2s  Emergent resonance: ${resonance}`,
+        `7.2-8.4s  Threshold move: signal shifts from analysis to survival.`,
+        `8.4-9.6s  Material proof: ash, frost, wire, smoke, or blood becomes motif.`,
+        `9.6-10.8s Recomposition: language consolidates into operational intent.`,
+        `10.8-12.0s Lock image: ${deliveryLead}`
+      ];
+    }
+
+    function safeQuote(text) {
+      return String(text || "").replace(/"/g, "'").replace(/\s+/g, " ").trim();
+    }
+
+    function buildSingleFileHtmlArtifact(titleText, leadLine, operatorLabel) {
+      const title = safeQuote(titleText || "Graph Operator Final");
+      const lead = safeQuote(leadLine || "No lead line.");
+      const lens = safeQuote(operatorLabel || "Operator");
+      return [
+        "<!doctype html>",
+        "<html lang=\"en\">",
+        "<head>",
+        "  <meta charset=\"utf-8\">",
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+        `  <title>${title}</title>`,
+        "  <style>",
+        "    :root { --bg:#0b0d11; --ink:#e6e9ef; --muted:#8f96a3; --line:#232a37; --accent:#f4b942; }",
+        "    * { box-sizing:border-box; }",
+        "    body { margin:0; min-height:100vh; font:14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; background:radial-gradient(circle at 15% 20%, #1b222f 0%, var(--bg) 56%); color:var(--ink); display:grid; place-items:center; }",
+        "    .frame { width:min(92vw, 900px); border:1px solid var(--line); background:#0f131a; border-radius:14px; padding:18px; }",
+        "    .kicker { color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-size:.7rem; }",
+        "    h1 { margin:.4rem 0 .6rem; font-size:1.08rem; letter-spacing:.02em; }",
+        "    .lead { color:#c9d1de; margin:0 0 14px; }",
+        "    .rail { border:1px solid var(--line); border-radius:10px; overflow:hidden; }",
+        "    .line { display:grid; grid-template-columns:52px minmax(0,1fr); border-top:1px solid var(--line); }",
+        "    .line:first-child { border-top:0; }",
+        "    .ln { color:var(--muted); padding:7px 8px; text-align:right; border-right:1px solid var(--line); }",
+        "    .txt { padding:7px 10px; }",
+        "    .txt strong { color:var(--accent); font-weight:700; }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <main class=\"frame\">",
+        `    <div class=\"kicker\">${lens}</div>`,
+        `    <h1>${title}</h1>`,
+        `    <p class=\"lead\">${lead}</p>`,
+        "    <section class=\"rail\">",
+        "      <div class=\"line\"><div class=\"ln\">1</div><div class=\"txt\"><strong>Seed</strong> -> motif extraction and visual stakes.</div></div>",
+        "      <div class=\"line\"><div class=\"ln\">2</div><div class=\"txt\"><strong>Beat Map</strong> -> 12-second escalation timeline.</div></div>",
+        "      <div class=\"line\"><div class=\"ln\">3</div><div class=\"txt\"><strong>Output</strong> -> video prompt + executable animation shell.</div></div>",
+        "    </section>",
+        "  </main>",
+        "</body>",
+        "</html>"
+      ].join("\n");
+    }
+
+    function buildCompletionText(sectionCell, operatorCell, runNo) {
+      const sectionText = String(sectionCell.payload || "");
+      const operatorId = operatorCell.meta?.operator_id || operatorCell.id;
+      const operatorLabel = operatorCell.label || operatorCell.meta?.operator_id || operatorId;
+      const discovery = extractTaggedSection(sectionText, "DISCOVERY_REPORT");
+      const coldDelivery = extractTaggedSection(sectionText, "THE_COLD_DELIVERY");
+      const seed = compactLine(extractField(discovery, "The_Seed"), "No seed supplied.");
+      const outlineCut = compactLine(
+        extractField(discovery, "The_Outline_Straightjackets_Cut"),
+        "No outline-cut supplied."
+      );
+      const resonance = compactLine(extractField(discovery, "Emergent_Resonance"), "No resonance supplied.");
+      const deliveryLead = compactLine(splitLines(coldDelivery).find((line) => line.trim()), "No cold-delivery lead.");
+      const styleLens = operatorStyleLens(operatorId, operatorLabel);
+      const beatMap = buildBeatMap(seed, resonance, outlineCut, deliveryLead);
+      const sourcePaths = Array.isArray(operatorCell.meta?.source_paths)
+        ? operatorCell.meta.source_paths.join(", ")
+        : "n/a";
+
+      const masterVideoPrompt = [
+        `Create a 12-second cinematic title sequence for "${sectionCell.meta?.major || sectionCell.label}" in the style lens: ${styleLens}.`,
+        `Core motif: ${seed}`,
+        `Constraint break: ${outlineCut}`,
+        `Resonance anchor: ${resonance}`,
+        "Visual system: high-contrast typography, tangible material textures (frost, ash, wire, smoke), strict rhythm with escalating fracture points.",
+        "Camera + motion: controlled dolly and lock-offs, punctuated with abrupt calibration drift at beat transitions.",
+        "Audio direction: low mechanical rumble + brittle transients; no heroic swell.",
+        "Output requirement: include exact 12-second beat sync and typography choreography suitable for title design previsualization."
+      ].join(" ");
+
+      const htmlArtifact = buildSingleFileHtmlArtifact(
+        `${sectionCell.meta?.section_id || sectionCell.id} ${sectionCell.meta?.major || ""}`.trim(),
+        deliveryLead,
+        operatorLabel
+      );
+
+      return [
+        "# completion-run",
+        `run: ${runNo}`,
+        `section_cell: ${sectionCell.id}`,
+        `operator_cell: ${operatorCell.id}`,
+        `operator_instruction: ${operatorCell.meta?.instruction || "n/a"}`,
+        `source_paths: ${sourcePaths}`,
+        "",
+        "## operator_package_context",
+        operatorCell.payload,
+        "",
+        "## section_text",
+        sectionText,
+        "",
+        "## concept_breakdown",
+        `- seed: ${seed}`,
+        `- outline_cut: ${outlineCut}`,
+        `- emergent_resonance: ${resonance}`,
+        `- operator_lens: ${styleLens}`,
+        "",
+        "## beat_map_12s",
+        ...beatMap,
+        "",
+        "## final_output",
+        "### master_ai_video_prompt",
+        masterVideoPrompt,
+        "",
+        "### single_file_html",
+        "```html",
+        htmlArtifact,
+        "```"
+      ].join("\n");
+    }
+
+    function completionKey(sectionId, operatorId) {
+      return `${sectionId}::${operatorId}`;
+    }
+
+    function runPair(sectionId, operatorId, options = {}) {
+      const sectionCell = state.cells.get(sectionId);
+      const operatorCell = state.cells.get(operatorId);
+      if (!sectionCell || !operatorCell) return null;
+
+      const key = completionKey(sectionId, operatorId);
+      const list = state.completionIndex.get(key) || [];
+      const runNo = list.length + 1;
+
+      const completionId = nextCellId("X");
+      const completionCell = {
+        id: completionId,
+        label: `Run ${runNo} · ${sectionCell.meta?.section_id || sectionCell.id} × ${operatorCell.meta?.operator_id || operatorCell.id}`,
+        kind: "completion",
+        payloadType: "text",
+        payload: buildCompletionText(sectionCell, operatorCell, runNo),
+        parents: [sectionId, operatorId],
+        family: "EXPERIMENT",
+        sourcePath: null,
+        createdAt: new Date().toISOString(),
+        meta: {
+          run_no: runNo,
+          section_id: sectionCell.meta?.section_id || sectionCell.id,
+          operator_id: operatorCell.meta?.operator_id || operatorCell.id
+        }
+      };
+
+      registerCell(completionCell);
+      list.push(completionId);
+      state.completionIndex.set(key, list);
+
+      if (options.select !== false) {
+        state.selectedSectionId = sectionId;
+        state.selectedOperatorId = operatorId;
+        state.selectedCompletionId = completionId;
+        state.focusId = completionId;
+      }
+
+      return completionId;
+    }
+
+    function runAllOperatorsOnSection(sectionId) {
+      let count = 0;
+      for (const operatorId of state.operatorIds) {
+        const id = runPair(sectionId, operatorId, { select: false });
+        if (id) count += 1;
+      }
+      if (count) {
+        state.selectedSectionId = sectionId;
+      }
+      showToast(`Ran ${count} operators for section`);
+      return count;
+    }
+
+    function runOperatorOnAllSections(operatorId) {
+      let count = 0;
+      for (const sectionId of state.sectionIds) {
+        const id = runPair(sectionId, operatorId, { select: false });
+        if (id) count += 1;
+      }
+      if (count) {
+        state.selectedOperatorId = operatorId;
+      }
+      showToast(`Ran operator across ${count} sections`);
+      return count;
+    }
+
+    function runFullMatrix() {
+      let count = 0;
+      for (const sectionId of state.sectionIds) {
+        for (const operatorId of state.operatorIds) {
+          const id = runPair(sectionId, operatorId, { select: false });
+          if (id) count += 1;
+        }
+      }
+      showToast(`Full matrix complete: ${count} runs`);
+      return count;
+    }
+
+    function runOneToOnePass(limit = 10) {
+      const max = Math.min(limit, state.sectionIds.length, state.operatorIds.length);
+      let count = 0;
+      let firstCompletionId = null;
+
+      for (let i = 0; i < max; i += 1) {
+        const completionId = runPair(state.sectionIds[i], state.operatorIds[i], { select: false });
+        if (completionId) {
+          count += 1;
+          if (!firstCompletionId) firstCompletionId = completionId;
+        }
+      }
+
+      if (firstCompletionId) {
+        const firstCell = state.cells.get(firstCompletionId);
+        state.selectedCompletionId = firstCompletionId;
+        state.focusId = firstCompletionId;
+        if (firstCell) {
+          state.selectedSectionId = firstCell.parents[0] || state.selectedSectionId;
+          state.selectedOperatorId = firstCell.parents[1] || state.selectedOperatorId;
+        }
+      }
+
+      showToast(`10-agent split complete: ${count} finals`);
+      return count;
+    }
+
+    function clearRuns() {
+      for (const ids of state.completionIndex.values()) {
+        for (const id of ids) {
+          state.cells.delete(id);
+        }
+      }
+      state.completionIndex.clear();
+      state.childMap = new Map();
+      for (const cell of state.cells.values()) {
+        for (const parentId of cell.parents) {
+          if (!state.childMap.has(parentId)) {
+            state.childMap.set(parentId, []);
+          }
+          state.childMap.get(parentId).push(cell.id);
+        }
+      }
+      state.selectedCompletionId = null;
+      state.genericRootId = null;
+      state.genericSelections.clear();
+      state.lineSelections.clear();
+      showToast("Runs cleared");
+    }
+
+    function filteredSectionIds() {
+      const q = state.search.trim().toLowerCase();
+      if (!q) return [...state.sectionIds];
+
+      return state.sectionIds.filter((id) => {
+        const cell = state.cells.get(id);
+        if (!cell) return false;
+        const hay = [
+          cell.id,
+          cell.label,
+          cell.meta?.section_id || "",
+          cell.payload
+        ].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function ensureSelections(sectionIds) {
+      if (!sectionIds.length) {
+        state.selectedSectionId = null;
+        state.selectedOperatorId = null;
+        state.selectedCompletionId = null;
+        return;
+      }
+
+      if (!state.selectedSectionId || !sectionIds.includes(state.selectedSectionId)) {
+        state.selectedSectionId = sectionIds[0];
+      }
+
+      if (!state.selectedOperatorId || !state.operatorIds.includes(state.selectedOperatorId)) {
+        state.selectedOperatorId = state.operatorIds[0] || null;
+      }
+
+      const key = completionKey(state.selectedSectionId, state.selectedOperatorId || "");
+      const pairRuns = state.completionIndex.get(key) || [];
+      if (!pairRuns.includes(state.selectedCompletionId)) {
+        state.selectedCompletionId = pairRuns[0] || null;
+      }
+
+      if (!state.focusId) {
+        state.focusId = state.selectedSectionId;
+      }
+    }
+
+    function createCellsLane(key, title, sub, cellIds, selectedId, anchorId, special = null) {
+      const pref = lanePref(key, { collapsed: false, childKind: "prompt", operator: "derive" });
+      return {
+        type: "cells",
+        key,
+        title,
+        sub,
+        cellIds,
+        selectedId,
+        anchorId,
+        collapsed: pref.collapsed,
+        childKind: pref.childKind,
+        operator: pref.operator,
+        special
+      };
+    }
+
+    function createPayloadLane(key, title, sub, cellId) {
+      const pref = lanePref(key, { collapsed: false, childKind: "completion", operator: "complete" });
+      return {
+        type: "payload",
+        key,
+        title,
+        sub,
+        cellId,
+        anchorId: cellId,
+        collapsed: pref.collapsed,
+        childKind: pref.childKind,
+        operator: pref.operator,
+        special: null
+      };
+    }
+
+    function appendGenericChain(lanes, rootId) {
+      if (!rootId || !state.cells.has(rootId)) return;
+
+      lanes.push(createCellsLane(
+        `generic-root:${rootId}`,
+        "Branch Root",
+        `from ${rootId}`,
+        [rootId],
+        rootId,
+        rootId
+      ));
+
+      lanes.push(createPayloadLane(
+        `payload:${rootId}`,
+        "Payload",
+        `${rootId} · ${splitLines(state.cells.get(rootId).payload).length} lines`,
+        rootId
+      ));
+
+      let parent = rootId;
+      let depth = 1;
+
+      while (depth < 24) {
+        const children = childrenOf(parent).filter((id) => {
+          const cell = state.cells.get(id);
+          return cell && cell.kind !== "completion";
+        });
+
+        if (!children.length) break;
+
+        const selected = state.genericSelections.get(parent) || children[0];
+        if (!children.includes(selected)) {
+          state.genericSelections.set(parent, children[0]);
+        }
+
+        const current = state.genericSelections.get(parent) || children[0];
+
+        lanes.push(createCellsLane(
+          `generic-children:${parent}`,
+          `Children ${depth}`,
+          `${parent} -> ${children.length} cells`,
+          children,
+          current,
+          current
+        ));
+
+        lanes.push(createPayloadLane(
+          `payload:${current}`,
+          "Payload",
+          `${current} · ${splitLines(state.cells.get(current).payload).length} lines`,
+          current
+        ));
+
+        parent = current;
+        depth += 1;
+      }
+    }
+
+    function buildLanes() {
+      const lanes = [];
+      const sectionIds = filteredSectionIds();
+      ensureSelections(sectionIds);
+
+      lanes.push(createCellsLane(
+        "sections",
+        "Sections",
+        `${sectionIds.length} section prompts`,
+        sectionIds,
+        state.selectedSectionId,
+        state.selectedSectionId,
+        "run-section"
+      ));
+
+      if (!state.selectedSectionId) {
+        state.lanes = lanes;
+        return;
+      }
+
+      const sectionCell = state.cells.get(state.selectedSectionId);
+      lanes.push(createPayloadLane(
+        `payload:${state.selectedSectionId}`,
+        "Section Payload",
+        `${state.selectedSectionId} · ${splitLines(sectionCell.payload).length} lines`,
+        state.selectedSectionId
+      ));
+
+      lanes.push(createCellsLane(
+        "operators",
+        "Operator Package",
+        `${state.operatorIds.length} operators loaded`,
+        state.operatorIds,
+        state.selectedOperatorId,
+        state.selectedOperatorId,
+        "run-operator"
+      ));
+
+      if (!state.selectedOperatorId) {
+        state.lanes = lanes;
+        return;
+      }
+
+      const operatorCell = state.cells.get(state.selectedOperatorId);
+      lanes.push(createPayloadLane(
+        `payload:${state.selectedOperatorId}`,
+        "Operator Prompt",
+        `${operatorCell.meta?.operator_id || state.selectedOperatorId}`,
+        state.selectedOperatorId
+      ));
+
+      const key = completionKey(state.selectedSectionId, state.selectedOperatorId);
+      const completionIds = state.completionIndex.get(key) || [];
+      if (!completionIds.includes(state.selectedCompletionId)) {
+        state.selectedCompletionId = completionIds[0] || null;
+      }
+
+      lanes.push(createCellsLane(
+        "completions",
+        "Pair Completions",
+        `${state.selectedSectionId} x ${state.selectedOperatorId} -> ${completionIds.length} runs`,
+        completionIds,
+        state.selectedCompletionId,
+        state.selectedCompletionId,
+        "run-pair"
+      ));
+
+      if (state.selectedCompletionId) {
+        const completionCell = state.cells.get(state.selectedCompletionId);
+        lanes.push(createPayloadLane(
+          `payload:${state.selectedCompletionId}`,
+          "Completion Payload",
+          `${state.selectedCompletionId} · ${splitLines(completionCell.payload).length} lines`,
+          state.selectedCompletionId
+        ));
+      }
+
+      if (state.genericRootId) {
+        appendGenericChain(lanes, state.genericRootId);
+      }
+
+      state.lanes = lanes;
+    }
+
+    function laneSelectsHtml(lane, laneIndex, hasAnchor) {
+      const childOptions = CHILD_KIND_OPTIONS
+        .map((opt) => `<option value="${escapeAttr(opt.value)}" ${lane.childKind === opt.value ? "selected" : ""}>${escapeHtml(opt.label)}</option>`)
+        .join("");
+
+      const operatorOptions = OPERATOR_OPTIONS
+        .map((opt) => `<option value="${escapeAttr(opt.value)}" ${lane.operator === opt.value ? "selected" : ""}>${escapeHtml(opt.label)}</option>`)
+        .join("");
+
+      return `
+        <div class="lane-tools">
+          <select class="lane-select" data-action="lane-child-kind" data-lane="${laneIndex}">${childOptions}</select>
+          <select class="lane-select" data-action="lane-operator" data-lane="${laneIndex}">${operatorOptions}</select>
+          <button class="lane-btn primary" type="button" data-action="branch-lane" data-lane="${laneIndex}" ${hasAnchor ? "" : "disabled"}>Branch</button>
+        </div>
+      `;
+    }
+
+    function laneSpecialButtons(lane, laneIndex) {
+      if (lane.special === "run-section") {
+        return `<button class="lane-btn" type="button" data-action="run-section" data-lane="${laneIndex}">Run Section x Operators</button>`;
+      }
+      if (lane.special === "run-operator") {
+        return `<button class="lane-btn" type="button" data-action="run-operator" data-lane="${laneIndex}">Run Operator x Sections</button>`;
+      }
+      if (lane.special === "run-pair") {
+        return `<button class="lane-btn" type="button" data-action="run-pair" data-lane="${laneIndex}">Run Pair</button>`;
+      }
+      return "";
+    }
+
+    function renderCellRow(cell, lane, laneIndex) {
+      const parentText = cell.parents.length ? `parents: ${cell.parents.join(" + ")}` : "parents: root";
+      const active = lane.selectedId === cell.id;
+      const operand = state.operandId === cell.id;
+
+      return `
+        <button class="cell ${active ? "active" : ""} ${operand ? "operand" : ""}" type="button" data-action="select-cell" data-lane="${laneIndex}" data-cell="${cell.id}">
+          <div class="cell-meta">
+            <span class="cell-id">${escapeHtml(cell.id)}</span>
+            <span class="cell-kind">${escapeHtml(cell.kind)}</span>
+          </div>
+          <div class="cell-label">${escapeHtml(cell.label)}</div>
+          <div class="cell-lineage">${escapeHtml(parentText)}</div>
+          <div class="cell-preview">${escapeHtml(summarizePayload(cell.payload))}</div>
+        </button>
+      `;
+    }
+
+    function renderPayloadLines(cellId, lines) {
+      const selected = getLineSelection(cellId);
+      return lines
+        .map((line, idx) => {
+          const no = idx + 1;
+          const rowClass = selected.has(no) ? "selected" : "";
+          return `
+            <div class="line-row ${rowClass}">
+              <button class="line-num" type="button" data-action="toggle-line" data-cell="${cellId}" data-line="${no}">${no}</button>
+              <button class="line-copy" type="button" data-action="copy-line" data-cell="${cellId}" data-line="${no}">Copy</button>
+              <div class="line-text">${line.length ? escapeHtml(line) : "&nbsp;"}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderPayloadBody(lane, laneIndex) {
+      const cell = state.cells.get(lane.cellId);
+      if (!cell) {
+        return `<div class="holding"><strong>Missing payload cell</strong>${escapeHtml(lane.cellId)}</div>`;
+      }
+
+      const lines = splitLines(cell.payload);
+      const selectedCount = selectedLineNumbers(cell.id).length;
+
+      return `
+        <div class="line-tools">
+          <div>${escapeHtml(cell.id)} · ${lines.length} lines · selected ${selectedCount}</div>
+          <div class="line-actions">
+            <button class="line-btn" type="button" data-action="copy-all-lines" data-cell="${cell.id}">Copy All</button>
+            <button class="line-btn" type="button" data-action="copy-selected-lines" data-cell="${cell.id}">Copy Selected</button>
+            <button class="line-btn" type="button" data-action="clear-selected-lines" data-cell="${cell.id}">Clear Selected</button>
+            <button class="line-btn" type="button" data-action="focus-cell" data-cell="${cell.id}">Focus</button>
+          </div>
+          <div class="line-range">
+            <span>S</span>
+            <input class="line-input" data-role="range-start" type="number" min="1" max="${lines.length}" value="1">
+            <span>E</span>
+            <input class="line-input" data-role="range-end" type="number" min="1" max="${lines.length}" value="${lines.length}">
+            <button class="line-btn" type="button" data-action="copy-range-lines" data-cell="${cell.id}" data-lane="${laneIndex}">Copy Range</button>
+          </div>
+        </div>
+        <div class="line-list">${renderPayloadLines(cell.id, lines)}</div>
+      `;
+    }
+
+    function renderLane(lane, laneIndex) {
+      const hasAnchor = Boolean(lane.anchorId);
+
+      let body = "";
+      if (lane.type === "payload") {
+        body = renderPayloadBody(lane, laneIndex);
+      } else if (!lane.cellIds.length) {
+        body = `<div class="holding"><strong>Holding Lane</strong>No cells available in this lane.</div>`;
+      } else {
+        body = lane.cellIds
+          .map((id) => state.cells.get(id))
+          .filter(Boolean)
+          .map((cell) => renderCellRow(cell, lane, laneIndex))
+          .join("");
+      }
+
+      return `
+        <section class="lane ${lane.collapsed ? "collapsed" : ""}" data-lane="${laneIndex}" data-lane-key="${escapeAttr(lane.key)}">
+          <button class="lane-tab" type="button" data-action="toggle-lane" data-lane="${laneIndex}">${escapeHtml(lane.title)}</button>
+          <header class="lane-head">
+            <div class="lane-head-top">
+              <div>
+                <div class="lane-title">${escapeHtml(lane.title)}</div>
+                <div class="lane-sub">${escapeHtml(lane.sub)}</div>
+              </div>
+              <button class="lane-toggle" type="button" data-action="toggle-lane" data-lane="${laneIndex}">&lsaquo;</button>
+            </div>
+            ${laneSelectsHtml(lane, laneIndex, hasAnchor)}
+            ${laneSpecialButtons(lane, laneIndex)}
+          </header>
+          <div class="lane-body">${body}</div>
+        </section>
+      `;
+    }
+
+    function renderInspector() {
+      const cell = state.cells.get(state.focusId);
+      if (!cell) {
+        el.focusId.textContent = "No cell selected";
+        el.focusMeta.textContent = "Select a cell to inspect payload, lineage, and provenance.";
+        el.focusPayload.innerHTML = "<pre>Payload preview appears here.</pre>";
+        el.copyBtn.disabled = true;
+        return;
+      }
+
+      const selected = selectedLineNumbers(cell.id);
+
+      el.focusId.textContent = `${cell.id} · ${cell.label}`;
+      el.focusMeta.textContent = [
+        `kind: ${cell.kind}`,
+        `family: ${cell.family}`,
+        `payload_type: ${cell.payloadType}`,
+        `parents: ${cell.parents.length ? cell.parents.join(", ") : "root"}`,
+        `source_path: ${cell.sourcePath || "(generated)"}`,
+        `created_at: ${cell.createdAt || "n/a"}`,
+        `selected_lines: ${selected.length}`,
+        `meta: ${cell.meta ? JSON.stringify(cell.meta) : "{}"}`
+      ].join("\n");
+
+      const numbered = splitLines(cell.payload)
+        .slice(0, 180)
+        .map((line, idx) => `${String(idx + 1).padStart(4, " ")} | ${line}`)
+        .join("\n");
+
+      el.focusPayload.innerHTML = `<pre>${escapeHtml(numbered)}</pre>`;
+      el.copyBtn.disabled = false;
+    }
+
+    function renderStatus() {
+      const runCount = [...state.completionIndex.values()].reduce((a, b) => a + b.length, 0);
+      const focus = state.focusId || "none";
+      const operand = state.operandId || "none";
+      el.status.textContent = `sections ${state.sectionIds.length} | operators ${state.operatorIds.length} | runs ${runCount} | lanes ${state.lanes.length} | focus ${focus} | operand ${operand}`;
+    }
+
+    function render() {
+      buildLanes();
+      el.laneScroll.innerHTML = state.lanes.map(renderLane).join("");
+      renderInspector();
+      renderStatus();
+      updateMeta();
+    }
+
+    function scrollRight() {
+      el.laneScroll.scrollLeft = el.laneScroll.scrollWidth;
+    }
+
+    function activeInput() {
+      const active = document.activeElement;
+      return active instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
+    }
+
+    function moveInCurrentCellsLane(delta) {
+      const lane = state.lanes[state.activeLane];
+      if (!lane || lane.type !== "cells" || !lane.cellIds.length || !lane.selectedId) return;
+      const idx = lane.cellIds.indexOf(lane.selectedId);
+      if (idx === -1) return;
+      const next = (idx + delta + lane.cellIds.length) % lane.cellIds.length;
+      selectCellInLane(state.activeLane, lane.cellIds[next], false);
+    }
+
+    function selectCellInLane(laneIndex, cellId, shiftKey) {
+      const lane = state.lanes[laneIndex];
+      if (!lane || lane.type !== "cells") return;
+
+      if (shiftKey) {
+        state.operandId = cellId;
+        showToast(`${cellId} marked as operand`);
+        render();
+        return;
+      }
+
+      state.focusId = cellId;
+      state.activeLane = laneIndex;
+
+      if (lane.key === "sections") {
+        state.selectedSectionId = cellId;
+        state.selectedCompletionId = null;
+      } else if (lane.key === "operators") {
+        state.selectedOperatorId = cellId;
+        state.selectedCompletionId = null;
+      } else if (lane.key === "completions") {
+        state.selectedCompletionId = cellId;
+      } else if (lane.key.startsWith("generic-root:")) {
+        state.genericRootId = cellId;
+      } else if (lane.key.startsWith("generic-children:")) {
+        const parentId = lane.key.split(":")[1] || "";
+        if (parentId) {
+          state.genericSelections.set(parentId, cellId);
+        }
+      }
+
+      render();
+      scrollRight();
+    }
+
+    function branchFromLane(laneIndex) {
+      const lane = state.lanes[laneIndex];
+      if (!lane) return;
+
+      const parentId = lane.anchorId;
+      if (!parentId || !state.cells.has(parentId)) {
+        showToast("No anchor cell in this lane");
+        return;
+      }
+
+      const parentCell = state.cells.get(parentId);
+      const parents = [parentId];
+      if (state.operandId && state.operandId !== parentId) {
+        parents.push(state.operandId);
+      }
+
+      const childKind = lane.childKind || "prompt";
+      const operator = lane.operator || "derive";
+      const childId = nextCellId("B");
+      const payload = [
+        `# branched-${childKind}`,
+        `operator: ${operator}`,
+        `parents: ${parents.join(" + ")}`,
+        `source: ${parentCell.id}`,
+        "",
+        summarizePayload(parentCell.payload)
+      ].join("\n");
+
+      const child = {
+        id: childId,
+        label: `${childKind.toUpperCase()} ${childId}`,
+        kind: childKind,
+        payloadType: inferPayloadType(childKind),
+        payload,
+        parents,
+        family: parentCell.family,
+        sourcePath: null,
+        createdAt: new Date().toISOString(),
+        meta: { branch_operator: operator }
+      };
+
+      registerCell(child);
+      state.genericRootId = parentId;
+      state.genericSelections.set(parentId, childId);
+      state.focusId = childId;
+      state.activeLane = laneIndex;
+
+      render();
+      scrollRight();
+      showToast(`${childId} created`);
+    }
+
+    function laneNode(laneIndex) {
+      return el.laneScroll.querySelector(`.lane[data-lane="${laneIndex}"]`);
+    }
+
+    function runPairFromCurrent() {
+      if (!state.selectedSectionId || !state.selectedOperatorId) {
+        showToast("Select section and operator first");
+        return;
+      }
+      const completionId = runPair(state.selectedSectionId, state.selectedOperatorId, { select: true });
+      if (!completionId) return;
+      render();
+      scrollRight();
+      showToast(`${completionId} created`);
+    }
+
+    function runSectionFromCurrent() {
+      if (!state.selectedSectionId) {
+        showToast("Select section first");
+        return;
+      }
+      runAllOperatorsOnSection(state.selectedSectionId);
+      render();
+      scrollRight();
+    }
+
+    function runOperatorFromCurrent() {
+      if (!state.selectedOperatorId) {
+        showToast("Select operator first");
+        return;
+      }
+      runOperatorOnAllSections(state.selectedOperatorId);
+      render();
+      scrollRight();
+    }
+
+    el.laneScroll.addEventListener("click", (event) => {
+      const laneEl = event.target.closest("[data-lane]");
+      if (laneEl instanceof HTMLElement) {
+        state.activeLane = Number(laneEl.getAttribute("data-lane"));
+      }
+
+      const target = event.target.closest("[data-action]");
+      if (!(target instanceof HTMLElement)) return;
+
+      const action = target.getAttribute("data-action");
+      if (!action) return;
+
+      if (action === "toggle-lane") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const lane = state.lanes[laneIndex];
+        if (!lane) return;
+        const pref = lanePref(lane.key, { collapsed: false, childKind: lane.childKind, operator: lane.operator });
+        pref.collapsed = !pref.collapsed;
+        render();
+        return;
+      }
+
+      if (action === "select-cell") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const cellId = target.getAttribute("data-cell") || "";
+        if (!cellId) return;
+        selectCellInLane(laneIndex, cellId, event.shiftKey);
+        return;
+      }
+
+      if (action === "branch-lane") {
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        branchFromLane(laneIndex);
+        return;
+      }
+
+      if (action === "run-section") {
+        runSectionFromCurrent();
+        return;
+      }
+
+      if (action === "run-operator") {
+        runOperatorFromCurrent();
+        return;
+      }
+
+      if (action === "run-pair") {
+        runPairFromCurrent();
+        return;
+      }
+
+      if (action === "toggle-line") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const line = Number(target.getAttribute("data-line"));
+        if (!cellId || !Number.isFinite(line)) return;
+        toggleLine(cellId, line);
+        render();
+        return;
+      }
+
+      if (action === "copy-line") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const line = Number(target.getAttribute("data-line"));
+        const cell = state.cells.get(cellId);
+        if (!cell || !Number.isFinite(line)) return;
+        const lines = splitLines(cell.payload);
+        void copyText(lines[line - 1] || "", `${cellId} line ${line} copied`);
+        return;
+      }
+
+      if (action === "copy-all-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const cell = state.cells.get(cellId);
+        if (!cell) return;
+        void copyText(String(cell.payload || ""), `${cellId} copied`);
+        return;
+      }
+
+      if (action === "copy-selected-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const nums = selectedLineNumbers(cellId);
+        if (!nums.length) {
+          showToast("No selected lines");
+          return;
+        }
+        void copyText(selectedLineText(cellId), `${cellId} selected lines copied`);
+        return;
+      }
+
+      if (action === "clear-selected-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        getLineSelection(cellId).clear();
+        render();
+        return;
+      }
+
+      if (action === "copy-range-lines") {
+        const cellId = target.getAttribute("data-cell") || "";
+        const laneIndex = Number(target.getAttribute("data-lane"));
+        const node = laneNode(laneIndex);
+        if (!(node instanceof HTMLElement)) return;
+
+        const sEl = node.querySelector('[data-role="range-start"]');
+        const eEl = node.querySelector('[data-role="range-end"]');
+        if (!(sEl instanceof HTMLInputElement) || !(eEl instanceof HTMLInputElement)) return;
+
+        const cell = state.cells.get(cellId);
+        if (!cell) return;
+
+        const lines = splitLines(cell.payload);
+        let start = Number(sEl.value);
+        let end = Number(eEl.value);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) return;
+        start = Math.max(1, Math.min(start, lines.length));
+        end = Math.max(start, Math.min(end, lines.length));
+        void copyText(lines.slice(start - 1, end).join("\n"), `${cellId} lines ${start}-${end} copied`);
+        return;
+      }
+
+      if (action === "focus-cell") {
+        const cellId = target.getAttribute("data-cell") || "";
+        if (!cellId || !state.cells.has(cellId)) return;
+        state.focusId = cellId;
+        render();
+      }
+    });
+
+    el.laneScroll.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const laneIndex = Number(target.getAttribute("data-lane"));
+      const lane = state.lanes[laneIndex];
+      if (!lane) return;
+
+      const pref = lanePref(lane.key, { collapsed: lane.collapsed, childKind: lane.childKind, operator: lane.operator });
+      const action = target.getAttribute("data-action");
+
+      if (action === "lane-child-kind" && target instanceof HTMLSelectElement) {
+        pref.childKind = target.value;
+      }
+
+      if (action === "lane-operator" && target instanceof HTMLSelectElement) {
+        pref.operator = target.value;
+      }
+    });
+
+    el.search.addEventListener("input", (event) => {
+      state.search = event.target.value || "";
+      render();
+    });
+
+    el.runPairBtn.addEventListener("click", () => {
+      runPairFromCurrent();
+    });
+
+    el.runSplitBtn.addEventListener("click", () => {
+      runOneToOnePass(10);
+      render();
+      scrollRight();
+    });
+
+    el.runSectionBtn.addEventListener("click", () => {
+      runSectionFromCurrent();
+    });
+
+    el.runMatrixBtn.addEventListener("click", () => {
+      runFullMatrix();
+      render();
+      scrollRight();
+    });
+
+    el.clearRunsBtn.addEventListener("click", () => {
+      clearRuns();
+      render();
+    });
+
+    el.copyBtn.addEventListener("click", () => {
+      const cell = state.cells.get(state.focusId);
+      if (!cell) return;
+      const selected = selectedLineNumbers(cell.id);
+      const text = selected.length ? selectedLineText(cell.id) : String(cell.payload || "");
+      const label = selected.length ? `${cell.id} selected lines copied` : `${cell.id} payload copied`;
+      void copyText(text, label);
+      el.copyBtn.classList.add("ok");
+      clearTimeout(el.copyBtn.t);
+      el.copyBtn.t = setTimeout(() => el.copyBtn.classList.remove("ok"), 1100);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "/" && !activeInput()) {
+        event.preventDefault();
+        el.search.focus();
+        el.search.select();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        state.operandId = null;
+        render();
+        return;
+      }
+
+      if (activeInput()) return;
+
+      const key = event.key.toLowerCase();
+
+      if (key === "r") {
+        event.preventDefault();
+        runPairFromCurrent();
+        return;
+      }
+
+      if (key === "t") {
+        event.preventDefault();
+        runOneToOnePass(10);
+        render();
+        scrollRight();
+        return;
+      }
+
+      if (key === "s") {
+        event.preventDefault();
+        runSectionFromCurrent();
+        return;
+      }
+
+      if (key === "m") {
+        event.preventDefault();
+        runFullMatrix();
+        render();
+        scrollRight();
+        return;
+      }
+
+      if (key === "g") {
+        event.preventDefault();
+        branchFromLane(state.activeLane);
+        return;
+      }
+
+      if (key === "c") {
+        event.preventDefault();
+        el.copyBtn.click();
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveInCurrentCellsLane(1);
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveInCurrentCellsLane(-1);
+      }
+    });
+
+    function sourcePreview(text, maxLines = 42, maxChars = 3200) {
+      const lines = splitLines(text).slice(0, maxLines).join("\n");
+      if (lines.length <= maxChars) return lines;
+      return `${lines.slice(0, maxChars)}\n... [truncated]`;
+    }
+
+    async function readPromptSource(path) {
+      try {
+        const res = await fetch(path, { cache: "no-store" });
+        if (!res.ok) {
+          return { path, ok: false, text: `# missing source\n${path}\nstatus: ${res.status}` };
+        }
+        const text = await res.text();
+        return { path, ok: true, text };
+      } catch (error) {
+        return { path, ok: false, text: `# source load error\n${path}\n${String(error.message || error)}` };
+      }
+    }
+
+    async function normalizeOperatorDefinitions(pkg) {
+      const fromOperators = Array.isArray(pkg.operators) ? pkg.operators : [];
+      if (fromOperators.length) {
+        return fromOperators.map((op) => ({
+          id: op.id || "",
+          label: op.label || op.id || "Operator",
+          instruction: op.instruction || "",
+          template: op.template || "",
+          source_paths: Array.isArray(op.source_paths) ? op.source_paths : []
+        }));
+      }
+
+      const agents = Array.isArray(pkg.agents) ? pkg.agents : [];
+      const globals = Array.isArray(pkg.global_sources) ? pkg.global_sources : [];
+      const defs = [];
+
+      for (const agent of agents) {
+        const localSources = Array.isArray(agent.prompt_sources) ? agent.prompt_sources : [];
+        const sourcePaths = [...new Set([...globals, ...localSources].filter(Boolean))];
+        const sourceEntries = await Promise.all(sourcePaths.map((path) => readPromptSource(path)));
+
+        const templateLines = [
+          `agent_id: ${agent.id || "unknown"}`,
+          `agent_role: ${agent.role || "n/a"}`,
+          `source_count: ${sourceEntries.length}`,
+          "",
+          "Use the loaded sources as operator context. Output both:",
+          "1. Master AI Video Prompt",
+          "2. Single-file HTML/CSS/JS animation artifact"
+        ];
+
+        for (const entry of sourceEntries) {
+          templateLines.push("", `--- source: ${entry.path} ---`, sourcePreview(entry.text));
+        }
+
+        defs.push({
+          id: agent.id || "",
+          label: agent.label || agent.id || "Agent",
+          instruction: agent.role || "Generate finals from section payload and loaded sources.",
+          template: templateLines.join("\n"),
+          source_paths: sourcePaths
+        });
+      }
+
+      return defs;
+    }
+
+    async function boot() {
+      const [datasetRes, packageRes] = await Promise.all([
+        fetch(DATASET_FILE, { cache: "no-store" }),
+        fetch(PACKAGE_FILE, { cache: "no-store" })
+      ]);
+
+      if (!datasetRes.ok) {
+        throw new Error(`Failed to load ${DATASET_FILE} (${datasetRes.status})`);
+      }
+      if (!packageRes.ok) {
+        throw new Error(`Failed to load ${PACKAGE_FILE} (${packageRes.status})`);
+      }
+
+      const datasetText = await datasetRes.text();
+      const pkg = await packageRes.json();
+      state.packageMeta = {
+        package_id: pkg.package_id || "unknown",
+        name: pkg.name || "Operator Package"
+      };
+
+      const sections = parseCreaturelinessSections(datasetText);
+      for (const section of sections) {
+        const id = nextCellId("S");
+        const cell = {
+          id,
+          label: sectionCellLabel(section),
+          kind: "section",
+          payloadType: "text",
+          payload: section.text,
+          parents: [],
+          family: "CREATURELINESS",
+          sourcePath: DATASET_FILE,
+          createdAt: new Date().toISOString(),
+          meta: {
+            section_id: section.marker,
+            major: section.major
+          }
+        };
+        registerCell(cell);
+        state.sectionIds.push(id);
+      }
+
+      const operators = await normalizeOperatorDefinitions(pkg);
+      for (const op of operators) {
+        const id = nextCellId("O");
+        const cell = {
+          id,
+          label: op.label || op.id || id,
+          kind: "operator",
+          payloadType: "text",
+          payload: [
+            `operator_id: ${op.id || id}`,
+            `instruction: ${op.instruction || "n/a"}`,
+            "",
+            op.template || ""
+          ].join("\n"),
+          parents: [],
+          family: "OPERATOR-PACKAGE",
+          sourcePath: PACKAGE_FILE,
+          createdAt: new Date().toISOString(),
+          meta: {
+            operator_id: op.id || id,
+            instruction: op.instruction || "",
+            template: op.template || "",
+            source_paths: op.source_paths || []
+          }
+        };
+        registerCell(cell);
+        state.operatorIds.push(id);
+      }
+
+      state.selectedSectionId = state.sectionIds[0] || null;
+      state.selectedOperatorId = state.operatorIds[0] || null;
+      state.focusId = state.selectedSectionId;
+
+      runOneToOnePass(10);
+      render();
+      showToast(`Loaded ${state.sectionIds.length} sections, ${state.operatorIds.length} operators, and generated split finals`);
+    }
+
+    void boot().catch((error) => {
+      el.status.textContent = String(error.message || error);
+      showToast("Boot failed");
+    });
+  </script>
+</body>
+</html>

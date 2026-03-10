@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1.0 THE SPLIT · M22 Westworld</title>
+  <style>
+    :root {
+      --bg: #07090d;
+      --panel: #10161f;
+      --ink: #edf1f7;
+      --muted: #97a6bd;
+      --line: #2a3a53;
+      --accent: #cdd7e6;
+      --hot: #d33b45;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 24% 8%, #1c2533 0%, #0c111a 54%, #05070b 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: rgba(11, 16, 25, 0.9); overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #0f1522; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1.02rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #16223a; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #dbe6f5; color: #0b1220; border-color: #dbe6f5; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #111826; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card p, .card li { margin: 0; font-size: 0.8rem; line-height: 1.4; }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+
+    .prompt-wrap { display: grid; gap: 6px; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #0d1421; padding: 8px; color: #d3def0; font: 0.7rem/1.38 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #060a11; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #04070d; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #0a0f18; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+    .panel::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px); pointer-events: none; }
+
+    #overlay { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(circle at 50% 50%, rgba(220, 227, 239, 0.13), transparent 58%),
+      radial-gradient(circle at 10% 90%, rgba(211, 59, 69, 0.09), transparent 52%);
+      mix-blend-mode: screen;
+    }
+
+    #words { position: absolute; inset: 0; z-index: 20; pointer-events: none; padding: 5vw; display: flex; flex-direction: column; justify-content: center; }
+    .word { display: block; opacity: 0; transform: translateX(-24px); transition: opacity 0.18s ease, transform 0.18s ease; font-family: "Arial Black", Impact, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; line-height: 0.9; }
+    .word.on { opacity: 1; transform: translateX(0); }
+    .w1 { font-size: clamp(34px, 7vw, 96px); color: #e7eef9; }
+    .w2 { font-size: clamp(22px, 3.6vw, 46px); color: #c3d0e3; }
+    .w3 { font-size: clamp(22px, 3.6vw, 46px); color: #b7c6dd; }
+    .w4 { font-size: clamp(44px, 10vw, 128px); color: #d33b45; }
+
+    #pulse { position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: var(--hot); transform: scaleX(0); opacity: 0; transform-origin: left; }
+    #pulse.fire { animation: fireline 0.64s ease-out forwards; }
+    @keyframes fireline {
+      0% { transform: scaleX(0); opacity: 1; }
+      70% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 01/10</div>
+        <h1>1.0 THE SPLIT · Agent M22 Westworld</h1>
+        <div class="meta">Machine reflection vs creaturely cold. White clinical form breaks into panic rhythm.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: mirror of god fractures into sight of an animal in cold machinery.</li>
+            <li>Agent lens: Westworld biomechanical anatomy, sterile white precision, ritual disassembly.</li>
+            <li>Primary motif: human silhouette replaced by jointed servo body while frost noise rises.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.8s: black to white assembly ring, silent calibration.</li>
+            <li>1.8–3.6s: split into dual panels; mirror glyph vs breathing frost.</li>
+            <li>3.6–6.3s: 2x2 dissection of eye, tendon, rib-frame, hooved arc.</li>
+            <li>6.3–8.8s: text snaps in four strikes: FRIGHTENED / ANIMAL / IN THE / COLD.</li>
+            <li>8.8–11.0s: collapse to one skull-like servo mask.</li>
+            <li>11.0–12.0s: red pulse line, hard reset to dark.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <div class="prompt-wrap">
+            <pre id="videoPrompt">Create a 12-second title sequence for "1.0 THE SPLIT" using the Westworld motion grammar.
+Sterile white/steel palette on abyssal black, punctured by one arterial red resolve.
+Motif: machine as anatomical mirror where divine fantasy collapses into creaturely fear.
+Use hard rhythmic cuts only, no cinematic easing.
+Show segmented biomechanical close-ups: iris rig, tendon cable, rib frame, equine servo joints, frost on glass.
+Typography in four percussive strikes: FRIGHTENED / ANIMAL / IN THE / COLD.
+End on a single skull-like robotic face and a horizontal red pulse.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+            <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+          </div>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="grid" class="cfg-single"></div>
+          <div id="overlay"></div>
+          <div id="words">
+            <span id="w1" class="word w1">FRIGHTENED</span>
+            <span id="w2" class="word w2">ANIMAL</span>
+            <span id="w3" class="word w3">IN THE</span>
+            <span id="w4" class="word w4">COLD</span>
+          </div>
+          <div id="pulse"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const pulse = document.getElementById('pulse');
+    const words = [
+      document.getElementById('w1'),
+      document.getElementById('w2'),
+      document.getElementById('w3'),
+      document.getElementById('w4')
+    ];
+
+    function ring(a) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#090e16"/>
+        <circle cx="150" cy="100" r="70" fill="none" stroke="#dce5f4" stroke-width="2" opacity="0.9"/>
+        <circle cx="150" cy="100" r="45" fill="none" stroke="#8ea4c8" stroke-width="1.5"/>
+        ${Array.from({ length: 18 }).map((_,i)=>{ const t=(i/18)*Math.PI*2+a; const x1=150+55*Math.cos(t), y1=100+55*Math.sin(t), x2=150+70*Math.cos(t), y2=100+70*Math.sin(t); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c3d2e9" stroke-width="1"/>`; }).join('')}
+        <circle cx="150" cy="100" r="8" fill="#d33b45"/>
+      </svg>`;
+    }
+
+    function rib(k) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#0a1018"/>
+        ${Array.from({ length: 8 }).map((_,i)=>`<path d="M ${52+i*24} 26 C ${78+i*22} ${86+k}, ${70+i*24} ${130-k}, ${90+i*24} 174" fill="none" stroke="#d5dfef" stroke-width="2" opacity="${0.85-i*0.07}"/>`).join('')}
+      </svg>`;
+    }
+
+    function eye(c) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#080d14"/>
+        <ellipse cx="150" cy="102" rx="92" ry="36" fill="#111a27" stroke="#d3deef" stroke-width="2"/>
+        <circle cx="150" cy="102" r="${20+c}" fill="#c7d4e8"/>
+        <circle cx="150" cy="102" r="10" fill="#d33b45"/>
+        <line x1="56" y1="102" x2="244" y2="102" stroke="#8398bc" opacity="0.7"/>
+      </svg>`;
+    }
+
+    function frost(v) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#0b121c"/>
+        ${Array.from({ length: 90 }).map((_,i)=>{ const x=(i*43+v*97)%300; const y=(i*29+v*53)%200; return `<circle cx="${x}" cy="${y}" r="${0.8+(i%3)}" fill="#e7eef9" opacity="${0.12+(i%5)*0.1}"/>`; }).join('')}
+      </svg>`;
+    }
+
+    function setLayout(name) { grid.className = ''; grid.classList.add(name); }
+    function setPanels(svgs) { grid.innerHTML = svgs.map(s => `<div class="panel">${s}</div>`).join(''); }
+    function clearWords() { words.forEach(w => w.classList.remove('on')); }
+    function showWord(i) { if (words[i]) words[i].classList.add('on'); }
+
+    let tick = 0;
+    function sequence() {
+      clearWords();
+      pulse.classList.remove('fire');
+      const beats = [
+        { t: 0, fn: () => { setLayout('cfg-single'); setPanels([ring(0)]); } },
+        { t: 1200, fn: () => { setLayout('cfg-2x1'); setPanels([ring(1.2), frost(1)]); } },
+        { t: 2400, fn: () => { setLayout('cfg-2x2'); setPanels([eye(0), rib(0), frost(2), ring(0.7)]); } },
+        { t: 3800, fn: () => showWord(0) },
+        { t: 4700, fn: () => showWord(1) },
+        { t: 5600, fn: () => showWord(2) },
+        { t: 6500, fn: () => showWord(3) },
+        { t: 7800, fn: () => { setLayout('cfg-single'); setPanels([eye(4)]); } },
+        { t: 10400, fn: () => { pulse.classList.add('fire'); } },
+        { t: 11800, fn: () => { setLayout('cfg-single'); setPanels([frost(8)]); clearWords(); } },
+        { t: 12600, fn: sequence }
+      ];
+      beats.forEach(b => setTimeout(b.fn, b.t));
+    }
+
+    setInterval(() => {
+      tick += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) {
+        p[0].innerHTML = tick % 2 === 0 ? ring((tick % 60) * 0.06) : eye((tick % 7));
+      }
+      if (grid.classList.contains('cfg-2x2') && p.length === 4) {
+        p[0].innerHTML = eye((tick % 5));
+        p[1].innerHTML = rib((tick % 6));
+        p[2].innerHTML = frost((tick % 12));
+        p[3].innerHTML = ring((tick % 80) * 0.05);
+      }
+    }, 130);
+
+    document.getElementById('copyPrompt').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    sequence();
+  </script>
+</body>
+</html>

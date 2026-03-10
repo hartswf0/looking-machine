@@ -1,0 +1,55 @@
+{
+  "package_id": "creatureliness-core-v1",
+  "name": "Creatureliness Operator Package",
+  "description": "Core operators for section-level prompt experimentation and downstream artifact prompts.",
+  "operators": [
+    {
+      "id": "summarize-core-claim",
+      "label": "Summarize Core Claim",
+      "instruction": "Compress the section into a high-signal thesis with no metaphoric drift.",
+      "template": "Summarize section {{section_id}} into 3-5 sentences: core claim, stakes, and operational implication."
+    },
+    {
+      "id": "extract-operational-instructions",
+      "label": "Extract Operational Instructions",
+      "instruction": "Convert claims into actionable design instructions.",
+      "template": "From section {{section_id}}, extract concrete instructions with conditions and failure modes."
+    },
+    {
+      "id": "counterargument-pressure-test",
+      "label": "Counterargument Pressure Test",
+      "instruction": "Stress the section with strongest opposing interpretation.",
+      "template": "Construct the strongest counterargument to section {{section_id}}, then rebut it with evidence from the section."
+    },
+    {
+      "id": "ontology-normalization",
+      "label": "Ontology Normalization",
+      "instruction": "Reduce language to primitive entities, relations, and constraints.",
+      "template": "Normalize section {{section_id}} into primitives: entities, relations, constraints, and invariants."
+    },
+    {
+      "id": "video-prompt-export",
+      "label": "Video Prompt Export",
+      "instruction": "Generate a production-grade master AI video prompt.",
+      "template": "Generate one master AI video prompt from section {{section_id}} with scene beats, camera language, color, and timing."
+    },
+    {
+      "id": "single-file-html-export",
+      "label": "Single-File HTML Export",
+      "instruction": "Generate a fully functional single-file HTML/CSS/JS animation prompt.",
+      "template": "Generate one prompt that yields a complete single-file HTML/CSS/JS animation from section {{section_id}}."
+    },
+    {
+      "id": "evidence-gap-audit",
+      "label": "Evidence Gap Audit",
+      "instruction": "Locate unsupported claims and specify required evidence.",
+      "template": "Audit section {{section_id}} for unsupported claims; list missing evidence and suggested tests."
+    },
+    {
+      "id": "implementation-plan",
+      "label": "Implementation Plan",
+      "instruction": "Translate section into a pragmatic build plan.",
+      "template": "Turn section {{section_id}} into a phased implementation plan with milestones and acceptance criteria."
+    }
+  ]
+}

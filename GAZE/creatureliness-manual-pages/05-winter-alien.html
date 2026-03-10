@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5.0 WINTER · M02 Alien</title>
+  <style>
+    :root {
+      --bg: #010102;
+      --ink: #e8edf7;
+      --muted: #8995ab;
+      --line: #2a303d;
+      --cold: #a9d5ff;
+      --ice: #b9f4ff;
+      --red: #cd2d41;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 60% 15%, #0d1220 0%, #05070d 45%, #010102 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #060810; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #0b0f1a; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #151b2a; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #dce6f7; color: #0a1020; border-color: #dce6f7; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #0b1020; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #080d1a; padding: 8px; color: #c9d4eb; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #02040a; }
+    #starfield { position: absolute; inset: 0; background: #010208; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #040913; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #fog { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgba(169, 213, 255, 0.18), transparent 58%); opacity: 0.5; }
+    #snow { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    #snow i { position: absolute; top: -10px; width: 2px; height: 10px; background: rgba(188, 236, 255, 0.7); animation: drift linear infinite; }
+    @keyframes drift { to { transform: translateY(105vh) translateX(20px); } }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transition: opacity 0.2s ease; letter-spacing: 0.1em; text-transform: uppercase; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; }
+    .w1 { font-size: clamp(34px, 7vw, 96px); color: #e6eefc; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #b3c8e6; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #b3c8e6; }
+    .w4 { font-size: clamp(42px, 9vw, 124px); color: var(--ice); }
+
+    #redline { position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: var(--red); transform: scaleX(0); opacity: 0; }
+    #redline.on { animation: pulse 0.6s ease-out forwards; }
+    @keyframes pulse { 0% { transform: scaleX(0); opacity: 1; } 70% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 05/10</div>
+        <h1>5.0 WINTER · Agent M02 Alien</h1>
+        <div class="meta">The machine stops. The cold remains. Silence outranks syntax.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: winter as ontological pressure, not design variable.</li>
+            <li>Agent lens: Alien minimal dread, black void, sparse typography, mechanical failure.</li>
+            <li>Primary motif: gentle operational hum replaced by unanswering cold field.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.8s: starfield and faint instrument arc.</li>
+            <li>1.8–3.8s: split to monitor and vent frost.</li>
+            <li>3.8–6.8s: 3x2 fragments of hull, code, frost, and dead fan.</li>
+            <li>6.8–9.0s: words strike: WINTER / IS / THE / REAL.</li>
+            <li>9.0–11.0s: all imagery collapses to one frozen port.</li>
+            <li>11.0–12.0s: red pulse and void.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "5.0 WINTER" in Alien mode.
+Keep it sparse and cold: starfield black, low blue-white highlights, restrained red event line.
+Narrative: machine does not die; it stops. Winter remains and enters the room.
+Use hard-cut timing and long pockets of near-stillness.
+Show dead instrumentation, vent frost ingress, inert fan, and empty terminal glow.
+Typography impacts: WINTER / IS / THE / REAL.
+End with frozen aperture and a red horizontal pulse to black.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="starfield"></div>
+          <div id="grid" class="cfg-single"></div>
+          <div id="fog"></div>
+          <div id="snow"></div>
+          <div id="words">
+            <span id="w1" class="word w1">WINTER</span>
+            <span id="w2" class="word w2">IS</span>
+            <span id="w3" class="word w3">THE</span>
+            <span id="w4" class="word w4">REAL</span>
+          </div>
+          <div id="redline"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const snow = document.getElementById('snow');
+    const redline = document.getElementById('redline');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function makeSnow() {
+      snow.innerHTML = '';
+      for (let i = 0; i < 70; i++) {
+        const d = document.createElement('i');
+        d.style.left = `${Math.random()*100}%`;
+        d.style.animationDuration = `${3 + Math.random()*5}s`;
+        d.style.animationDelay = `${-Math.random()*8}s`;
+        d.style.opacity = `${0.2 + Math.random()*0.6}`;
+        snow.appendChild(d);
+      }
+    }
+
+    function arc(v) {
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#030712'/>${Array.from({length:22}).map((_,i)=>{ const a=(i/21)*Math.PI + v*0.04; const x=150+110*Math.cos(a); const y=180+90*Math.sin(a); return `<circle cx='${x}' cy='${y}' r='1.3' fill='#b7d5ff'/>`;}).join('')}<text x='14' y='24' fill='#8ba6ca' font-size='11'>LOW TEMP ORBITAL READOUT</text></svg>`;
+    }
+
+    function vent(v) {
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#050b16'/><rect x='60' y='46' width='180' height='108' fill='none' stroke='#8ba6ca'/>
+      ${Array.from({length:8}).map((_,i)=>`<line x1='60' y1='${56+i*12}' x2='240' y2='${56+i*12}' stroke='#6f86aa'/>`).join('')}
+      <path d='M 0 ${50+v} C 80 ${20+v}, 150 ${90+v}, 300 ${40+v}' stroke='#d0efff' stroke-width='2' opacity='0.8' fill='none'/></svg>`;
+    }
+
+    function deadFan(v) {
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#050910'/><circle cx='150' cy='100' r='68' fill='none' stroke='#7f96b6'/>
+      ${Array.from({length:5}).map((_,i)=>{ const a=i*72+v*2; return `<path d='M 150 100 L ${150+52*Math.cos(a*Math.PI/180)} ${100+52*Math.sin(a*Math.PI/180)} L ${150+18*Math.cos((a+26)*Math.PI/180)} ${100+18*Math.sin((a+26)*Math.PI/180)} Z' fill='#6b83a7' opacity='0.75'/>`;}).join('')}</svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    let tick = 0;
+    function run(){
+      clearWords();
+      redline.classList.remove('on');
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([arc(0)]); }},
+        { t:1800, fn:()=>{ setLayout('cfg-2x1'); setPanels([vent(0), deadFan(0)]); }},
+        { t:3800, fn:()=>{ setLayout('cfg-3x2'); setPanels([arc(1), vent(1), deadFan(1), vent(2), deadFan(2), arc(2)]); }},
+        { t:5400, fn:()=>show(0)},
+        { t:6400, fn:()=>show(1)},
+        { t:7300, fn:()=>show(2)},
+        { t:8200, fn:()=>show(3)},
+        { t:9000, fn:()=>{ setLayout('cfg-single'); setPanels([vent(6)]);} },
+        { t:11000, fn:()=>{ redline.classList.add('on'); clearWords(); }},
+        { t:12400, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn, b.t));
+    }
+
+    setInterval(()=>{
+      tick += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = vent(tick%10);
+      if (grid.classList.contains('cfg-3x2') && p.length===6) {
+        p[0].innerHTML = arc((tick+1)%20);
+        p[1].innerHTML = vent((tick+2)%10);
+        p[2].innerHTML = deadFan((tick+3)%8);
+        p[3].innerHTML = vent((tick+4)%10);
+        p[4].innerHTML = deadFan((tick+5)%8);
+        p[5].innerHTML = arc((tick+6)%20);
+      }
+    }, 190);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    makeSnow();
+    run();
+  </script>
+</body>
+</html>

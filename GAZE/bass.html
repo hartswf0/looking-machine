@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saul Bass Study Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="kicker">GAZE</p>
+      <h1>Saul Bass Study Viewer</h1>
+      <p class="meta">Filter the Bass filmography and jump to direct study links and YouTube references.</p>
+      <nav class="quick-links" aria-label="Site links">
+        <a href="index.html">Home</a>
+        <a href="minimal-embeds.html">Minimal Embeds</a>
+        <a href="film-view.html">Film Viewer</a>
+        <a href="title-operator.html">Title Operator</a>
+        <a href="graph-operator.html">Graph Operator</a>
+        <a href="graph-operator-creatureliness.html">Graph Operator Experiment</a>
+        <a href="title-crispr.md" target="_blank" rel="noopener noreferrer">title-crispr.md</a>
+        <a href="decon.md" target="_blank" rel="noopener noreferrer">decon.md</a>
+        <a href="prompt.md" target="_blank" rel="noopener noreferrer">prompt.md</a>
+        <a href="titles.md" target="_blank" rel="noopener noreferrer">titles.md</a>
+        <a href="bass.md" target="_blank" rel="noopener noreferrer">bass.md</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="controls">
+      <label>
+        <input id="search" class="search-input" type="search" placeholder="Filter by film, director, motif, or category">
+      </label>
+      <label>
+        <select id="decade" class="select-input">
+          <option value="all">All eras</option>
+          <option value="1950">1950s</option>
+          <option value="1960">1960s</option>
+          <option value="1980">1980s</option>
+          <option value="1990">1990s</option>
+        </select>
+      </label>
+    </div>
+
+    <p id="stats" class="stats"></p>
+    <section id="grid" class="cards" aria-live="polite"></section>
+
+    <section class="reader">
+      <div class="reader-head">
+        <h3>bass.md Inspector</h3>
+        <div class="reader-actions">
+          <button id="copy-bass" class="reader-btn" type="button">Copy</button>
+        </div>
+      </div>
+      <pre id="bass-text">Loading bass.md...</pre>
+    </section>
+  </main>
+  <script>
+    const films = [
+      {
+        title: "Carmen Jones",
+        release: "Oct 28, 1954",
+        year: 1954,
+        director: "Otto Preminger",
+        runtime: "Undocumented",
+        category: "Illustration / live action",
+        motif: "Flaming rose",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Carmen_Jones_(film)"],
+          ["AIGA 100 Context", "https://www.printmag.com/daily-heller/weekend-heller-aigas-100-years-now-in-atlanta/"]
+        ]
+      },
+      {
+        title: "The Seven Year Itch",
+        release: "Jun 3, 1955",
+        year: 1955,
+        director: "Billy Wilder",
+        runtime: "Undocumented",
+        category: "Stop-frame / graphic",
+        motif: "Animated earth-toned squares",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/the-seven-year-itch/"],
+          ["Wikipedia", "https://en.wikipedia.org/wiki/The_Seven_Year_Itch"]
+        ]
+      },
+      {
+        title: "The Man with the Golden Arm",
+        release: "Dec 15, 1955",
+        year: 1955,
+        director: "Otto Preminger",
+        runtime: "Undocumented",
+        category: "Cut-out paper animation",
+        motif: "Crooked, disjointed arm",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/The_Man_with_the_Golden_Arm_(film)"],
+          ["Design Analysis", "https://thelastdrivein.com/2013/01/14/the-graphic-genius-of-saul-bass-the-man-with-the-distinctive-title/"]
+        ]
+      },
+      {
+        title: "Around the World in 80 Days",
+        release: "Oct 17, 1956",
+        year: 1956,
+        director: "Michael Anderson",
+        runtime: "6 minutes",
+        category: "Animated epilogue / caricature",
+        motif: "Moving vignettes, clockwork",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Around_the_World_in_80_Days_(1956_film)"],
+          ["ShotOnWhat", "https://shotonwhat.com/around-the-world-in-eighty-days-1956"]
+        ]
+      },
+      {
+        title: "Vertigo",
+        release: "Jul 21, 1958",
+        year: 1958,
+        director: "Alfred Hitchcock",
+        runtime: "Undocumented",
+        category: "Spirographic / mechanical",
+        motif: "Hypnotic spiral and extreme close-up eye",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Vertigo_(film)"],
+          ["Sotheby's Analysis", "https://www.sothebys.com/en/articles/the-deadly-design-of-saul-basss-vertigo"]
+        ]
+      },
+      {
+        title: "Anatomy of a Murder",
+        release: "Jul 1, 1959",
+        year: 1959,
+        director: "Otto Preminger",
+        runtime: "Undocumented",
+        category: "Minimalist disassembled shapes",
+        motif: "Fragmented human body",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Anatomy_of_a_Murder"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "North by Northwest",
+        release: "Sep 26, 1959",
+        year: 1959,
+        director: "Alfred Hitchcock",
+        runtime: "Undocumented",
+        category: "Kinetic typography / grid alignment",
+        motif: "Converging lines and skyscraper facade",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/North_by_Northwest"],
+          ["BFI Essential Bass Sequences", "https://www.bfi.org.uk/lists/celebrating-saul-basss-centenary-10-essential-title-sequences"]
+        ]
+      },
+      {
+        title: "Psycho",
+        release: "Sep 8, 1960",
+        year: 1960,
+        director: "Alfred Hitchcock",
+        runtime: "Undocumented",
+        category: "Fractured situational type",
+        motif: "Rushing horizontal bars and split text",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Psycho_(1960_film)"],
+          ["Collaboration Reassessment", "https://west86th.bgc.bard.edu/articles/reassessing-the-saul-bass-and-alfred-hitchcock-collaboration/"]
+        ]
+      },
+      {
+        title: "Spartacus",
+        release: "Oct 7, 1960",
+        year: 1960,
+        director: "Stanley Kubrick",
+        runtime: "Undocumented",
+        category: "Live action montage / silhouette",
+        motif: "Disembodied hands and crumbling statues",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/spartacus/"],
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Spartacus_(film)"]
+        ]
+      },
+      {
+        title: "Ocean's Eleven",
+        release: "Aug 10, 1960",
+        year: 1960,
+        director: "Lewis Milestone",
+        runtime: "Undocumented",
+        category: "Typography / fading transition",
+        motif: "Las Vegas neon and glitz",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Ocean%27s_11"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "West Side Story",
+        release: "Oct 18, 1961",
+        year: 1961,
+        director: "Robert Wise, Jerome Robbins",
+        runtime: "Undocumented",
+        category: "2D graphic / live action",
+        motif: "Abstracted hand-drawn lines and urban graffiti",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/West_Side_Story_(1961_film)"],
+          ["Cultural Legacy Study", "https://archive.johncabot.edu/server/api/core/bitstreams/1f286bdb-1038-481d-9ff1-dddc12a51ec3/content"]
+        ]
+      },
+      {
+        title: "Walk on the Wild Side",
+        release: "Feb 21, 1962",
+        year: 1962,
+        director: "Edward Dmytryk",
+        runtime: "Undocumented",
+        category: "Live-action animal choreography",
+        motif: "Prowling black cat and cement pipes",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Walk_on_the_Wild_Side_(film)"],
+          ["Criterion Essay", "https://www.criterion.com/current/posts/6937-credit-where-it-s-due-the-father-of-the-title-sequence"]
+        ]
+      },
+      {
+        title: "It's a Mad Mad Mad Mad World",
+        release: "Dec 2, 1963",
+        year: 1963,
+        director: "Stanley Kramer",
+        runtime: "Undocumented",
+        category: "Cel animation / comedic illustration",
+        motif: "Animated globe and unruly typography",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/It%27s_a_Mad,_Mad,_Mad,_Mad_World"],
+          ["Credits Roster", "https://www.metacritic.com/movie/its-a-mad-mad-mad-mad-world/credits/"]
+        ]
+      },
+      {
+        title: "Bunny Lake Is Missing",
+        release: "Oct 3, 1965",
+        year: 1965,
+        director: "Otto Preminger",
+        runtime: "Undocumented",
+        category: "Physical manipulation",
+        motif: "Hand tearing black paper",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/bunny-lake-is-missing/"],
+          ["Warwick Study PDF", "https://warwick.ac.uk/fac/arts/scapvc/film/movie/contents/breaux._bunny_lake_is_missing.pdf"]
+        ]
+      },
+      {
+        title: "Seconds",
+        release: "Oct 5, 1966",
+        year: 1966,
+        director: "John Frankenheimer",
+        runtime: "41 seconds (clip average)",
+        category: "Extreme close-up / optical distortion",
+        motif: "Bandage-swathed head and funhouse mirror",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Seconds_(1966_film)"],
+          ["Golden Year Review", "https://buddwilkins.wordpress.com/2016/02/08/golden-year-seconds-john-frankenheimer-1051966/"]
+        ]
+      },
+      {
+        title: "Grand Prix",
+        release: "Dec 21, 1966",
+        year: 1966,
+        director: "John Frankenheimer",
+        runtime: "Undocumented",
+        category: "Multi-screen montage",
+        motif: "Exhaust pipe and racing helmets",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Grand_Prix_(1966_film)"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "Broadcast News",
+        release: "Dec 25, 1987",
+        year: 1987,
+        director: "James L. Brooks",
+        runtime: "2 minutes, 55 seconds",
+        category: "Type over scene / end crawl",
+        motif: "Television control room",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/broadcast-news/"],
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Broadcast_News_(film)"]
+        ]
+      },
+      {
+        title: "The War of the Roses",
+        release: "Dec 8, 1989",
+        year: 1989,
+        director: "Danny DeVito",
+        runtime: "Undocumented",
+        category: "Mixed media / live action",
+        motif: "Billowing white handkerchief",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/The_War_of_the_Roses_(film)"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "Goodfellas",
+        release: "Sep 18, 1990",
+        year: 1990,
+        director: "Martin Scorsese",
+        runtime: "Undocumented",
+        category: "Animation stand / typographic",
+        motif: "Speeding text synced to highway cars",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Goodfellas"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "Cape Fear",
+        release: "Nov 13, 1991",
+        year: 1991,
+        director: "Martin Scorsese",
+        runtime: "3 minutes",
+        category: "Superimposed physical reflection",
+        motif: "Liquid surface, blood, predatory hawk",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/cape-fear/"],
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Cape_Fear_(1991_film)"]
+        ]
+      },
+      {
+        title: "The Age of Innocence",
+        release: "Oct 1, 1993",
+        year: 1993,
+        director: "Martin Scorsese",
+        runtime: "Undocumented",
+        category: "Time-lapse photography",
+        motif: "Blooming roses and period lace",
+        study: [
+          ["Wikipedia", "https://en.wikipedia.org/wiki/The_Age_of_Innocence_(1993_film)"],
+          ["Saul Bass Titles Index", "https://www.artofthetitle.com/designer/saul-bass/titles/"]
+        ]
+      },
+      {
+        title: "Casino",
+        release: "Nov 14, 1995",
+        year: 1995,
+        director: "Martin Scorsese",
+        runtime: "3 minutes",
+        category: "Mixed media / digital effects",
+        motif: "Fiery purgatory and neon abstraction",
+        study: [
+          ["Art of the Title", "https://www.artofthetitle.com/title/casino/"],
+          ["Wikipedia", "https://en.wikipedia.org/wiki/Casino_(1995_film)"]
+        ]
+      },
+      {
+        title: "The Big Country",
+        release: "1958",
+        year: 1958,
+        director: "William Wyler",
+        runtime: "2:20 (linked clip)",
+        category: "Saul Bass opening titles",
+        motif: "Epic western typography and scale",
+        youtube: "https://www.youtube.com/watch?v=QKdmOpXJHR4",
+        study: [
+          ["YouTube Clip", "https://www.youtube.com/watch?v=QKdmOpXJHR4"],
+          ["Context in titles.md", "titles.md"]
+        ]
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+    const stats = document.getElementById("stats");
+    const search = document.getElementById("search");
+    const decade = document.getElementById("decade");
+    const bassText = document.getElementById("bass-text");
+    const copyBass = document.getElementById("copy-bass");
+    let bassRaw = "";
+
+    render();
+    void loadBass();
+
+    search.addEventListener("input", render);
+    decade.addEventListener("change", render);
+    copyBass.addEventListener("click", () => {
+      void copyBassMarkdown();
+    });
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const decadeValue = decade.value;
+      const filtered = films.filter((film) => {
+        const haystack = [
+          film.title,
+          film.director,
+          film.category,
+          film.motif,
+          String(film.year)
+        ].join(" ").toLowerCase();
+
+        if (query && !haystack.includes(query)) {
+          return false;
+        }
+
+        if (decadeValue === "all") {
+          return true;
+        }
+
+        const floor = Number(decadeValue);
+        return film.year >= floor && film.year < floor + 10;
+      });
+
+      stats.textContent = `${filtered.length} films in view (${films.length} total)`;
+      grid.innerHTML = "";
+
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No films matched this filter.";
+        grid.append(empty);
+        return;
+      }
+
+      for (const film of filtered) {
+        grid.append(createCard(film));
+      }
+    }
+
+    function createCard(film) {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      const title = document.createElement("h2");
+      title.textContent = `${film.title} (${film.year})`;
+
+      const meta = document.createElement("p");
+      meta.className = "meta";
+      meta.textContent = `${film.release} | Dir. ${film.director}`;
+
+      const facts = document.createElement("div");
+      facts.className = "facts";
+      facts.append(
+        makeFact("Runtime", film.runtime),
+        makeFact("Category", film.category),
+        makeFact("Primary motif", film.motif)
+      );
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      actions.append(
+        makeButton(
+          film.youtube || youtubeSearchUrl(film),
+          film.youtube ? "YouTube Video" : "YouTube Search",
+          true
+        ),
+        makeButton(studyFallback(film), "Primary Study Link", false)
+      );
+
+      const links = document.createElement("div");
+      links.className = "links";
+      for (const [label, url] of film.study) {
+        links.append(makeButton(url, label, false, true));
+      }
+
+      card.append(title, meta, facts, actions, links);
+      return card;
+    }
+
+    function makeFact(label, value) {
+      const p = document.createElement("p");
+      p.className = "fact";
+      const strong = document.createElement("strong");
+      strong.textContent = `${label}: `;
+      p.append(strong, document.createTextNode(value));
+      return p;
+    }
+
+    function makeButton(url, label, primary, compact = false) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = url.startsWith("http") ? "_blank" : "_self";
+      a.rel = "noopener noreferrer";
+      a.textContent = label;
+      a.className = compact ? "" : `btn ${primary ? "btn-primary" : "btn-soft"}`;
+      return a;
+    }
+
+    function studyFallback(film) {
+      const first = film.study[0];
+      return first ? first[1] : "https://www.artofthetitle.com/designer/saul-bass/titles/";
+    }
+
+    function youtubeSearchUrl(film) {
+      const query = encodeURIComponent(`${film.title} ${film.year} Saul Bass title sequence`);
+      return `https://www.youtube.com/results?search_query=${query}`;
+    }
+
+    async function loadBass() {
+      try {
+        const response = await fetch("bass.md", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Could not load bass.md (${response.status})`);
+        }
+        bassRaw = await response.text();
+        bassText.textContent = bassRaw;
+      } catch (error) {
+        bassRaw = "";
+        bassText.textContent = String(error.message || error);
+      }
+    }
+
+    async function copyBassMarkdown() {
+      const defaultLabel = copyBass.textContent;
+      if (!bassRaw) {
+        copyBass.textContent = "No Content";
+        window.setTimeout(() => {
+          copyBass.textContent = defaultLabel;
+        }, 1200);
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(bassRaw);
+        copyBass.textContent = "Copied";
+        copyBass.classList.add("ok");
+      } catch {
+        copyBass.textContent = "Copy Failed";
+      } finally {
+        window.setTimeout(() => {
+          copyBass.textContent = defaultLabel;
+          copyBass.classList.remove("ok");
+        }, 1300);
+      }
+    }
+  </script>
+</body>
+</html>

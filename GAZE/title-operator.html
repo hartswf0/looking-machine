@@ -1,0 +1,1362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Title Operator</title>
+  <style>
+    :root {
+      --bg: #eeebe4;
+      --panel: #f8f5ef;
+      --ink: #14171e;
+      --muted: #5f6570;
+      --line: #b8b1a4;
+      --primary: #0f1522;
+      --ok: #0d7750;
+      --radius: 12px;
+
+      --tok-tag: #2f56d0;
+      --tok-attr: #a33458;
+      --tok-string: #0d7c4f;
+      --tok-comment: #6c7385;
+      --tok-angle: #8a90a0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.35;
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 8px;
+    }
+
+    .pane {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .prompt-pane {
+      position: sticky;
+      top: 6px;
+      z-index: 40;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .prompt-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .prompt-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .active-id {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .active-label {
+      margin-top: 2px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .btn {
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      min-height: 38px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .prompt-text {
+      overflow: auto;
+      min-height: 30vh;
+      max-height: 40vh;
+      background: #fff;
+      border-top: 0;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.76rem;
+      line-height: 1.46;
+      color: #1a2236;
+      user-select: text;
+      -webkit-user-select: text;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .reference-wrap {
+      border-top: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .reference-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 8px;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #f7f5f0;
+    }
+
+    .reference-kicker {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.62rem;
+      font-weight: 900;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .reference-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .reference-meta {
+      font-size: 0.63rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      line-height: 1.45;
+    }
+
+    .reference-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .reference-grid {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfbf8;
+    }
+
+    .reference-grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reference-card {
+      border: 1px solid #e6dfd2;
+      border-radius: 10px;
+      padding: 6px 8px;
+      background: #fff;
+      min-height: 0;
+    }
+
+    .reference-label {
+      display: block;
+      margin-bottom: 4px;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.56rem;
+      font-weight: 900;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .reference-value {
+      display: block;
+      font-size: 0.68rem;
+      line-height: 1.35;
+      color: #1a2236;
+      word-break: break-word;
+    }
+
+    .reference-value.empty {
+      color: #8b90a0;
+      font-style: italic;
+    }
+
+    .reference-frame {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      display: block;
+      background: #000;
+    }
+
+    .reference-empty {
+      padding: 10px 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .sline {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 0;
+      border-bottom: 1px solid #f3f2ef;
+    }
+
+    .sline:last-child { border-bottom: none; }
+
+    .ln {
+      color: #8b90a0;
+      background: #f8f8fb;
+      border-right: 1px solid #eceaf0;
+      text-align: right;
+      padding: 3px 8px 3px 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .lc {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 3px 10px;
+      min-height: 1.35em;
+    }
+
+    .tok-angle { color: var(--tok-angle); }
+    .tok-tag { color: var(--tok-tag); font-weight: 700; }
+    .tok-attr { color: var(--tok-attr); }
+    .tok-string { color: var(--tok-string); }
+    .tok-comment { color: var(--tok-comment); font-style: italic; }
+
+    .menu-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .menu-title {
+      margin: 0;
+      font-size: 0.96rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .menu-count {
+      justify-self: end;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .menu-actions {
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      background: var(--panel);
+    }
+
+    .search-input {
+      grid-column: 1 / -1;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      min-height: 38px;
+      padding: 0 10px;
+      font: inherit;
+      font-size: 0.78rem;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .dial {
+      padding: 8px;
+      border-bottom: 2px solid var(--line);
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      background: #f2eee6;
+    }
+
+    .dial-btn {
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      min-height: 46px;
+      padding: 4px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      gap: 2px;
+      text-align: center;
+    }
+
+    .dial-btn.active {
+      border-color: var(--primary);
+      box-shadow: inset 0 0 0 2px var(--primary);
+      background: #edf3ff;
+    }
+
+    .dial-num {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.72rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.04em;
+    }
+
+    .dial-tag {
+      font-size: 0.54rem;
+      color: var(--muted);
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .rows {
+      max-height: 42vh;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+    }
+
+    .row:last-child { border-bottom: none; }
+    .row.active { outline: 2px solid var(--primary); outline-offset: -2px; }
+
+    .rid {
+      min-width: 56px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px 7px;
+      background: #fff;
+      text-align: center;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .rlabel {
+      margin: 0 0 2px;
+      font-size: 0.78rem;
+      line-height: 1.2;
+    }
+
+    .rmeta {
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .copy-mini {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      min-height: 30px;
+      padding: 0 8px;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .menu-foot {
+      border-top: 2px solid var(--line);
+      padding: 7px 8px;
+      background: #fff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .menu-foot a {
+      text-decoration: none;
+      color: var(--muted);
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%) translateY(12px);
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 80;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (min-width: 980px) {
+      .workspace {
+        grid-template-columns: 390px minmax(0, 1fr);
+        align-items: start;
+      }
+
+      .menu-pane {
+        order: 1;
+        position: sticky;
+        top: 10px;
+      }
+
+      .prompt-pane {
+        order: 2;
+        top: 10px;
+      }
+
+      .prompt-text {
+        min-height: calc(100vh - 620px);
+        max-height: calc(100vh - 620px);
+      }
+
+      .rows {
+        max-height: calc(100vh - 342px);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell { padding: 8px; }
+      .prompt-head { grid-template-columns: 1fr; }
+      .prompt-actions { justify-content: flex-start; }
+      .dial { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .reference-grid.two { grid-template-columns: 1fr; }
+      .reference-head { grid-template-columns: 1fr; }
+      .row { grid-template-columns: auto 1fr; }
+      .copy-mini { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="workspace">
+      <section class="pane prompt-pane" aria-label="Prompt text">
+        <div class="prompt-head">
+          <div>
+            <div id="activeId" class="active-id">P---</div>
+            <div id="activeLabel" class="active-label">Loading prompts...</div>
+          </div>
+          <div class="prompt-actions">
+            <button id="copyActiveBtn" class="btn btn-primary" type="button">Copy Prompt</button>
+            <button id="copyPathBtn" class="btn" type="button">Copy Path</button>
+          </div>
+        </div>
+
+        <div class="reference-wrap" aria-label="Reference video">
+          <div class="reference-head">
+            <div>
+              <div class="reference-kicker">Reference Video</div>
+              <div id="referenceTitle" class="reference-title">No reference loaded.</div>
+              <div id="referenceMeta" class="reference-meta">SAUL-BASS and MODERN prompts can display a linked YouTube title-sequence reference here.</div>
+            </div>
+            <div class="reference-actions">
+              <button id="referenceToggle" class="btn" type="button">Show Video</button>
+              <a id="referenceOpen" class="btn" href="#" target="_blank" rel="noopener noreferrer">Open Video</a>
+              <button id="referenceCopy" class="btn" type="button">Copy Embed</button>
+            </div>
+          </div>
+          <div class="reference-grid two" aria-label="Reference metadata">
+            <div class="reference-card">
+              <span class="reference-label">Work</span>
+              <span id="metaWork" class="reference-value empty">Not loaded.</span>
+            </div>
+            <div class="reference-card">
+              <span class="reference-label">Year</span>
+              <span id="metaYear" class="reference-value empty">Not loaded.</span>
+            </div>
+            <div class="reference-card">
+              <span class="reference-label">Format</span>
+              <span id="metaFormat" class="reference-value empty">Not loaded.</span>
+            </div>
+            <div class="reference-card">
+              <span class="reference-label">Director / Creator</span>
+              <span id="metaDirector" class="reference-value empty">Not loaded.</span>
+            </div>
+            <div class="reference-card">
+              <span class="reference-label">Title Sequence By</span>
+              <span id="metaSequenceBy" class="reference-value empty">Not loaded.</span>
+            </div>
+            <div class="reference-card">
+              <span class="reference-label">Video Uploader</span>
+              <span id="metaUploader" class="reference-value empty">Not loaded.</span>
+            </div>
+          </div>
+          <iframe id="referenceFrame" class="reference-frame" style="display:none;" title="Prompt reference video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div id="referenceEmpty" class="reference-empty">Select a mapped prompt to load the YouTube reference iframe.</div>
+        </div>
+
+        <div id="promptText" class="prompt-text" role="region" aria-label="Current prompt source"></div>
+      </section>
+
+      <section class="pane menu-pane" aria-label="Operator menu">
+        <div class="menu-head">
+          <h1 class="menu-title">Title Operator</h1>
+          <div id="count" class="menu-count">0 / 0</div>
+        </div>
+
+        <div class="menu-actions">
+          <button id="prevBtn" class="btn" type="button">Prev</button>
+          <button id="nextBtn" class="btn" type="button">Next</button>
+          <input id="searchInput" class="search-input" type="search" placeholder="Search prompt name, folder, or path...">
+        </div>
+
+        <div id="dial" class="dial"></div>
+        <div id="rows" class="rows"></div>
+
+        <div class="menu-foot" aria-label="Navigation">
+          <a href="index.html">Index</a>
+          <a href="minimal-embeds.html">Minimal Embeds</a>
+          <a href="film-view.html">Film Viewer</a>
+          <a href="bass.html">Bass Viewer</a>
+          <a href="graph-operator.html">Graph Operator</a>
+        <a href="graph-operator-creatureliness.html">Graph Operator Experiment</a>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const MANIFEST = [
+      { id: "R01", path: "title-crispr.md", folder: "ROOT", label: "Title Crispr" },
+      { id: "R02", path: "prompt.md", folder: "ROOT", label: "Prompt Engine" },
+      { id: "R03", path: "bass.md", folder: "ROOT", label: "Bass Framework" },
+      { id: "R04", path: "decon.md", folder: "ROOT", label: "Deconstruction Prompt" },
+      { id: "M01", path: "MODERN/007.md", folder: "MODERN", label: "007" },
+      { id: "M02", path: "MODERN/alien.md", folder: "MODERN", label: "Alien" },
+      { id: "M03", path: "MODERN/andromeda.md", folder: "MODERN", label: "Andromeda" },
+      { id: "M04", path: "MODERN/bicentennial-man.md", folder: "MODERN", label: "Bicentennial Man" },
+      { id: "M05", path: "MODERN/catchme.md", folder: "MODERN", label: "Catch Me If You Can" },
+      { id: "M06", path: "MODERN/common-side.md", folder: "MODERN", label: "Common Side" },
+      { id: "M07", path: "MODERN/elf.md", folder: "MODERN", label: "Elf" },
+      { id: "M08", path: "MODERN/game-of-thrones.md", folder: "MODERN", label: "Game Of Thrones" },
+      { id: "M09", path: "MODERN/ghost-in-shell.md", folder: "MODERN", label: "Ghost In Shell" },
+      { id: "M10", path: "MODERN/high-castle.md", folder: "MODERN", label: "High Castle" },
+      { id: "M11", path: "MODERN/irma-vep.md", folder: "MODERN", label: "Irma Vep" },
+      { id: "M12", path: "MODERN/nick.md", folder: "MODERN", label: "Nick" },
+      { id: "M13", path: "MODERN/severance.md", folder: "MODERN", label: "Severance" },
+      { id: "M14", path: "MODERN/simpsons.md", folder: "MODERN", label: "Simpsons" },
+      { id: "M15", path: "MODERN/south-park.md", folder: "MODERN", label: "South Park" },
+      { id: "M16", path: "MODERN/sphere.md", folder: "MODERN", label: "Sphere" },
+      { id: "M17", path: "MODERN/spiderman.md", folder: "MODERN", label: "Spiderman" },
+      { id: "M18", path: "MODERN/star-wars.md", folder: "MODERN", label: "Star Wars" },
+      { id: "M19", path: "MODERN/stranger-things.md", folder: "MODERN", label: "Stranger Things" },
+      { id: "M20", path: "MODERN/succession.md", folder: "MODERN", label: "Succession" },
+      { id: "M21", path: "MODERN/true-detective.md", folder: "MODERN", label: "True Detective" },
+      { id: "M22", path: "MODERN/westworld.md", folder: "MODERN", label: "Westworld" },
+      { id: "M23", path: "MODERN/wings-of-desire.md", folder: "MODERN", label: "Wings Of Desire" },
+      { id: "S01", path: "SAUL-BASS/age-of-innocence.md", folder: "SAUL-BASS", label: "Age Of Innocence" },
+      { id: "S02", path: "SAUL-BASS/anatomy-of-a-murder.md", folder: "SAUL-BASS", label: "Anatomy Of A Murder" },
+      { id: "S03", path: "SAUL-BASS/around-the-world.md", folder: "SAUL-BASS", label: "Around the World in 80 Days" },
+      { id: "S04", path: "SAUL-BASS/bunny-lake.md", folder: "SAUL-BASS", label: "Bunny Lake Is Missing" },
+      { id: "S05", path: "SAUL-BASS/cape-fear.md", folder: "SAUL-BASS", label: "Cape Fear" },
+      { id: "S06", path: "SAUL-BASS/carmen-jones.md", folder: "SAUL-BASS", label: "Carmen Jones" },
+      { id: "S07", path: "SAUL-BASS/casino.md", folder: "SAUL-BASS", label: "Casino" },
+      { id: "S08", path: "SAUL-BASS/golden-arms.md", folder: "SAUL-BASS", label: "The Man with the Golden Arm" },
+      { id: "S09", path: "SAUL-BASS/good-fellas.md", folder: "SAUL-BASS", label: "Goodfellas" },
+      { id: "S10", path: "SAUL-BASS/grand-prix.md", folder: "SAUL-BASS", label: "Grand Prix" },
+      { id: "S11", path: "SAUL-BASS/mad.md", folder: "SAUL-BASS", label: "It's a Mad Mad Mad Mad World" },
+      { id: "S12", path: "SAUL-BASS/northby.md", folder: "SAUL-BASS", label: "North by Northwest" },
+      { id: "S13", path: "SAUL-BASS/oceans11.md", folder: "SAUL-BASS", label: "Ocean's Eleven" },
+      { id: "S14", path: "SAUL-BASS/psycho.md", folder: "SAUL-BASS", label: "Psycho" },
+      { id: "S15", path: "SAUL-BASS/seconds.md", folder: "SAUL-BASS", label: "Seconds" },
+      { id: "S16", path: "SAUL-BASS/seven-year.md", folder: "SAUL-BASS", label: "The Seven Year Itch" },
+      { id: "S17", path: "SAUL-BASS/spartacus.md", folder: "SAUL-BASS", label: "Spartacus" },
+      { id: "S18", path: "SAUL-BASS/vertigo.md", folder: "SAUL-BASS", label: "Vertigo" },
+      { id: "S19", path: "SAUL-BASS/walk-on.md", folder: "SAUL-BASS", label: "Walk on the Wild Side" },
+      { id: "S20", path: "SAUL-BASS/war-of-roses.md", folder: "SAUL-BASS", label: "The War of the Roses" },
+      { id: "S21", path: "SAUL-BASS/westside.md", folder: "SAUL-BASS", label: "West Side Story" }
+    ];
+
+    const VIDEO_REFERENCES = {
+      "MODERN/007.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=A1AMUmkj-ck",
+        youtubeTitle: "Casino Royale Opening original"
+      },
+      "MODERN/alien.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=DkTAk73OLgs",
+        youtubeTitle: "Alien (1979) - Opening Credits - Ridley Scott"
+      },
+      "MODERN/andromeda.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=kEp-ftrmuKU",
+        youtubeTitle: "The Andromeda Strain (1971) | OPENING TITLES (HD)"
+      },
+      "MODERN/bicentennial-man.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=fajcWOaZ4Yw",
+        youtubeTitle: "Bicentennial Man - Opening Titles"
+      },
+      "MODERN/catchme.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=aN715Rp4L74",
+        youtubeTitle: "Catch Me If You Can (2002) title sequence"
+      },
+      "MODERN/common-side.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=wBhj4o3b_4E",
+        youtubeTitle: "Common Side Effects Intro (1080p)"
+      },
+      "MODERN/elf.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=JWcesL05dEM",
+        youtubeTitle: "Elf (2003) title sequence"
+      },
+      "MODERN/game-of-thrones.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=s7L2PVdrb_8",
+        youtubeTitle: "Official Opening Credits: Game of Thrones (HBO)"
+      },
+      "MODERN/ghost-in-shell.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=Uf7Pn8GB_jI",
+        youtubeTitle: "Ghost in the Shell 1995 Opening credits scene 4K HDR"
+      },
+      "MODERN/high-castle.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=jW5JdppVUnk",
+        youtubeTitle: "The Man in the High Castle (Opening Credits) · Original Score by Claudio Ragnedda"
+      },
+      "MODERN/irma-vep.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=T4HmjC7Cf4M",
+        youtubeTitle: "Irma Vep (2022) title sequence"
+      },
+      "MODERN/nick.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=r9L4AseD-aA",
+        youtubeTitle: "\"SpongeBob SquarePants\" Theme Song (NEW HD) | Episode Opening Credits | Nick Animation"
+      },
+      "MODERN/severance.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=NmS3m0OG-Ug",
+        youtubeTitle: "Severance - Official Intro Title Sequence 2022 / Credits / Opening 4K"
+      },
+      "MODERN/simpsons.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=aPzS3QYb868",
+        youtubeTitle: "The Simpsons Opening Credits and Theme Song"
+      },
+      "MODERN/south-park.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=Bdt0pz5C4Xc",
+        youtubeTitle: "Season 17 (Intro) - SOUTH PARK"
+      },
+      "MODERN/sphere.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=lTrA-u3Xtlc",
+        youtubeTitle: "Sphere (1998) | OPENING TITLES (HD)"
+      },
+      "MODERN/spiderman.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=l1A6UqYPwrc",
+        youtubeTitle: "Spider-Man: Far From Home (2019) title sequence"
+      },
+      "MODERN/star-wars.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=iXDnFYu91vY",
+        youtubeTitle: "Star Wars (1977) original opening crawl"
+      },
+      "MODERN/stranger-things.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=-RcPZdihrp4",
+        youtubeTitle: "Stranger Things | Title Sequence [HD] | Netflix"
+      },
+      "MODERN/succession.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=77PsqaWzwG0",
+        youtubeTitle: "Succession Opening Credits Theme Song | Succession | HBO"
+      },
+      "MODERN/true-detective.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=FxXRkqXfhYM",
+        youtubeTitle: "True Detective - Intro / Opening Scene HD"
+      },
+      "MODERN/westworld.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=elkHuRROPfk",
+        youtubeTitle: "Westworld Season 1 Opening Credits | HBO"
+      },
+      "MODERN/wings-of-desire.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=XzaEaVFjfVg",
+        youtubeTitle: "Wings of Desire title sequence HD"
+      },
+      "SAUL-BASS/age-of-innocence.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=nCk5EGkV1Xk",
+        youtubeTitle: "The Age of Innocence (1993) title sequence"
+      },
+      "SAUL-BASS/anatomy-of-a-murder.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=QccJ2L-7DVk",
+        youtubeTitle: "Saul Bass: Anatomy of a Murder (1959) title sequence"
+      },
+      "SAUL-BASS/around-the-world.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=A4m5gWzwfD4",
+        youtubeTitle: "Around the World in 80 Days (1956) Ending Title"
+      },
+      "SAUL-BASS/bunny-lake.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=MkeOXYHSPUc",
+        youtubeTitle: "Saul Bass: Bunny Lake Is Missing (1965) title sequence"
+      },
+      "SAUL-BASS/cape-fear.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=jIlEaBKjFaM",
+        youtubeTitle: "Saul Bass: Cape Fear (1991) title sequence"
+      },
+      "SAUL-BASS/carmen-jones.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=I0OkcWIeg40",
+        youtubeTitle: "Saul Bass: Carmen Jones (1954) title sequence"
+      },
+      "SAUL-BASS/casino.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=F0gQ2M2Epfk",
+        youtubeTitle: "Saul Bass: Casino (1995) title sequence"
+      },
+      "SAUL-BASS/golden-arms.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=PhwsLS1XolU",
+        youtubeTitle: "The Man with the Golden Arm (1955) title sequence"
+      },
+      "SAUL-BASS/good-fellas.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=s8pQJOeTkFs",
+        youtubeTitle: "Saul Bass: Goodfellas (1990) title sequence"
+      },
+      "SAUL-BASS/grand-prix.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=GkMOAoiGuGc",
+        youtubeTitle: "Grand Prix (1966) title sequence"
+      },
+      "SAUL-BASS/mad.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=p2Ek6yOLno0",
+        youtubeTitle: "Saul Bass: It's a Mad Mad Mad Mad World (1963) title sequence"
+      },
+      "SAUL-BASS/northby.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=1ON67uYwGaw",
+        youtubeTitle: "Saul Bass: North by Northwest (1959) title sequence"
+      },
+      "SAUL-BASS/oceans11.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=xnG3OjIcN8M",
+        youtubeTitle: "Saul Bass title sequence - Ocean's Eleven (1960)"
+      },
+      "SAUL-BASS/psycho.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=aj6aBuC1Lb8",
+        youtubeTitle: "Saul Bass: Psycho (1960) title sequence"
+      },
+      "SAUL-BASS/seconds.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=MaRdXHYVP04",
+        youtubeTitle: "Saul Bass: Seconds (1966) title sequence"
+      },
+      "SAUL-BASS/seven-year.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=Gg1MA03VZB4",
+        youtubeTitle: "Saul Bass: The Seven Year Itch (1955) title sequence"
+      },
+      "SAUL-BASS/spartacus.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=-spQt_tLBeI",
+        youtubeTitle: "Saul Bass title sequence - Spartacus (1960)"
+      },
+      "SAUL-BASS/vertigo.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=SkLn8mamU78&t=33s",
+        youtubeTitle: "Vertigo (1958) title sequence"
+      },
+      "SAUL-BASS/walk-on.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=XI9Or8rE_Dc",
+        youtubeTitle: "Walk On The Wild Side -BEST title/credits sequence Ever!!! HD"
+      },
+      "SAUL-BASS/war-of-roses.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=LU12tMa8Iec",
+        youtubeTitle: "The War of the Roses (1989) title sequence"
+      },
+      "SAUL-BASS/westside.md": {
+        youtubeUrl: "https://www.youtube.com/watch?v=P1ON6DH35sQ",
+        youtubeTitle: "Saul Bass: West Side Story (1961) title sequence"
+      }
+    };
+
+    const WORK_METADATA = {
+      "MODERN/007.md": { work: "Casino Royale", year: "2006", format: "Film", director: "Martin Campbell", sequenceBy: "Daniel Kleinman" },
+      "MODERN/alien.md": { work: "Alien", year: "1979", format: "Film", director: "Ridley Scott", sequenceBy: "Richard Greenberg / R/Greenberg Associates" },
+      "MODERN/andromeda.md": { work: "The Andromeda Strain", year: "1971", format: "Film", director: "Robert Wise", sequenceBy: "" },
+      "MODERN/bicentennial-man.md": { work: "Bicentennial Man", year: "1999", format: "Film", director: "Chris Columbus", sequenceBy: "Imaginary Forces" },
+      "MODERN/catchme.md": { work: "Catch Me If You Can", year: "2002", format: "Film", director: "Steven Spielberg", sequenceBy: "Kuntzel + Deygas" },
+      "MODERN/common-side.md": { work: "Common Side Effects", year: "2025", format: "TV Series", director: "Joe Bennett and Steve Hely", sequenceBy: "Vincent Tsui" },
+      "MODERN/elf.md": { work: "Elf", year: "2003", format: "Film", director: "Jon Favreau", sequenceBy: "" },
+      "MODERN/game-of-thrones.md": { work: "Game of Thrones", year: "2011", format: "TV Series", director: "David Benioff and D. B. Weiss", sequenceBy: "Elastic" },
+      "MODERN/ghost-in-shell.md": { work: "Ghost in the Shell", year: "1995", format: "Film", director: "Mamoru Oshii", sequenceBy: "Production I.G." },
+      "MODERN/high-castle.md": { work: "The Man in the High Castle", year: "2015", format: "TV Series", director: "Frank Spotnitz", sequenceBy: "Elastic / Patrick Clair" },
+      "MODERN/irma-vep.md": { work: "Irma Vep", year: "2022", format: "TV Series", director: "Olivier Assayas", sequenceBy: "" },
+      "MODERN/nick.md": { work: "Nickelodeon Animation 25th Anniversary", year: "2016", format: "Network Ident", director: "Nickelodeon Animation", sequenceBy: "Nickelodeon Animation" },
+      "MODERN/severance.md": { work: "Severance", year: "2022", format: "TV Series", director: "Ben Stiller and Aoife McArdle", sequenceBy: "Oliver Latta / Extraweg" },
+      "MODERN/simpsons.md": { work: "The Simpsons", year: "1989", format: "TV Series", director: "Matt Groening", sequenceBy: "Gracie Films opening team" },
+      "MODERN/south-park.md": { work: "South Park", year: "1997", format: "TV Series", director: "Trey Parker and Matt Stone", sequenceBy: "South Park Studios" },
+      "MODERN/sphere.md": { work: "Sphere", year: "1998", format: "Film", director: "Barry Levinson", sequenceBy: "" },
+      "MODERN/spiderman.md": { work: "Spider-Man: Far From Home", year: "2019", format: "Film", director: "Jon Watts", sequenceBy: "" },
+      "MODERN/star-wars.md": { work: "Star Wars", year: "1977", format: "Film", director: "George Lucas", sequenceBy: "Dan Perri" },
+      "MODERN/stranger-things.md": { work: "Stranger Things", year: "2016", format: "TV Series", director: "The Duffer Brothers", sequenceBy: "Imaginary Forces" },
+      "MODERN/succession.md": { work: "Succession", year: "2018", format: "TV Series", director: "Jesse Armstrong", sequenceBy: "Imaginary Forces" },
+      "MODERN/true-detective.md": { work: "True Detective", year: "2014", format: "TV Series", director: "Nic Pizzolatto", sequenceBy: "Elastic / Patrick Clair" },
+      "MODERN/westworld.md": { work: "Westworld", year: "2016", format: "TV Series", director: "Jonathan Nolan and Lisa Joy", sequenceBy: "Elastic / Patrick Clair" },
+      "MODERN/wings-of-desire.md": { work: "Wings of Desire", year: "1987", format: "Film", director: "Wim Wenders", sequenceBy: "" },
+      "SAUL-BASS/age-of-innocence.md": { work: "The Age of Innocence", year: "1993", format: "Film", director: "Martin Scorsese", sequenceBy: "Saul Bass and Elaine Bass" },
+      "SAUL-BASS/anatomy-of-a-murder.md": { work: "Anatomy of a Murder", year: "1959", format: "Film", director: "Otto Preminger", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/around-the-world.md": { work: "Around the World in 80 Days", year: "1956", format: "Film", director: "Michael Anderson", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/bunny-lake.md": { work: "Bunny Lake Is Missing", year: "1965", format: "Film", director: "Otto Preminger", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/cape-fear.md": { work: "Cape Fear", year: "1991", format: "Film", director: "Martin Scorsese", sequenceBy: "Saul Bass and Elaine Bass" },
+      "SAUL-BASS/carmen-jones.md": { work: "Carmen Jones", year: "1954", format: "Film", director: "Otto Preminger", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/casino.md": { work: "Casino", year: "1995", format: "Film", director: "Martin Scorsese", sequenceBy: "Saul Bass and Elaine Bass" },
+      "SAUL-BASS/golden-arms.md": { work: "The Man with the Golden Arm", year: "1955", format: "Film", director: "Otto Preminger", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/good-fellas.md": { work: "Goodfellas", year: "1990", format: "Film", director: "Martin Scorsese", sequenceBy: "Saul Bass and Elaine Bass" },
+      "SAUL-BASS/grand-prix.md": { work: "Grand Prix", year: "1966", format: "Film", director: "John Frankenheimer", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/mad.md": { work: "It's a Mad, Mad, Mad, Mad World", year: "1963", format: "Film", director: "Stanley Kramer", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/northby.md": { work: "North by Northwest", year: "1959", format: "Film", director: "Alfred Hitchcock", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/oceans11.md": { work: "Ocean's Eleven", year: "1960", format: "Film", director: "Lewis Milestone", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/psycho.md": { work: "Psycho", year: "1960", format: "Film", director: "Alfred Hitchcock", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/seconds.md": { work: "Seconds", year: "1966", format: "Film", director: "John Frankenheimer", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/seven-year.md": { work: "The Seven Year Itch", year: "1955", format: "Film", director: "Billy Wilder", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/spartacus.md": { work: "Spartacus", year: "1960", format: "Film", director: "Stanley Kubrick", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/vertigo.md": { work: "Vertigo", year: "1958", format: "Film", director: "Alfred Hitchcock", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/walk-on.md": { work: "Walk on the Wild Side", year: "1962", format: "Film", director: "Edward Dmytryk", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/war-of-roses.md": { work: "The War of the Roses", year: "1989", format: "Film", director: "Danny DeVito", sequenceBy: "Saul Bass" },
+      "SAUL-BASS/westside.md": { work: "West Side Story", year: "1961", format: "Film", director: "Robert Wise and Jerome Robbins", sequenceBy: "Saul Bass" }
+    };
+
+    const FILTERS = [
+      { key: "all", num: "ALL", tag: "Folders" },
+      { key: "root", num: "ROOT", tag: "Top" },
+      { key: "modern", num: "MOD", tag: "MODERN" },
+      { key: "saul", num: "BASS", tag: "SAUL-BASS" }
+    ];
+
+    const state = {
+      prompts: [],
+      filtered: [],
+      active: null,
+      syntaxCache: new Map(),
+      videoMetaCache: new Map(),
+      referenceExpanded: true,
+      mode: "all",
+      query: ""
+    };
+
+    const el = {
+      count: document.getElementById("count"),
+      activeId: document.getElementById("activeId"),
+      activeLabel: document.getElementById("activeLabel"),
+      copyActiveBtn: document.getElementById("copyActiveBtn"),
+      copyPathBtn: document.getElementById("copyPathBtn"),
+      referenceTitle: document.getElementById("referenceTitle"),
+      referenceMeta: document.getElementById("referenceMeta"),
+      referenceToggle: document.getElementById("referenceToggle"),
+      referenceOpen: document.getElementById("referenceOpen"),
+      referenceCopy: document.getElementById("referenceCopy"),
+      referenceFrame: document.getElementById("referenceFrame"),
+      referenceEmpty: document.getElementById("referenceEmpty"),
+      metaWork: document.getElementById("metaWork"),
+      metaYear: document.getElementById("metaYear"),
+      metaFormat: document.getElementById("metaFormat"),
+      metaDirector: document.getElementById("metaDirector"),
+      metaSequenceBy: document.getElementById("metaSequenceBy"),
+      metaUploader: document.getElementById("metaUploader"),
+      promptText: document.getElementById("promptText"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      searchInput: document.getElementById("searchInput"),
+      dial: document.getElementById("dial"),
+      rows: document.getElementById("rows"),
+      toast: document.getElementById("toast")
+    };
+
+    function showToast(msg) {
+      el.toast.textContent = msg;
+      el.toast.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => el.toast.classList.remove("show"), 1200);
+    }
+
+    async function copyText(text, label = "Copied") {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }
+        showToast(label);
+      } catch {
+        showToast("Copy failed");
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function wordCount(text) {
+      return String(text || "").trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    function setMetaValue(node, value) {
+      node.textContent = value || "Not loaded.";
+      node.classList.toggle("empty", !value);
+    }
+
+    function setReferenceExpanded(expanded) {
+      state.referenceExpanded = Boolean(expanded);
+      el.referenceFrame.style.display = state.referenceExpanded ? "block" : "none";
+      el.referenceToggle.textContent = state.referenceExpanded ? "Hide Video" : "Show Video";
+    }
+
+    function compactMetaLine(cur) {
+      if (!cur) return "SAUL-BASS and MODERN prompts can display a linked YouTube title-sequence reference here.";
+      const left = [];
+      const right = [];
+
+      if (cur.year) left.push(cur.year);
+      if (cur.format) left.push(cur.format);
+      if (cur.director) right.push(`Dir. ${cur.director}`);
+      if (cur.sequenceBy) right.push(`Titles ${cur.sequenceBy}`);
+      if (cur.videoUploader) right.push(`via ${cur.videoUploader}`);
+
+      const merged = [];
+      if (left.length) merged.push(left.join(" "));
+      if (right.length) merged.push(...right);
+      if (!merged.length) merged.push(`${cur.folder} · ${cur.path}`);
+      return merged.join(" · ");
+    }
+
+    function parseTimecode(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return 0;
+      if (/^\d+$/.test(raw)) return Number(raw);
+      const match = raw.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
+      if (!match) return 0;
+      const hours = Number(match[1] || 0);
+      const mins = Number(match[2] || 0);
+      const secs = Number(match[3] || 0);
+      return hours * 3600 + mins * 60 + secs;
+    }
+
+    function parseYouTubeReference(url) {
+      try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace(/^www\./, "");
+        let videoId = "";
+        let start = 0;
+
+        if (host === "youtu.be") {
+          videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+          start = parseTimecode(parsed.searchParams.get("t"));
+        } else if (host.endsWith("youtube.com")) {
+          videoId = parsed.searchParams.get("v") || "";
+          start = parseTimecode(parsed.searchParams.get("t") || parsed.searchParams.get("start"));
+        }
+
+        if (!videoId) return null;
+
+        const embed = new URL(`https://www.youtube.com/embed/${videoId}`);
+        embed.searchParams.set("rel", "0");
+        if (start > 0) {
+          embed.searchParams.set("start", String(start));
+        }
+
+        return {
+          videoId,
+          embedSrc: embed.toString(),
+          embedHtml: [
+            `<iframe`,
+            `  width="560"`,
+            `  height="315"`,
+            `  src="${embed.toString()}"`,
+            `  title="YouTube video player"`,
+            `  frameborder="0"`,
+            `  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"`,
+            `  referrerpolicy="strict-origin-when-cross-origin"`,
+            `  allowfullscreen`,
+            `></iframe>`
+          ].join("\n")
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    function activePrompt() {
+      if (!state.filtered.length || state.active == null) return null;
+      return state.filtered[state.active] || null;
+    }
+
+    function highlightTagAttrs(inner) {
+      return inner.replace(/([a-zA-Z_:][\w:.-]*)(=)(&quot;.*?&quot;|&#39;.*?&#39;)/g, (_m, name, eq, val) => {
+        return `<span class="tok-attr">${name}</span>${eq}<span class="tok-string">${val}</span>`;
+      });
+    }
+
+    function highlightLine(line) {
+      const escaped = escapeHtml(line);
+      const withComments = escaped.replace(/(&lt;!--.*?--&gt;)/g, "<span class=\"tok-comment\">$1</span>");
+
+      return withComments.replace(/(&lt;\/?)([a-zA-Z_][\w:.-]*)([^&]*?)(\/??&gt;)/g, (_m, open, tag, rest, close) => {
+        const attrs = highlightTagAttrs(rest);
+        return `<span class="tok-angle">${open}</span><span class="tok-tag">${tag}</span>${attrs}<span class="tok-angle">${close}</span>`;
+      });
+    }
+
+    function renderSyntaxHtml(promptId, text) {
+      const cacheKey = `${promptId}:${text.length}`;
+      const cached = state.syntaxCache.get(cacheKey);
+      if (cached) return cached;
+
+      const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      const html = lines.map((line, i) => {
+        const body = line.length ? highlightLine(line) : "&nbsp;";
+        return `<div class="sline"><span class="ln">${i + 1}</span><span class="lc">${body}</span></div>`;
+      }).join("");
+
+      state.syntaxCache.set(cacheKey, html);
+      if (state.syntaxCache.size > 1000) state.syntaxCache.clear();
+      return html;
+    }
+
+    function renderCount() {
+      el.count.textContent = `${state.filtered.length} / ${state.prompts.length}`;
+    }
+
+    function renderPrompt() {
+      const cur = activePrompt();
+      if (!cur) {
+        el.activeId.textContent = "P---";
+        el.activeLabel.textContent = "No prompts loaded.";
+        renderReference(null);
+        el.promptText.innerHTML = "";
+        return;
+      }
+
+      el.activeId.textContent = cur.id;
+      el.activeLabel.textContent = `${cur.folder} · ${cur.path}`;
+      renderReference(cur);
+      el.promptText.innerHTML = renderSyntaxHtml(cur.id, cur.text);
+    }
+
+    function renderReference(cur) {
+      if (!cur || !cur.embedSrc) {
+        el.referenceTitle.textContent = cur ? (cur.work || cur.label) : "No reference loaded.";
+        el.referenceMeta.textContent = cur ? compactMetaLine(cur) : compactMetaLine(null);
+        setMetaValue(el.metaWork, cur && cur.work ? cur.work : "");
+        setMetaValue(el.metaYear, cur && cur.year ? cur.year : "");
+        setMetaValue(el.metaFormat, cur && cur.format ? cur.format : "");
+        setMetaValue(el.metaDirector, cur && cur.director ? cur.director : "");
+        setMetaValue(el.metaSequenceBy, cur && cur.sequenceBy ? cur.sequenceBy : "");
+        setMetaValue(el.metaUploader, "");
+        el.referenceToggle.style.display = "none";
+        el.referenceOpen.style.display = "none";
+        el.referenceCopy.style.display = "none";
+        el.referenceFrame.src = "about:blank";
+        setReferenceExpanded(false);
+        el.referenceEmpty.style.display = "block";
+        el.referenceEmpty.textContent = cur && (cur.folder === "SAUL-BASS" || cur.folder === "MODERN")
+          ? "This prompt does not have a mapped YouTube reference yet."
+          : "Root prompt files do not currently have linked title-sequence references.";
+        return;
+      }
+
+      el.referenceTitle.textContent = cur.work || cur.label || cur.youtubeTitle;
+      el.referenceMeta.textContent = compactMetaLine(cur);
+      setMetaValue(el.metaWork, cur.work);
+      setMetaValue(el.metaYear, cur.year);
+      setMetaValue(el.metaFormat, cur.format);
+      setMetaValue(el.metaDirector, cur.director);
+      setMetaValue(el.metaSequenceBy, cur.sequenceBy);
+      setMetaValue(el.metaUploader, cur.videoUploader || "");
+      el.referenceToggle.style.display = "inline-flex";
+      el.referenceOpen.href = cur.youtubeUrl;
+      el.referenceOpen.style.display = "inline-flex";
+      el.referenceCopy.style.display = "inline-flex";
+      el.referenceFrame.src = cur.embedSrc;
+      el.referenceEmpty.style.display = "none";
+      setReferenceExpanded(true);
+      void hydrateVideoMetadata(cur);
+    }
+
+    async function hydrateVideoMetadata(cur) {
+      if (!cur || !cur.youtubeUrl) return;
+      if (cur.videoMetaLoaded) return;
+
+      const cacheKey = cur.youtubeUrl;
+      const cached = state.videoMetaCache.get(cacheKey);
+      if (cached) {
+        Object.assign(cur, cached, { videoMetaLoaded: true });
+        if (activePrompt() === cur) {
+          setMetaValue(el.metaUploader, cur.videoUploader || "");
+          el.referenceMeta.textContent = compactMetaLine(cur);
+        }
+        return;
+      }
+
+      try {
+        const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(cur.youtubeUrl)}&format=json`;
+        const res = await fetch(endpoint, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const payload = {
+          videoUploader: data.author_name || "",
+          videoPageTitle: data.title || cur.youtubeTitle || ""
+        };
+        state.videoMetaCache.set(cacheKey, payload);
+        Object.assign(cur, payload, { videoMetaLoaded: true });
+        if (activePrompt() === cur) {
+          setMetaValue(el.metaUploader, cur.videoUploader || "");
+          el.referenceMeta.textContent = compactMetaLine(cur);
+        }
+      } catch {
+        cur.videoMetaLoaded = true;
+      }
+    }
+
+    function renderDial() {
+      el.dial.innerHTML = FILTERS.map((f) => `
+        <button class="dial-btn ${state.mode === f.key ? "active" : ""}" data-mode="${f.key}" type="button">
+          <span class="dial-num">${f.num}</span>
+          <span class="dial-tag">${f.tag}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderRows() {
+      if (!state.filtered.length) {
+        el.rows.innerHTML = `<div class="row"><div><p class="rlabel">No prompts found.</p></div></div>`;
+        return;
+      }
+
+      el.rows.innerHTML = state.filtered.map((p, i) => {
+        return `
+          <div class="row ${i === state.active ? "active" : ""}" data-open="${i}">
+            <div class="rid">${p.id}</div>
+            <div>
+              <p class="rlabel">${escapeHtml(p.label)}</p>
+              <div class="rmeta">${p.folder} · ${p.wordCount} words${p.embedSrc ? " · video" : ""}</div>
+            </div>
+            <button class="copy-mini" data-copy="${i}" type="button">Copy</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function applyFilters() {
+      const q = state.query.trim().toLowerCase();
+      state.filtered = state.prompts.filter((p) => {
+        const mode = state.mode;
+        if (mode === "root" && p.folder !== "ROOT") return false;
+        if (mode === "modern" && p.folder !== "MODERN") return false;
+        if (mode === "saul" && p.folder !== "SAUL-BASS") return false;
+
+        if (!q) return true;
+        const haystack = `${p.id} ${p.label} ${p.folder} ${p.path} ${p.youtubeTitle || ""} ${p.work || ""} ${p.director || ""} ${p.sequenceBy || ""}`.toLowerCase();
+        return haystack.includes(q);
+      });
+
+      if (!state.filtered.length) {
+        state.active = null;
+      } else if (state.active == null || state.active >= state.filtered.length) {
+        state.active = 0;
+      }
+
+      renderCount();
+      renderDial();
+      renderRows();
+      renderPrompt();
+    }
+
+    function markActive(index, on) {
+      const row = el.rows.querySelector(`[data-open="${index}"]`);
+      if (row) row.classList.toggle("active", on);
+    }
+
+    function setActive(index, options = {}) {
+      const { scroll = false } = options;
+      if (!state.filtered.length) return;
+
+      const max = state.filtered.length - 1;
+      const next = Math.max(0, Math.min(index, max));
+      const prev = state.active;
+
+      if (prev != null && prev !== next) markActive(prev, false);
+      state.active = next;
+      markActive(next, true);
+      renderPrompt();
+
+      if (scroll) {
+        const row = el.rows.querySelector(`[data-open="${next}"]`);
+        if (row) row.scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    async function loadPrompt(item) {
+      const reference = VIDEO_REFERENCES[item.path] || null;
+      const video = reference ? parseYouTubeReference(reference.youtubeUrl) : null;
+      const metadata = WORK_METADATA[item.path] || null;
+      try {
+        const res = await fetch(item.path, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        return { ...item, ...(metadata || {}), ...(reference || {}), ...(video || {}), text, wordCount: wordCount(text), error: null };
+      } catch (error) {
+        const message = `Failed to load ${item.path}: ${String(error.message || error)}`;
+        return { ...item, ...(metadata || {}), ...(reference || {}), ...(video || {}), text: message, wordCount: wordCount(message), error: true };
+      }
+    }
+
+    async function loadAll() {
+      const loaded = await Promise.all(MANIFEST.map(loadPrompt));
+      state.prompts = loaded;
+      state.active = Math.max(0, loaded.findIndex((item) => item.embedSrc));
+      applyFilters();
+      showToast(`Loaded ${state.prompts.length} prompts`);
+    }
+
+    function move(delta) {
+      if (!state.filtered.length || state.active == null) return;
+      const next = (state.active + delta + state.filtered.length) % state.filtered.length;
+      setActive(next, { scroll: true });
+    }
+
+    function bindEvents() {
+      el.prevBtn.addEventListener("click", () => move(-1));
+      el.nextBtn.addEventListener("click", () => move(1));
+      el.copyActiveBtn.addEventListener("click", () => {
+        const cur = activePrompt();
+        if (cur) {
+          copyText(cur.text.trim() + "\n", `${cur.id} prompt copied`);
+        }
+      });
+      el.copyPathBtn.addEventListener("click", () => {
+        const cur = activePrompt();
+        if (cur) {
+          copyText(cur.path + "\n", `${cur.id} path copied`);
+        }
+      });
+      el.referenceToggle.addEventListener("click", () => {
+        const cur = activePrompt();
+        if (cur && cur.embedSrc) {
+          setReferenceExpanded(!state.referenceExpanded);
+        }
+      });
+      el.referenceCopy.addEventListener("click", () => {
+        const cur = activePrompt();
+        if (cur && cur.embedHtml) {
+          copyText(cur.embedHtml + "\n", `${cur.id} iframe copied`);
+        } else {
+          showToast("No embed");
+        }
+      });
+
+      el.searchInput.addEventListener("input", (e) => {
+        state.query = e.target.value || "";
+        applyFilters();
+      });
+
+      el.dial.addEventListener("click", (e) => {
+        const target = e.target.closest("[data-mode]");
+        if (!target) return;
+        state.mode = target.getAttribute("data-mode") || "all";
+        applyFilters();
+      });
+
+      el.rows.addEventListener("click", (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        const copyBtn = target.closest("[data-copy]");
+        if (copyBtn instanceof HTMLElement) {
+          const idx = Number(copyBtn.getAttribute("data-copy"));
+          const item = state.filtered[idx];
+          if (item) {
+            copyText(item.text.trim() + "\n", `${item.id} copied`);
+          }
+          return;
+        }
+
+        const row = target.closest("[data-open]");
+        if (row instanceof HTMLElement) {
+          const idx = Number(row.getAttribute("data-open"));
+          setActive(idx, { scroll: false });
+        }
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (!state.filtered.length) return;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") move(1);
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(-1);
+      });
+    }
+
+    function boot() {
+      bindEvents();
+      loadAll().catch(() => {
+        applyFilters();
+        showToast("Load failed");
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

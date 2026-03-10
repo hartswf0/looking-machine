@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creatureliness Radio Intro</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap");
+
+    :root {
+      --bg: #06111c;
+      --bg-deep: #040910;
+      --panel: rgba(10, 21, 33, 0.82);
+      --panel-strong: rgba(11, 24, 39, 0.94);
+      --line: rgba(158, 176, 194, 0.22);
+      --soft-line: rgba(158, 176, 194, 0.12);
+      --ink: #ebf2fa;
+      --muted: #9aa9bc;
+      --warm: #d7b98a;
+      --alert: #ff7557;
+      --signal: #78f0cf;
+      --agent: #6fd6ff;
+      --agent-strong: #42b8ff;
+      --shadow: rgba(0, 0, 0, 0.36);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+      --sans: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 20% 18%, color-mix(in srgb, var(--agent) 22%, transparent) 0%, transparent 34%),
+        radial-gradient(circle at 82% 14%, rgba(255, 117, 87, 0.12) 0%, transparent 24%),
+        linear-gradient(180deg, #07111b 0%, var(--bg-deep) 100%);
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.03) 50%, transparent 100%),
+        repeating-linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 5px,
+          rgba(255, 255, 255, 0.025) 5px,
+          rgba(255, 255, 255, 0.025) 6px
+        );
+      mix-blend-mode: screen;
+      opacity: 0.3;
+    }
+
+    body::after {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.6px, transparent 0.6px);
+      background-size: 14px 14px;
+      opacity: 0.08;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1480px, calc(100vw - 24px));
+      margin: 12px auto 20px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 22%),
+        var(--panel);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 18px 48px var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 26%, transparent 74%, rgba(255, 255, 255, 0.04));
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .masthead {
+      display: grid;
+      gap: 18px;
+      padding: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      font: 700 0.72rem/1 var(--mono);
+      letter-spacing: 0.32em;
+      color: var(--warm);
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    ol {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 12ch;
+      font-size: clamp(2.6rem, 8vw, 6.4rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .masthead-copy {
+      display: grid;
+      gap: 12px;
+    }
+
+    .lede {
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .masthead-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .signal-card,
+    .metric-card {
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius-sm);
+      background: rgba(6, 14, 24, 0.76);
+      padding: 14px;
+    }
+
+    .signal-label,
+    .mini-label,
+    .stack-label {
+      display: block;
+      margin-bottom: 8px;
+      font: 700 0.7rem/1 var(--mono);
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .signal-readout {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .signal-frequency {
+      font: 700 clamp(1.4rem, 4vw, 2.4rem)/1 var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .signal-call {
+      color: color-mix(in srgb, var(--agent) 78%, white);
+      font-size: 0.98rem;
+      font-weight: 500;
+    }
+
+    .tuner {
+      position: relative;
+      height: 58px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 58%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.26));
+      border: 1px solid var(--soft-line);
+      overflow: hidden;
+    }
+
+    .tuner-track {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 50%;
+      height: 2px;
+      transform: translateY(-50%);
+      background:
+        linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          rgba(255, 255, 255, 0.85) 12%,
+          rgba(255, 255, 255, 0.1) 24%,
+          rgba(255, 255, 255, 0.85) 36%,
+          rgba(255, 255, 255, 0.1) 48%,
+          rgba(255, 255, 255, 0.85) 60%,
+          rgba(255, 255, 255, 0.1) 72%,
+          rgba(255, 255, 255, 0.85) 84%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
+      opacity: 0.4;
+    }
+
+    .tuner-track::before {
+      content: "";
+      position: absolute;
+      inset: -12px 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+      transform: translateX(-100%);
+      animation: sweep 6.5s linear infinite;
+    }
+
+    .tuner-needle {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      width: 18px;
+      transform: translateX(-50%);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), color-mix(in srgb, var(--agent) 70%, #10253c));
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.22),
+        0 0 24px color-mix(in srgb, var(--agent) 58%, transparent);
+      transition: left 260ms ease;
+    }
+
+    .tuner-needle::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 2px;
+      height: calc(100% + 12px);
+      transform: translate(-50%, -50%);
+      background: color-mix(in srgb, var(--agent) 82%, white);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--agent) 60%, transparent);
+    }
+
+    .signal-barset {
+      display: grid;
+      grid-template-columns: repeat(16, minmax(0, 1fr));
+      gap: 5px;
+      align-items: end;
+      height: 76px;
+      margin-top: 14px;
+    }
+
+    .signal-bar {
+      width: 100%;
+      border-radius: 999px 999px 4px 4px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--agent) 84%, white), color-mix(in srgb, var(--agent) 72%, #07111b));
+      box-shadow: 0 0 18px color-mix(in srgb, var(--agent) 20%, transparent);
+      transition: height 180ms ease;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-value {
+      display: block;
+      margin-bottom: 6px;
+      font: 700 clamp(1.4rem, 4vw, 2rem)/1 var(--mono);
+      color: var(--ink);
+    }
+
+    .metric-copy {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-panel,
+    .preview-panel {
+      padding: 16px;
+    }
+
+    .control-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .panel-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .panel-kicker {
+      margin-bottom: 8px;
+      font: 700 0.72rem/1 var(--mono);
+      color: var(--warm);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .panel-title {
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-copy {
+      max-width: 48ch;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
+    }
+
+    .toolbar {
+      display: grid;
+      gap: 10px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tool-btn,
+    .source-btn,
+    .chip-link,
+    .action-link {
+      border: 1px solid var(--soft-line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      font: 700 0.7rem/1 var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .tool-btn:hover,
+    .source-btn:hover,
+    .chip-link:hover,
+    .action-link:hover {
+      border-color: color-mix(in srgb, var(--agent) 60%, white);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .tool-btn.primary,
+    .action-link.primary {
+      background: linear-gradient(90deg, color-mix(in srgb, var(--agent) 24%, #0c2436), rgba(255, 255, 255, 0.06));
+      border-color: color-mix(in srgb, var(--agent) 48%, white);
+    }
+
+    .tool-btn.alert {
+      border-color: rgba(255, 117, 87, 0.28);
+      color: #ffd5ca;
+    }
+
+    .tool-btn.playing {
+      color: #07111b;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--signal) 80%, white), color-mix(in srgb, var(--agent) 40%, white));
+      border-color: transparent;
+    }
+
+    .dial-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .dial-btn,
+    .section-btn {
+      position: relative;
+      width: 100%;
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      padding: 12px;
+      overflow: hidden;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .dial-btn::before,
+    .section-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 38%);
+      opacity: 0;
+      transition: opacity 160ms ease;
+    }
+
+    .dial-btn:hover,
+    .section-btn:hover {
+      border-color: color-mix(in srgb, var(--agent) 46%, white);
+      transform: translateY(-1px);
+    }
+
+    .dial-btn:hover::before,
+    .section-btn:hover::before,
+    .dial-btn.active::before,
+    .section-btn.active::before {
+      opacity: 1;
+    }
+
+    .dial-btn.active,
+    .section-btn.active {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--agent) 20%, #0f2135), rgba(255, 255, 255, 0.06));
+      border-color: color-mix(in srgb, var(--agent) 74%, white);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .dial-id,
+    .section-id {
+      display: block;
+      margin-bottom: 6px;
+      font: 700 0.68rem/1 var(--mono);
+      letter-spacing: 0.16em;
+      color: var(--warm);
+      text-transform: uppercase;
+    }
+
+    .dial-name,
+    .section-name {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .dial-role {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .section-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .info-stack,
+    .concept-grid,
+    .source-stack,
+    .carrier-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .info-card,
+    .concept-card,
+    .source-shell,
+    .carrier-shell {
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius-sm);
+      background: rgba(5, 12, 20, 0.72);
+      padding: 12px;
+    }
+
+    .info-copy,
+    .concept-copy {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.48;
+    }
+
+    .info-copy strong,
+    .concept-copy strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .source-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .source-btn {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+    }
+
+    .source-btn.active {
+      background: linear-gradient(90deg, color-mix(in srgb, var(--agent) 22%, #0a1f32), rgba(255, 255, 255, 0.1));
+      border-color: color-mix(in srgb, var(--agent) 62%, white);
+    }
+
+    .source-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .carrier-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip-link {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+    }
+
+    .preview-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .preview-shell {
+      position: relative;
+      min-height: 52vh;
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+    }
+
+    .preview-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 20%),
+        repeating-linear-gradient(180deg, transparent 0, transparent 3px, rgba(255, 255, 255, 0.035) 3px, rgba(255, 255, 255, 0.035) 4px);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .preview-overlay {
+      position: absolute;
+      inset: 14px 14px auto 14px;
+      z-index: 3;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .preview-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(5, 13, 22, 0.72);
+      padding: 7px 10px;
+      font: 700 0.62rem/1 var(--mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 52vh;
+      border: 0;
+      background: #000;
+    }
+
+    .preview-meta {
+      display: grid;
+      gap: 10px;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preview-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .beat-panel,
+    .doc-panel {
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      background: rgba(4, 11, 18, 0.78);
+      padding: 14px;
+    }
+
+    .subhead {
+      margin-bottom: 10px;
+      font: 700 0.76rem/1 var(--mono);
+      letter-spacing: 0.18em;
+      color: var(--warm);
+      text-transform: uppercase;
+    }
+
+    .beat-list {
+      padding-left: 1.15rem;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .beat-list li::marker {
+      color: color-mix(in srgb, var(--agent) 70%, white);
+      font-weight: 700;
+    }
+
+    .beat-list li {
+      padding-left: 4px;
+      line-height: 1.48;
+    }
+
+    .doc-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .doc-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .doc-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .doc-viewer {
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius-sm);
+      background: rgba(6, 13, 22, 0.88);
+      max-height: 54vh;
+      overflow: auto;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .doc-line {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .doc-line:last-child {
+      border-bottom: 0;
+    }
+
+    .doc-num,
+    .doc-code {
+      display: block;
+      padding: 5px 10px;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .doc-num {
+      color: #8091a6;
+      text-align: right;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      user-select: none;
+    }
+
+    .doc-code {
+      color: #d9e7f4;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translate(-50%, 10px);
+      border-radius: 999px;
+      background: rgba(5, 14, 23, 0.92);
+      border: 1px solid var(--soft-line);
+      padding: 10px 14px;
+      font: 700 0.72rem/1 var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 40;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 14px;
+      line-height: 1.5;
+    }
+
+    @keyframes sweep {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @media (min-width: 960px) {
+      .masthead {
+        grid-template-columns: minmax(0, 1.2fr) minmax(400px, 0.8fr);
+        align-items: end;
+      }
+
+      .workspace {
+        grid-template-columns: 420px minmax(0, 1fr);
+        align-items: start;
+      }
+
+      .control-panel {
+        position: sticky;
+        top: 12px;
+      }
+
+      .preview-grid {
+        grid-template-columns: minmax(0, 0.84fr) minmax(360px, 0.96fr);
+      }
+    }
+
+    @media (max-width: 959px) {
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100vw - 12px, 1480px);
+        margin-top: 6px;
+        gap: 8px;
+      }
+
+      .masthead,
+      .control-panel,
+      .preview-panel {
+        padding: 14px;
+      }
+
+      .dial-grid,
+      .section-strip {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: none;
+        font-size: clamp(2.2rem, 15vw, 4rem);
+      }
+
+      .preview-shell,
+      iframe {
+        min-height: 44vh;
+      }
+
+      .doc-viewer {
+        max-height: 42vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">Cool Radio / Creatureliness Package</p>
+        <h1>All Agents On Air</h1>
+        <p class="lede">
+          Tune through the ten-agent Creatureliness package like a late-night broadcast deck.
+          Each station locks to a section, previews the generated HTML artifact, and opens the markdown prompt stack that produced it.
+        </p>
+      </div>
+
+      <div class="masthead-grid">
+        <section class="signal-card" aria-label="Broadcast signal">
+          <span class="signal-label">Now Transmitting</span>
+          <div class="signal-readout">
+            <span id="frequency" class="signal-frequency">AG01 // 1.0</span>
+            <span id="callSign" class="signal-call">Loading broadcast signature...</span>
+          </div>
+          <div class="tuner" aria-hidden="true">
+            <div class="tuner-track"></div>
+            <div id="tunerNeedle" class="tuner-needle" style="left: 12%;"></div>
+          </div>
+          <div id="signalBars" class="signal-barset" aria-hidden="true"></div>
+        </section>
+
+        <section class="metric-grid" aria-label="Package totals">
+          <article class="metric-card">
+            <span class="signal-label">Agents</span>
+            <span id="agentCount" class="metric-value">10</span>
+            <p class="metric-copy">Dedicated title operators in the active package.</p>
+          </article>
+          <article class="metric-card">
+            <span class="signal-label">Sections</span>
+            <span id="sectionCount" class="metric-value">10</span>
+            <p class="metric-copy">Cold-delivery acts available on the dial.</p>
+          </article>
+          <article class="metric-card">
+            <span class="signal-label">Artifacts</span>
+            <span id="artifactCount" class="metric-value">100</span>
+            <p class="metric-copy">Generated HTML and prompt pairs in the matrix.</p>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel control-panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Transmission Deck</p>
+            <h2 class="panel-title">Agent Dial</h2>
+          </div>
+          <p class="panel-copy">
+            Pick an agent, choose a section, then step through the exact markdown files listed in the package.
+          </p>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-row">
+            <button id="prevBtn" class="tool-btn" type="button">Prev</button>
+            <button id="nextBtn" class="tool-btn" type="button">Next</button>
+            <button id="scanBtn" class="tool-btn primary" type="button">Auto Scan</button>
+            <a class="tool-btn" href="creatureliness-gallery.html">Gallery</a>
+            <a class="tool-btn alert" href="index.html">Main Index</a>
+          </div>
+        </div>
+
+        <section class="info-stack">
+          <article class="info-card">
+            <span class="stack-label">Current Band</span>
+            <p id="agentInfo" class="info-copy"><strong>AG01</strong> DNA Forensics</p>
+            <p id="agentRole" class="info-copy">Loading role...</p>
+          </article>
+          <article class="info-card">
+            <span class="stack-label">Lineage</span>
+            <p id="lineageInfo" class="info-copy">Loading lineage...</p>
+          </article>
+        </section>
+
+        <section class="source-stack">
+          <div class="source-shell">
+            <span class="stack-label">Agents</span>
+            <div id="agentDial" class="dial-grid"></div>
+          </div>
+          <div class="source-shell">
+            <span class="stack-label">Sections</span>
+            <div id="sectionStrip" class="section-strip"></div>
+          </div>
+        </section>
+
+        <section class="concept-grid">
+          <article class="concept-card">
+            <span class="stack-label">Seed</span>
+            <p id="seedText" class="concept-copy">Loading seed...</p>
+          </article>
+          <article class="concept-card">
+            <span class="stack-label">Straightjacket Cut</span>
+            <p id="cutText" class="concept-copy">Loading cut...</p>
+          </article>
+          <article class="concept-card">
+            <span class="stack-label">Emergent Resonance</span>
+            <p id="resonanceText" class="concept-copy">Loading resonance...</p>
+          </article>
+        </section>
+
+        <section class="carrier-stack">
+          <div class="carrier-shell">
+            <span class="stack-label">Prompt Source Stack</span>
+            <div id="sourceTabs" class="source-tabs"></div>
+            <p id="sourceMeta" class="source-meta">Loading markdown sources...</p>
+          </div>
+          <div class="carrier-shell">
+            <span class="stack-label">Global Carrier Files</span>
+            <div id="carrierLinks" class="carrier-links"></div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel preview-panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Preview</p>
+            <h2 id="artifactTitle" class="panel-title">Loading artifact...</h2>
+          </div>
+          <div class="preview-actions">
+            <a id="openArtifact" class="action-link primary" href="#" target="_blank" rel="noopener noreferrer">Open Page</a>
+            <a id="openPrompt" class="action-link" href="#" target="_blank" rel="noopener noreferrer">Prompt MD</a>
+            <a id="openSource" class="action-link" href="#" target="_blank" rel="noopener noreferrer">Open Source</a>
+            <button id="copySource" class="action-link" type="button">Copy Source</button>
+          </div>
+        </div>
+
+        <div class="preview-shell">
+          <div class="preview-overlay">
+            <span id="overlayAgent" class="preview-pill">AG01</span>
+            <span id="overlaySection" class="preview-pill">1.0</span>
+            <span id="overlayLineage" class="preview-pill">HELIX / SCAN</span>
+          </div>
+          <iframe id="artifactFrame" title="Selected Creatureliness artifact"></iframe>
+        </div>
+
+        <div class="preview-grid">
+          <section class="beat-panel">
+            <h3 class="subhead">Beat Map</h3>
+            <ol id="beatMap" class="beat-list"></ol>
+          </section>
+
+          <section class="doc-panel">
+            <div class="doc-toolbar">
+              <div>
+                <h3 id="docTitle" class="doc-title">Loading markdown...</h3>
+                <p id="docMeta" class="source-meta">No markdown loaded yet.</p>
+              </div>
+              <div class="doc-actions">
+                <a id="docLink" class="action-link" href="#" target="_blank" rel="noopener noreferrer">Open File</a>
+              </div>
+            </div>
+            <div id="docViewer" class="doc-viewer">
+              <div class="empty">Waiting for source stack...</div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script>
+    const AGENT_COLORS = [
+      "#6fd6ff",
+      "#ff8a6a",
+      "#ffd364",
+      "#d98cff",
+      "#79f3af",
+      "#7ab8ff",
+      "#98c1d9",
+      "#ff956f",
+      "#f0c571",
+      "#7f91ff"
+    ];
+
+    const state = {
+      packageData: null,
+      matrix: [],
+      agents: [],
+      sections: [],
+      agentIndex: 0,
+      sectionIndex: 0,
+      sourceIndex: 0,
+      sourcePaths: [],
+      docCache: new Map(),
+      signalTick: null,
+      autoTick: null
+    };
+
+    const el = {
+      agentCount: document.getElementById("agentCount"),
+      sectionCount: document.getElementById("sectionCount"),
+      artifactCount: document.getElementById("artifactCount"),
+      frequency: document.getElementById("frequency"),
+      callSign: document.getElementById("callSign"),
+      tunerNeedle: document.getElementById("tunerNeedle"),
+      signalBars: document.getElementById("signalBars"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      scanBtn: document.getElementById("scanBtn"),
+      agentInfo: document.getElementById("agentInfo"),
+      agentRole: document.getElementById("agentRole"),
+      lineageInfo: document.getElementById("lineageInfo"),
+      agentDial: document.getElementById("agentDial"),
+      sectionStrip: document.getElementById("sectionStrip"),
+      seedText: document.getElementById("seedText"),
+      cutText: document.getElementById("cutText"),
+      resonanceText: document.getElementById("resonanceText"),
+      sourceTabs: document.getElementById("sourceTabs"),
+      sourceMeta: document.getElementById("sourceMeta"),
+      carrierLinks: document.getElementById("carrierLinks"),
+      artifactTitle: document.getElementById("artifactTitle"),
+      openArtifact: document.getElementById("openArtifact"),
+      openPrompt: document.getElementById("openPrompt"),
+      openSource: document.getElementById("openSource"),
+      copySource: document.getElementById("copySource"),
+      overlayAgent: document.getElementById("overlayAgent"),
+      overlaySection: document.getElementById("overlaySection"),
+      overlayLineage: document.getElementById("overlayLineage"),
+      artifactFrame: document.getElementById("artifactFrame"),
+      beatMap: document.getElementById("beatMap"),
+      docTitle: document.getElementById("docTitle"),
+      docMeta: document.getElementById("docMeta"),
+      docLink: document.getElementById("docLink"),
+      docViewer: document.getElementById("docViewer"),
+      toast: document.getElementById("toast")
+    };
+
+    function showToast(message) {
+      el.toast.textContent = message;
+      el.toast.classList.add("show");
+      clearTimeout(showToast.tid);
+      showToast.tid = setTimeout(() => {
+        el.toast.classList.remove("show");
+      }, 1400);
+    }
+
+    async function copyText(text, label) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.style.position = "fixed";
+          area.style.left = "-9999px";
+          document.body.appendChild(area);
+          area.focus();
+          area.select();
+          document.execCommand("copy");
+          area.remove();
+        }
+        showToast(label);
+      } catch {
+        showToast("Copy failed");
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function currentAgent() {
+      return state.agents[state.agentIndex] || null;
+    }
+
+    function currentSection() {
+      return state.sections[state.sectionIndex] || null;
+    }
+
+    function currentEntry() {
+      const agent = currentAgent();
+      const section = currentSection();
+      if (!agent || !section) return null;
+      return state.matrix.find((item) => item.agent.id === agent.id && item.section.marker === section.marker) || null;
+    }
+
+    function agentAccent(order) {
+      return AGENT_COLORS[(Math.max(1, Number(order || 1)) - 1) % AGENT_COLORS.length];
+    }
+
+    function setAccent(color) {
+      document.documentElement.style.setProperty("--agent", color);
+    }
+
+    function words(text) {
+      return String(text || "").trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    function renderSignalBars() {
+      if (el.signalBars.children.length) return;
+      for (let i = 0; i < 16; i += 1) {
+        const bar = document.createElement("span");
+        bar.className = "signal-bar";
+        bar.style.height = "20%";
+        el.signalBars.appendChild(bar);
+      }
+    }
+
+    function animateSignalBars() {
+      renderSignalBars();
+      const bars = [...el.signalBars.children];
+      clearInterval(state.signalTick);
+      state.signalTick = setInterval(() => {
+        const agent = currentAgent();
+        const seed = (agent ? agent.order : 1) * 9;
+        bars.forEach((bar, index) => {
+          const base = 18 + ((seed + index * 11) % 36);
+          const swing = 18 + Math.floor(Math.random() * 46);
+          bar.style.height = `${Math.min(96, base + swing)}%`;
+        });
+      }, 210);
+    }
+
+    function renderAgentDial() {
+      el.agentDial.innerHTML = state.agents.map((agent, index) => {
+        return [
+          `<button class="dial-btn ${index === state.agentIndex ? "active" : ""}" data-agent-index="${index}" type="button">`,
+          `<span class="dial-id">${escapeHtml(agent.id)}</span>`,
+          `<span class="dial-name">${escapeHtml(agent.label)}</span>`,
+          `<span class="dial-role">${escapeHtml(agent.role)}</span>`,
+          `</button>`
+        ].join("");
+      }).join("");
+    }
+
+    function renderSectionStrip() {
+      el.sectionStrip.innerHTML = state.sections.map((section, index) => {
+        return [
+          `<button class="section-btn ${index === state.sectionIndex ? "active" : ""}" data-section-index="${index}" type="button">`,
+          `<span class="section-id">${escapeHtml(section.marker)}</span>`,
+          `<span class="section-name">${escapeHtml(section.major)}</span>`,
+          `</button>`
+        ].join("");
+      }).join("");
+    }
+
+    function renderCarrierLinks() {
+      const sources = state.packageData ? state.packageData.global_sources || [] : [];
+      el.carrierLinks.innerHTML = sources.map((path) => {
+        return `<a class="chip-link" href="${escapeHtml(path)}" target="_blank" rel="noopener noreferrer">${escapeHtml(path)}</a>`;
+      }).join("");
+    }
+
+    function renderBeatMap(entry) {
+      if (!entry || !Array.isArray(entry.beat_map)) {
+        el.beatMap.innerHTML = `<li>No beat map available.</li>`;
+        return;
+      }
+
+      el.beatMap.innerHTML = entry.beat_map.map((beat) => `<li>${escapeHtml(beat)}</li>`).join("");
+    }
+
+    function renderDoc(text) {
+      const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      if (!lines.length) {
+        el.docViewer.innerHTML = `<div class="empty">No markdown text loaded.</div>`;
+        return;
+      }
+
+      el.docViewer.innerHTML = lines.map((line, index) => {
+        const code = line.length ? escapeHtml(line) : "&nbsp;";
+        return [
+          `<div class="doc-line">`,
+          `<span class="doc-num">${index + 1}</span>`,
+          `<span class="doc-code">${code}</span>`,
+          `</div>`
+        ].join("");
+      }).join("");
+    }
+
+    async function fetchJson(path) {
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Failed to load ${path} (${response.status})`);
+      }
+      return response.json();
+    }
+
+    async function fetchMarkdown(path) {
+      if (state.docCache.has(path)) {
+        return state.docCache.get(path);
+      }
+
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Failed to load ${path} (${response.status})`);
+      }
+
+      const text = await response.text();
+      state.docCache.set(path, text);
+      return text;
+    }
+
+    function buildSourceStack(agent) {
+      const packageData = state.packageData || { global_sources: [] };
+      const set = new Set();
+      const ordered = [];
+
+      [...(packageData.global_sources || []), ...(agent ? agent.prompt_sources || [] : [])].forEach((path) => {
+        if (!set.has(path)) {
+          set.add(path);
+          ordered.push(path);
+        }
+      });
+
+      return ordered;
+    }
+
+    async function renderSourceTabs(agent) {
+      state.sourcePaths = buildSourceStack(agent);
+      if (!state.sourcePaths.length) {
+        el.sourceTabs.innerHTML = "";
+        el.sourceMeta.textContent = "No source files listed for this agent.";
+        el.docTitle.textContent = "No markdown";
+        el.docMeta.textContent = "No source paths available.";
+        el.docLink.href = "#";
+        el.openSource.href = "#";
+        el.docViewer.innerHTML = `<div class="empty">No source stack defined.</div>`;
+        return;
+      }
+
+      state.sourceIndex = Math.min(state.sourceIndex, state.sourcePaths.length - 1);
+      el.sourceTabs.innerHTML = state.sourcePaths.map((path, index) => {
+        return `<button class="source-btn ${index === state.sourceIndex ? "active" : ""}" data-source-index="${index}" type="button">${escapeHtml(path)}</button>`;
+      }).join("");
+
+      await loadSourceDocument(state.sourcePaths[state.sourceIndex]);
+    }
+
+    async function loadSourceDocument(path) {
+      if (!path) return;
+
+      el.docTitle.textContent = path;
+      el.docMeta.textContent = "Loading markdown...";
+      el.docLink.href = path;
+      el.openSource.href = path;
+
+      try {
+        const text = await fetchMarkdown(path);
+        renderDoc(text);
+        el.docMeta.textContent = `${words(text)} words`;
+        el.sourceMeta.textContent = `Inspecting ${path} in the active prompt stack.`;
+      } catch (error) {
+        el.docViewer.innerHTML = `<div class="empty">${escapeHtml(String(error.message || error))}</div>`;
+        el.docMeta.textContent = "Load failed";
+        el.sourceMeta.textContent = `Could not load ${path}.`;
+      }
+    }
+
+    function setNeedle() {
+      const total = Math.max(1, state.sections.length * state.agents.length - 1);
+      const value = state.sectionIndex * state.agents.length + state.agentIndex;
+      const percent = 10 + (value / total) * 80;
+      el.tunerNeedle.style.left = `${percent}%`;
+    }
+
+    function stopAutoScan() {
+      clearInterval(state.autoTick);
+      state.autoTick = null;
+      el.scanBtn.classList.remove("playing");
+      el.scanBtn.textContent = "Auto Scan";
+    }
+
+    function startAutoScan() {
+      stopAutoScan();
+      el.scanBtn.classList.add("playing");
+      el.scanBtn.textContent = "Scanning";
+      state.autoTick = setInterval(() => {
+        move(1);
+      }, 3600);
+    }
+
+    function toggleAutoScan() {
+      if (state.autoTick) {
+        stopAutoScan();
+      } else {
+        startAutoScan();
+      }
+    }
+
+    async function renderSelection() {
+      const agent = currentAgent();
+      const entry = currentEntry();
+      const section = currentSection();
+
+      if (!agent || !entry || !section) {
+        return;
+      }
+
+      const accent = agentAccent(agent.order);
+      setAccent(accent);
+      setNeedle();
+
+      el.frequency.textContent = `${agent.id} // ${section.marker}`;
+      el.callSign.textContent = `${agent.label} / ${section.major}`;
+      el.agentInfo.innerHTML = `<strong>${escapeHtml(agent.id)}</strong> ${escapeHtml(agent.label)}`;
+      el.agentRole.textContent = agent.role;
+      el.lineageInfo.innerHTML = `<strong>${escapeHtml(entry.lineage || "PACKAGE")}</strong>`;
+      el.seedText.textContent = entry.concept && entry.concept.seed ? entry.concept.seed : "No seed available.";
+      el.cutText.textContent = entry.concept && entry.concept.outline_cut ? entry.concept.outline_cut : "No cut available.";
+      el.resonanceText.textContent = entry.concept && entry.concept.resonance ? entry.concept.resonance : "No resonance available.";
+
+      el.artifactTitle.textContent = `${section.marker} ${section.major} / ${agent.label}`;
+      el.overlayAgent.textContent = agent.id;
+      el.overlaySection.textContent = section.marker;
+      el.overlayLineage.textContent = (entry.lineage || "PACKAGE").replace(/:/g, " / ").toUpperCase();
+
+      el.openArtifact.href = `creatureliness-singular-pages/${entry.files.page}`;
+      el.openPrompt.href = `creatureliness-singular-pages/${entry.files.prompt}`;
+      el.artifactFrame.src = `creatureliness-singular-pages/${entry.files.page}`;
+
+      renderBeatMap(entry);
+      renderAgentDial();
+      renderSectionStrip();
+      await renderSourceTabs(agent);
+    }
+
+    function move(step) {
+      const totalAgents = state.agents.length || 1;
+      const totalSections = state.sections.length || 1;
+      let sectionIndex = state.sectionIndex;
+      let agentIndex = state.agentIndex + step;
+
+      while (agentIndex < 0) {
+        agentIndex += totalAgents;
+        sectionIndex = (sectionIndex - 1 + totalSections) % totalSections;
+      }
+
+      while (agentIndex >= totalAgents) {
+        agentIndex -= totalAgents;
+        sectionIndex = (sectionIndex + 1) % totalSections;
+      }
+
+      state.agentIndex = agentIndex;
+      state.sectionIndex = sectionIndex;
+      state.sourceIndex = 0;
+      renderSelection();
+    }
+
+    function bindEvents() {
+      el.prevBtn.addEventListener("click", () => {
+        move(-1);
+      });
+
+      el.nextBtn.addEventListener("click", () => {
+        move(1);
+      });
+
+      el.scanBtn.addEventListener("click", () => {
+        toggleAutoScan();
+      });
+
+      el.agentDial.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-agent-index]");
+        if (!(target instanceof HTMLElement)) return;
+        state.agentIndex = Number(target.getAttribute("data-agent-index")) || 0;
+        state.sourceIndex = 0;
+        renderSelection();
+      });
+
+      el.sectionStrip.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-section-index]");
+        if (!(target instanceof HTMLElement)) return;
+        state.sectionIndex = Number(target.getAttribute("data-section-index")) || 0;
+        state.sourceIndex = 0;
+        renderSelection();
+      });
+
+      el.sourceTabs.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-source-index]");
+        if (!(target instanceof HTMLElement)) return;
+        state.sourceIndex = Number(target.getAttribute("data-source-index")) || 0;
+        renderSourceTabs(currentAgent());
+      });
+
+      el.copySource.addEventListener("click", async () => {
+        const path = state.sourcePaths[state.sourceIndex];
+        if (!path) return;
+        try {
+          const text = await fetchMarkdown(path);
+          copyText(text, `${path} copied`);
+        } catch {
+          showToast("Copy failed");
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+          move(1);
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+          move(-1);
+        }
+        if (event.key === " ") {
+          event.preventDefault();
+          toggleAutoScan();
+        }
+      });
+    }
+
+    async function boot() {
+      animateSignalBars();
+      bindEvents();
+
+      try {
+        const [packageData, matrixData] = await Promise.all([
+          fetchJson("creatureliness-10-agent-package.json"),
+          fetchJson("creatureliness-singular-pages/matrix.json")
+        ]);
+
+        state.packageData = packageData;
+        state.matrix = matrixData.matrix || [];
+        state.agents = packageData.agents || [];
+        state.sections = [...new Map(
+          state.matrix.map((item) => [item.section.marker, item.section])
+        ).values()].sort((a, b) => a.index - b.index);
+
+        el.agentCount.textContent = String(state.agents.length);
+        el.sectionCount.textContent = String(state.sections.length);
+        el.artifactCount.textContent = String(state.matrix.length);
+
+        renderCarrierLinks();
+        await renderSelection();
+        showToast(`Loaded ${state.matrix.length} artifacts`);
+      } catch (error) {
+        const message = String(error.message || error);
+        el.callSign.textContent = message;
+        el.agentRole.textContent = message;
+        el.sourceMeta.textContent = message;
+        el.docViewer.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+        showToast("Load failed");
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>7.0 THE OPERATIONAL HINGE · M06 Common Side</title>
+  <style>
+    :root {
+      --bg: #040808;
+      --panel: #0b1313;
+      --ink: #d6f3df;
+      --muted: #87b59a;
+      --line: #2d5b49;
+      --ok: #56d39b;
+      --warn: #f6b85f;
+      --crit: #e4525f;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 20% 0%, #183228 0%, #09120f 42%, #030706 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #07100e; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #0c1714; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #13221e; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #56d39b; color: #032317; border-color: #56d39b; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #0b1714; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #07110f; padding: 8px; color: #caeed5; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #050c0a; }
+    #hud { position: absolute; left: 0; right: 0; top: 0; height: 30px; border-bottom: 1px solid #2d5b49; display: flex; align-items: center; gap: 14px; padding: 0 10px; font: 700 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: #9fd8b6; z-index: 25; background: rgba(8,16,13,0.8); }
+    #grid { position: absolute; inset: 30px 0 0; display: grid; gap: 2px; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #07110f; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transform: scale(0.9); transition: opacity 0.16s ease, transform 0.16s ease; text-transform: uppercase; letter-spacing: 0.1em; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; transform: scale(1); }
+    .w1 { font-size: clamp(30px, 6vw, 90px); color: #d8f4e2; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #93d5b2; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #93d5b2; }
+    .w4 { font-size: clamp(44px, 9vw, 124px); color: #56d39b; }
+
+    #status { position: absolute; right: 10px; bottom: 10px; border: 1px solid #2d5b49; border-radius: 999px; padding: 4px 10px; font: 700 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: #b9eacc; z-index: 24; background: rgba(8,16,13,0.76); }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 07/10</div>
+        <h1>7.0 THE OPERATIONAL HINGE · Agent M06 Common Side</h1>
+        <div class="meta">Translate distinction into operations: symbolic, cybernetic, hybrid.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: distinctions matter only when converted into instructions.</li>
+            <li>Agent lens: clinical systems dashboard with live sensor/actuator loop readouts.</li>
+            <li>Primary motif: three manufacturing logics run in parallel and fail differently.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.6s: symbolic rule chain baseline.</li>
+            <li>1.6–3.4s: split symbolic vs cybernetic loop.</li>
+            <li>3.4–6.7s: 3x2 matrix adds hybrid fence tension.</li>
+            <li>6.7–9.0s: words strike: TRANSLATE / INTO / ACTION / NOW.</li>
+            <li>9.0–11.0s: single hinge map with constraint gauges.</li>
+            <li>11.0–12.0s: status badge flips to EXECUTE.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "7.0 THE OPERATIONAL HINGE" in Common Side mode.
+Use diagnostic-lab visual language: sensor charts, actuator vectors, procedural overlays.
+Narrative: symbolic, cybernetic, and hybrid processes are only meaningful when turned into action.
+Hard-cut rhythm only.
+Show side-by-side process diagrams, calibration drift, fence-tightness meter, and failure mode annotations.
+Typography impacts: TRANSLATE / INTO / ACTION / NOW.
+Resolve on a single operational hinge diagram with EXECUTE status.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="hud"><span>SYMBOLIC</span><span>CYBERNETIC</span><span>HYBRID</span><span id="tick">T+000</span></div>
+          <div id="grid" class="cfg-single"></div>
+          <div id="words">
+            <span id="w1" class="word w1">TRANSLATE</span>
+            <span id="w2" class="word w2">INTO</span>
+            <span id="w3" class="word w3">ACTION</span>
+            <span id="w4" class="word w4">NOW</span>
+          </div>
+          <div id="status">STATUS: HOLD</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+    const tickEl = document.getElementById('tick');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function symbolic(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#08120f'/><text x='16' y='24' fill='#95d9b3' font-size='11'>RULE CHAIN</text>${Array.from({length:5}).map((_,i)=>`<rect x='22' y='${40+i*28}' width='${220-i*22}' height='18' fill='none' stroke='#56d39b'/><text x='28' y='${53+i*28}' fill='#a9e8c8' font-size='10'>IF CASE_${i+1+v%3} THEN ACT</text>`).join('')}</svg>`;
+    }
+
+    function loop(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#07120f'/><circle cx='102' cy='100' r='48' fill='none' stroke='#56d39b'/><circle cx='198' cy='100' r='48' fill='none' stroke='#56d39b'/><path d='M 148 76 C 166 64, 184 64, 202 76' stroke='#f6b85f' fill='none'/><path d='M 202 124 C 184 136, 166 136, 148 124' stroke='#f6b85f' fill='none'/><text x='72' y='104' fill='#b9eacc' font-size='10'>SENSE</text><text x='170' y='104' fill='#b9eacc' font-size='10'>ACT</text><text x='18' y='186' fill='#93d5b2' font-size='11'>ERR ${(v%12)+2}%</text></svg>`;
+    }
+
+    function hybrid(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#08110f'/><rect x='34' y='34' width='232' height='132' fill='none' stroke='#56d39b'/><line x1='34' y1='100' x2='266' y2='100' stroke='#2d5b49'/><rect x='44' y='46' width='${40 + (v%7)*24}' height='16' fill='#56d39b'/><rect x='44' y='138' width='${230 - (v%7)*22}' height='16' fill='#f6b85f'/><text x='44' y='30' fill='#a9e8c8' font-size='10'>FENCE TENSION</text><text x='44' y='188' fill='#e4525f' font-size='11'>LEAK RISK ${(v%9)+1}</text></svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    let tick = 0;
+    function run(){
+      clearWords();
+      statusEl.textContent = 'STATUS: HOLD';
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([symbolic(0)]); }},
+        { t:1600, fn:()=>{ setLayout('cfg-2x1'); setPanels([symbolic(1), loop(1)]); }},
+        { t:3400, fn:()=>{ setLayout('cfg-3x2'); setPanels([symbolic(2), loop(2), hybrid(2), loop(3), hybrid(3), symbolic(3)]); }},
+        { t:5200, fn:()=>show(0)},
+        { t:6200, fn:()=>show(1)},
+        { t:7100, fn:()=>show(2)},
+        { t:8000, fn:()=>show(3)},
+        { t:9000, fn:()=>{ setLayout('cfg-single'); setPanels([hybrid(8)]);} },
+        { t:11000, fn:()=>{ statusEl.textContent = 'STATUS: EXECUTE'; clearWords(); }},
+        { t:12400, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn,b.t));
+    }
+
+    setInterval(()=>{
+      tick += 1;
+      tickEl.textContent = `T+${String(tick).padStart(3,'0')}`;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = hybrid(tick%10);
+      if (grid.classList.contains('cfg-3x2') && p.length===6) {
+        p[0].innerHTML = symbolic((tick+1)%10);
+        p[1].innerHTML = loop((tick+2)%10);
+        p[2].innerHTML = hybrid((tick+3)%10);
+        p[3].innerHTML = loop((tick+4)%10);
+        p[4].innerHTML = hybrid((tick+5)%10);
+        p[5].innerHTML = symbolic((tick+6)%10);
+      }
+    }, 170);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    run();
+  </script>
+</body>
+</html>

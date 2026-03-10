@@ -2,7 +2,7 @@ const cardsRoot = document.getElementById("cards");
 const template = document.getElementById("video-card-template");
 const meta = document.getElementById("meta");
 const docsRoot = document.getElementById("docs-list");
-const markdownFiles = ["prompt.md", "titles.md", "bass.md"];
+const markdownFiles = ["title-crispr.md", "decon.md", "prompt.md", "titles.md", "bass.md"];
 
 void init();
 
@@ -213,13 +213,6 @@ async function createDocItem(file) {
   const actions = document.createElement("div");
   actions.className = "doc-actions";
 
-  const open = document.createElement("a");
-  open.className = "doc-btn doc-open";
-  open.href = file;
-  open.target = "_blank";
-  open.rel = "noopener noreferrer";
-  open.textContent = "Open";
-
   const copy = document.createElement("button");
   copy.type = "button";
   copy.className = "doc-btn doc-copy";
@@ -245,7 +238,7 @@ async function createDocItem(file) {
     copy.disabled = true;
   }
 
-  actions.append(open, copy);
+  actions.append(copy);
   head.append(name, actions);
   wrapper.append(head, pre);
 

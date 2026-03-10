@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fast and The Furious - Grand Prix Title Sequence</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #0d0d0d;
+      --oil: #1a1a1a;
+      --steel: #707070;
+      --white: #f5f5f0;
+      --red: #c21807;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      font-family: "Arial Narrow", "Helvetica Neue Condensed", "Impact", sans-serif;
+    }
+
+    #stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: var(--black);
+      isolation: isolate;
+    }
+
+    #grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 3px;
+      background: #070707;
+      opacity: 0;
+      transition: opacity 0s;
+      z-index: 1;
+    }
+
+    #grid.cfg-single {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    #grid.cfg-2x1 {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    #grid.cfg-2x2 {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    #grid.cfg-3x2 {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    #grid.cfg-3x1 {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--oil);
+    }
+
+    .panel svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.2) 2px,
+        rgba(0, 0, 0, 0.2) 4px
+      );
+      pointer-events: none;
+      z-index: 8;
+    }
+
+    .panel.blur-x {
+      animation: blurX 0.32s linear infinite;
+    }
+
+    .panel.pulse {
+      animation: pulse 0.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes blurX {
+      0% { filter: blur(0px) brightness(1); }
+      50% { filter: blur(2px) brightness(1.35); }
+      100% { filter: blur(0px) brightness(1); }
+    }
+
+    @keyframes pulse {
+      from { filter: brightness(0.82); }
+      to { filter: brightness(1.28); }
+    }
+
+    #text-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 6vw;
+      mix-blend-mode: screen;
+    }
+
+    .word {
+      display: block;
+      line-height: 0.85;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 900;
+      transform: translateX(-60px);
+      opacity: 0;
+      transition: none;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
+    }
+
+    .word.visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .word.large {
+      font-size: clamp(3.5rem, 14vw, 12rem);
+      color: var(--white);
+    }
+
+    .word.small {
+      font-size: clamp(1rem, 4.5vw, 2.2rem);
+      letter-spacing: 0.18em;
+      color: var(--steel);
+    }
+
+    .word.xl {
+      font-size: clamp(4rem, 18vw, 16rem);
+      color: var(--red);
+      mix-blend-mode: normal;
+    }
+
+    #red-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      opacity: 0;
+      z-index: 24;
+    }
+
+    #red-line.pulse-line {
+      animation: redLine 0.6s ease-out forwards;
+    }
+
+    @keyframes redLine {
+      0% { transform: scaleX(0); opacity: 1; }
+      60% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+      background-size: 170px 170px;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="grid" class="cfg-single"></div>
+
+    <div id="text-layer" aria-hidden="true">
+      <span id="word-fast" class="word large">The Fast</span>
+      <span id="word-and" class="word small">and</span>
+      <span id="word-the" class="word small">the</span>
+      <span id="word-furious" class="word xl">Furious</span>
+    </div>
+
+    <div id="red-line"></div>
+    <div id="grain"></div>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const redLine = document.getElementById("red-line");
+
+    const WORD_IDS = ["word-fast", "word-and", "word-the", "word-furious"];
+
+    const PANELS = {
+      tachometer(angle = -120) {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#0f0f0f"/>
+            <circle cx="100" cy="100" r="84" fill="none" stroke="#2c2c2c" stroke-width="4"/>
+            <circle cx="100" cy="100" r="68" fill="#0a0a0a" stroke="#262626" stroke-width="2"/>
+            ${Array.from({ length: 24 }, (_, i) => {
+              const a = (i / 24) * 260 - 130;
+              const r = a * Math.PI / 180;
+              const x1 = 100 + 58 * Math.cos(r);
+              const y1 = 100 + 58 * Math.sin(r);
+              const x2 = 100 + 68 * Math.cos(r);
+              const y2 = 100 + 68 * Math.sin(r);
+              const major = i % 4 === 0;
+              const hot = i > 18;
+              return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hot ? "#c21807" : "#888"}" stroke-width="${major ? 2.4 : 1}"/>`;
+            }).join("")}
+            ${[0, 20, 40, 60, 80, 100, 120].map((v, i) => {
+              const a = (i / 6) * 260 - 130;
+              const r = a * Math.PI / 180;
+              const x = 100 + 50 * Math.cos(r);
+              const y = 100 + 50 * Math.sin(r);
+              return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${i >= 5 ? "#c21807" : "#8f8f8f"}" font-size="7" font-family="monospace">${v}</text>`;
+            }).join("")}
+            <line x1="100" y1="100" x2="${100 + 56 * Math.cos((angle - 90) * Math.PI / 180)}" y2="${100 + 56 * Math.sin((angle - 90) * Math.PI / 180)}" stroke="#c21807" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="6" fill="#333" stroke="#c21807" stroke-width="2"/>
+            <text x="100" y="132" text-anchor="middle" fill="#666" font-size="8" font-family="monospace">RPM x 100</text>
+          </svg>
+        `;
+      },
+
+      gearshift(gear = 1) {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#111"/>
+            <rect x="88" y="22" width="24" height="156" rx="4" fill="#1d1d1d" stroke="#3c3c3c"/>
+            <circle cx="100" cy="30" r="21" fill="#2a2a2a" stroke="#555" stroke-width="3"/>
+            <circle cx="100" cy="30" r="13" fill="#121212"/>
+            <text x="100" y="35" text-anchor="middle" fill="#c21807" font-size="15" font-family="monospace">${gear}</text>
+            ${[[70,80],[130,80],[70,110],[130,110],[70,140],[130,140]].map(([x, y], i) => `
+              <line x1="100" y1="${y}" x2="${x}" y2="${y}" stroke="#464646" stroke-width="3"/>
+              <circle cx="${x}" cy="${y}" r="10" fill="#1a1a1a" stroke="${i === gear - 1 ? "#c21807" : "#4a4a4a"}" stroke-width="2"/>
+              <text x="${x}" y="${y + 4}" text-anchor="middle" fill="${i === gear - 1 ? "#c21807" : "#6b6b6b"}" font-size="8" font-family="monospace">${i + 1}</text>
+            `).join("")}
+          </svg>
+        `;
+      },
+
+      speedometer(speed = 0) {
+        const clamped = Math.max(0, Math.min(320, speed));
+        const needle = (clamped / 320) * 200 - 100;
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#101010"/>
+            <circle cx="100" cy="108" r="82" fill="none" stroke="#1f1f1f" stroke-width="18"/>
+            ${Array.from({ length: 9 }, (_, i) => {
+              const v = i * 40;
+              const a = (i / 8) * 200 - 100;
+              const x = 100 + 62 * Math.cos((a - 90) * Math.PI / 180);
+              const y = 108 + 62 * Math.sin((a - 90) * Math.PI / 180);
+              return `<text x="${x}" y="${y + 3}" text-anchor="middle" fill="${v > clamped ? "#444" : "#878787"}" font-size="7" font-family="monospace">${v}</text>`;
+            }).join("")}
+            <line x1="100" y1="108" x2="${100 + 60 * Math.cos((needle - 90) * Math.PI / 180)}" y2="${108 + 60 * Math.sin((needle - 90) * Math.PI / 180)}" stroke="#c21807" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="100" cy="108" r="7" fill="#c21807"/>
+            <text x="100" y="152" text-anchor="middle" fill="#666" font-size="9" font-family="monospace">MPH</text>
+          </svg>
+        `;
+      },
+
+      steeringWheel(rot = 0) {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#101010"/>
+            <g transform="translate(100 100) rotate(${rot})">
+              <circle r="78" fill="none" stroke="#2b2b2b" stroke-width="18"/>
+              <circle r="78" fill="none" stroke="#4b4b4b" stroke-width="2"/>
+              ${[0, 120, 240].map((a) => {
+                const r = a * Math.PI / 180;
+                return `<line x1="${22 * Math.cos(r)}" y1="${22 * Math.sin(r)}" x2="${60 * Math.cos(r)}" y2="${60 * Math.sin(r)}" stroke="#555" stroke-width="10" stroke-linecap="round"/>`;
+              }).join("")}
+              <circle r="22" fill="#1e1e1e" stroke="#5b5b5b" stroke-width="3"/>
+              <circle r="8" fill="#c21807"/>
+            </g>
+          </svg>
+        `;
+      },
+
+      exhaust(frame = 0) {
+        const f = Math.max(0, Math.min(3, frame));
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#0d0d0d"/>
+            <rect x="60" y="82" width="120" height="36" rx="18" fill="#1a1a1a" stroke="#333" stroke-width="3"/>
+            <circle cx="62" cy="100" r="20" fill="#111" stroke="#444" stroke-width="4"/>
+            <circle cx="62" cy="100" r="12" fill="#090909"/>
+            ${f > 0 ? `<ellipse cx="35" cy="100" rx="${8 + f * 3}" ry="${5 + f * 2}" fill="rgba(194,24,7,0.${2 + f})"/>` : ""}
+            ${f > 1 ? `<ellipse cx="18" cy="100" rx="${4 + f * 5}" ry="${3 + f * 3}" fill="rgba(194,24,7,0.${f})"/>` : ""}
+            <line x1="60" y1="70" x2="180" y2="70" stroke="#202020" stroke-width="12" stroke-linecap="round"/>
+            <line x1="60" y1="130" x2="180" y2="130" stroke="#202020" stroke-width="12" stroke-linecap="round"/>
+          </svg>
+        `;
+      },
+
+      nosValve() {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#0f0f0f"/>
+            <rect x="20" y="85" width="160" height="30" rx="3" fill="#1e1e1e" stroke="#333"/>
+            <rect x="82" y="40" width="36" height="120" rx="4" fill="#1b1b1b" stroke="#454545"/>
+            <rect x="89" y="47" width="22" height="106" rx="2" fill="#121212"/>
+            <circle cx="100" cy="100" r="16" fill="#222" stroke="#c21807" stroke-width="2"/>
+            <circle cx="100" cy="100" r="8" fill="#c21807"/>
+            <rect x="94" y="20" width="12" height="28" rx="2" fill="#333" stroke="#666"/>
+            <text x="100" y="176" text-anchor="middle" fill="#565656" font-size="8" font-family="monospace" letter-spacing="2">NITROUS</text>
+          </svg>
+        `;
+      },
+
+      tireTrack() {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#0a0a0a"/>
+            ${Array.from({ length: 13 }, (_, i) => `
+              <rect x="30" y="${i * 15}" width="140" height="8" rx="1" fill="#181818" stroke="#282828"/>
+              ${Array.from({ length: 10 }, (_, j) => `<rect x="${35 + j * 14}" y="${i * 15 + 2}" width="10" height="4" rx="1" fill="#2b2b2b"/>`).join("")}
+            `).join("")}
+            <rect x="60" y="0" width="80" height="200" fill="rgba(0,0,0,0.5)"/>
+          </svg>
+        `;
+      },
+
+      driverEye(blink = false) {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#0b0b0b"/>
+            <rect x="0" y="70" width="200" height="60" fill="#111"/>
+            ${blink ? `<rect x="0" y="70" width="200" height="60" fill="#0b0b0b"/>` : `
+              <ellipse cx="100" cy="100" rx="70" ry="22" fill="#170f0f" stroke="#333"/>
+              <ellipse cx="100" cy="100" rx="20" ry="20" fill="#100909" stroke="#c21807" stroke-width="1.3"/>
+              <circle cx="100" cy="100" r="12" fill="#050505"/>
+              <circle cx="94" cy="94" r="3.5" fill="#fff" opacity="0.55"/>
+              <ellipse cx="100" cy="86" rx="70" ry="10" fill="#0a0a0a"/>
+              <ellipse cx="100" cy="114" rx="70" ry="10" fill="#0a0a0a"/>
+            `}
+            <line x1="0" y1="70" x2="200" y2="70" stroke="#c21807" stroke-width="1.3"/>
+            <line x1="0" y1="130" x2="200" y2="130" stroke="#c21807" stroke-width="1.3"/>
+          </svg>
+        `;
+      },
+
+      roadBlur() {
+        return `
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#080808"/>
+            ${Array.from({ length: 34 }, (_, i) => {
+              const y = i * 6;
+              const x = (i * 31) % 200;
+              const w = 4 + (i % 5) * 2;
+              const opacity = 0.12 + (i % 4) * 0.06;
+              return `<rect x="${x}" y="${y}" width="${w}" height="3" fill="#3d3d3d" opacity="${opacity}"/>`;
+            }).join("")}
+            <rect x="96" y="0" width="8" height="200" fill="#222" opacity="0.7"/>
+            <line x1="100" y1="0" x2="100" y2="200" stroke="#333" stroke-width="1" stroke-dasharray="20,15"/>
+          </svg>
+        `;
+      }
+    };
+
+    const state = {
+      tachAngle: -130,
+      tachDir: 1,
+      steerRot: 0,
+      speed: 0,
+      gear: 1,
+      exhaustFrame: 0,
+      blink: false,
+      liveTimer: null
+    };
+
+    function setGridConfig(cfg) {
+      grid.className = "";
+      grid.classList.add(cfg);
+    }
+
+    function setPanels(configs) {
+      grid.innerHTML = "";
+      configs.forEach((cfg) => {
+        const panel = document.createElement("div");
+        panel.className = `panel${cfg.anim ? ` ${cfg.anim}` : ""}`;
+        panel.innerHTML = cfg.svg;
+        grid.appendChild(panel);
+      });
+    }
+
+    function showGrid() {
+      grid.style.opacity = "1";
+    }
+
+    function hideGrid() {
+      grid.style.opacity = "0";
+    }
+
+    function showWord(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("visible");
+    }
+
+    function hideWord(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("visible");
+    }
+
+    function hideAllWords() {
+      WORD_IDS.forEach(hideWord);
+    }
+
+    function startLive(mode) {
+      stopLive();
+
+      state.liveTimer = setInterval(() => {
+        if (mode === "tach") {
+          state.tachAngle += state.tachDir * 16;
+          if (state.tachAngle > 130) state.tachDir = -1;
+          if (state.tachAngle < -130) state.tachDir = 1;
+          const p = grid.querySelectorAll(".panel");
+          if (p[0]) p[0].innerHTML = PANELS.tachometer(state.tachAngle);
+        }
+
+        if (mode === "split32") {
+          state.tachAngle += 14;
+          if (state.tachAngle > 130) state.tachAngle = -130;
+          state.steerRot += 12;
+          state.speed = Math.min(320, state.speed + 18);
+          state.gear = (state.gear % 6) + 1;
+          state.exhaustFrame = (state.exhaustFrame + 1) % 4;
+
+          const p = grid.querySelectorAll(".panel");
+          if (p[0]) p[0].innerHTML = PANELS.tachometer(state.tachAngle);
+          if (p[1]) p[1].innerHTML = PANELS.gearshift(state.gear);
+          if (p[2]) p[2].innerHTML = PANELS.nosValve();
+          if (p[3]) p[3].innerHTML = PANELS.steeringWheel(state.steerRot);
+          if (p[4]) p[4].innerHTML = PANELS.exhaust(state.exhaustFrame);
+          if (p[5]) p[5].innerHTML = PANELS.speedometer(state.speed);
+        }
+
+        if (mode === "eye") {
+          state.blink = !state.blink;
+          const blinkNow = state.blink && Math.random() < 0.2;
+          const p = grid.querySelectorAll(".panel");
+          if (p[0]) p[0].innerHTML = PANELS.driverEye(blinkNow);
+        }
+      }, 120);
+    }
+
+    function stopLive() {
+      if (state.liveTimer) {
+        clearInterval(state.liveTimer);
+        state.liveTimer = null;
+      }
+    }
+
+    const beats = [
+      { t: 0, fn: () => {
+        hideGrid();
+        hideAllWords();
+        stopLive();
+        redLine.classList.remove("pulse-line");
+      }},
+      { t: 350, fn: () => {
+        setGridConfig("cfg-single");
+        setPanels([{ svg: PANELS.tachometer(-130) }]);
+        showGrid();
+        startLive("tach");
+      }},
+      { t: 900, fn: () => {
+        stopLive();
+        setGridConfig("cfg-2x1");
+        setPanels([
+          { svg: PANELS.gearshift(1) },
+          { svg: PANELS.tachometer(-112) }
+        ]);
+      }},
+      { t: 1300, fn: () => {
+        setPanels([
+          { svg: PANELS.exhaust(3), anim: "pulse" },
+          { svg: PANELS.nosValve() }
+        ]);
+      }},
+      { t: 1650, fn: () => {
+        setGridConfig("cfg-3x2");
+        state.speed = 60;
+        setPanels([
+          { svg: PANELS.tachometer(0) },
+          { svg: PANELS.gearshift(3) },
+          { svg: PANELS.nosValve() },
+          { svg: PANELS.steeringWheel(15) },
+          { svg: PANELS.exhaust(2), anim: "pulse" },
+          { svg: PANELS.speedometer(80) }
+        ]);
+        startLive("split32");
+      }},
+      { t: 3000, fn: () => {
+        showWord("word-fast");
+      }},
+      { t: 4100, fn: () => {
+        stopLive();
+        setGridConfig("cfg-2x2");
+        state.speed = 170;
+        setPanels([
+          { svg: PANELS.nosValve() },
+          { svg: PANELS.steeringWheel(35) },
+          { svg: PANELS.tireTrack() },
+          { svg: PANELS.speedometer(170) }
+        ]);
+      }},
+      { t: 5300, fn: () => {
+        showWord("word-and");
+      }},
+      { t: 6000, fn: () => {
+        setGridConfig("cfg-3x1");
+        setPanels([
+          { svg: PANELS.roadBlur(), anim: "blur-x" },
+          { svg: PANELS.gearshift(5), anim: "pulse" },
+          { svg: PANELS.speedometer(280), anim: "pulse" }
+        ]);
+      }},
+      { t: 6600, fn: () => {
+        showWord("word-the");
+      }},
+      { t: 7300, fn: () => {
+        setGridConfig("cfg-3x2");
+        state.speed = 250;
+        state.tachAngle = 88;
+        setPanels([
+          { svg: PANELS.speedometer(250), anim: "pulse" },
+          { svg: PANELS.steeringWheel(100) },
+          { svg: PANELS.tachometer(100), anim: "pulse" },
+          { svg: PANELS.nosValve() },
+          { svg: PANELS.gearshift(6), anim: "pulse" },
+          { svg: PANELS.exhaust(3), anim: "pulse" }
+        ]);
+        startLive("split32");
+      }},
+      { t: 8450, fn: () => {
+        showWord("word-furious");
+      }},
+      { t: 9550, fn: () => {
+        stopLive();
+        hideAllWords();
+        setGridConfig("cfg-single");
+        setPanels([{ svg: PANELS.driverEye(false) }]);
+        startLive("eye");
+      }},
+      { t: 10600, fn: () => {
+        stopLive();
+        hideGrid();
+      }},
+      { t: 11000, fn: () => {
+        redLine.classList.remove("pulse-line");
+        void redLine.offsetWidth;
+        redLine.classList.add("pulse-line");
+      }},
+      { t: 11800, fn: () => {
+        redLine.classList.remove("pulse-line");
+      }},
+      { t: 12400, fn: () => {
+        runSequence();
+      }}
+    ];
+
+    function runSequence() {
+      hideAllWords();
+      hideGrid();
+      stopLive();
+      redLine.classList.remove("pulse-line");
+      beats.forEach((beat) => {
+        setTimeout(beat.fn, beat.t);
+      });
+    }
+
+    runSequence();
+  </script>
+</body>
+</html>

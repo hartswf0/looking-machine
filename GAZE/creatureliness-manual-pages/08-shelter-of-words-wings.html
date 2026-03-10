@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8.0 THE SHELTER OF WORDS · M23 Wings Of Desire</title>
+  <style>
+    :root {
+      --bg: #101010;
+      --ink: #f2f2f2;
+      --muted: #a0a0a0;
+      --line: #4d4d4d;
+      --paper: #161616;
+      --chalk: #e8e8e8;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #0b0b0b; color: var(--ink); font-family: "Georgia", "Times New Roman", serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #111; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #171717; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #222; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 "Avenir Next", "Segoe UI", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #f2f2f2; color: #111; border-color: #f2f2f2; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #151515; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.82rem; line-height: 1.45; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #101010; padding: 8px; color: #e8e8e8; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #0f0f0f; }
+    #paper { position: absolute; inset: 0; background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(255,255,255,0.03), transparent 50%);
+    }
+
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #121212; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #script { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+    #script span { position: absolute; color: rgba(245,245,245,0.5); font-style: italic; font-size: clamp(16px, 2vw, 24px); }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transition: opacity 0.18s ease; letter-spacing: 0.08em; text-transform: uppercase; font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .word.on { opacity: 1; }
+    .w1 { font-size: clamp(30px, 6vw, 88px); color: #f4f4f4; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #cfcfcf; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #cfcfcf; }
+    .w4 { font-size: clamp(42px, 9vw, 124px); color: #ffffff; }
+
+    #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 56%, rgba(0,0,0,0.45)); }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 08/10</div>
+        <h1>8.0 THE SHELTER OF WORDS · Agent M23 Wings Of Desire</h1>
+        <div class="meta">Writing as huddling: a small signal sent into unanswering dark.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: words do not solve cold, but they make temporary shelter.</li>
+            <li>Agent lens: monochrome poetic cinema, handwritten traces, observational stillness.</li>
+            <li>Primary motif: charcoal sentence etched onto metal as survival signal.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.8s: empty grainy field, faint scratch marks.</li>
+            <li>1.8–3.8s: split into text fragments and hand movement traces.</li>
+            <li>3.8–6.8s: 2x2 diary-like fragments, incomplete lines.</li>
+            <li>6.8–9.2s: words strike: WRITE / TO / STAY / WARM.</li>
+            <li>9.2–11.2s: single panel: "IT IS COLD" inscription.</li>
+            <li>11.2–12.0s: white fade breathes out.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "8.0 THE SHELTER OF WORDS" in Wings-of-Desire mode.
+Black-and-white poetic atmosphere with grain, scratches, handwritten overlays, and quiet observational pacing.
+Narrative: writing is not solution but huddling; a fragile signal sent in silence.
+Use cut rhythm, not smooth cinematic transitions.
+Show charcoal marks, steel panel surface, notebook fragments, unfinished lines, and lingering breath haze.
+Typography impacts: WRITE / TO / STAY / WARM.
+End on the inscription "IT IS COLD" and a soft white fade.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="paper"></div>
+          <div id="grid" class="cfg-single"></div>
+          <div id="script"></div>
+          <div id="words">
+            <span id="w1" class="word w1">WRITE</span>
+            <span id="w2" class="word w2">TO</span>
+            <span id="w3" class="word w3">STAY</span>
+            <span id="w4" class="word w4">WARM</span>
+          </div>
+          <div id="vignette"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const script = document.getElementById('script');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function addScript() {
+      script.innerHTML = '';
+      const lines = ['we keep arranging words', 'the silence is large', 'it is cold', 'someone was here'];
+      lines.forEach((txt, i) => {
+        const s = document.createElement('span');
+        s.textContent = txt;
+        s.style.left = `${8 + i*18}%`;
+        s.style.top = `${20 + i*16}%`;
+        s.style.transform = `rotate(${(i%2?-1:1)*(3+i)}deg)`;
+        script.appendChild(s);
+      });
+    }
+
+    function sheet(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#131313'/>${Array.from({length:11}).map((_,i)=>`<line x1='20' y1='${26+i*15}' x2='280' y2='${26+i*15}' stroke='#2e2e2e'/>`).join('')}<text x='20' y='182' fill='#cecece' font-size='11'>ENTRY ${100+v}</text></svg>`;
+    }
+
+    function scratch(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#101010'/>${Array.from({length:22}).map((_,i)=>`<path d='M ${10+i*13} ${20+(i%7)*20} L ${14+i*13} ${30+(i%7)*20 + (v%8)}' stroke='#f2f2f2' opacity='0.4'/>`).join('')}</svg>`;
+    }
+
+    function steel(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#121212'/><rect x='42' y='34' width='216' height='132' fill='none' stroke='#a9a9a9'/><text x='66' y='102' fill='#f4f4f4' font-size='20' font-family='Georgia'>IT IS COLD</text><text x='66' y='126' fill='#c9c9c9' font-size='12'>ELIAS // SECTOR 4</text></svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    let t = 0;
+    function run(){
+      clearWords();
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([sheet(0)]); }},
+        { t:1800, fn:()=>{ setLayout('cfg-2x1'); setPanels([sheet(1), scratch(0)]); }},
+        { t:3800, fn:()=>{ setLayout('cfg-2x2'); setPanels([sheet(2), scratch(2), scratch(3), sheet(3)]); }},
+        { t:5200, fn:()=>show(0)},
+        { t:6200, fn:()=>show(1)},
+        { t:7200, fn:()=>show(2)},
+        { t:8200, fn:()=>show(3)},
+        { t:9200, fn:()=>{ setLayout('cfg-single'); setPanels([steel(0)]);} },
+        { t:12400, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn,b.t));
+    }
+
+    setInterval(()=>{
+      t += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = steel(t%6);
+      if (grid.classList.contains('cfg-2x2') && p.length===4) {
+        p[0].innerHTML = sheet((t+1)%10);
+        p[1].innerHTML = scratch((t+2)%10);
+        p[2].innerHTML = scratch((t+3)%10);
+        p[3].innerHTML = sheet((t+4)%10);
+      }
+    }, 220);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    addScript();
+    run();
+  </script>
+</body>
+</html>

@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1.0 THE SPLIT :: AG06 True Detective Operator</title>
+  <style>
+    :root {
+      --bg-a: #150f10;
+      --bg-b: #2d1b1b;
+      --bg-c: #1d1313;
+      --ink: #e8ecf2;
+      --muted: #9ca5b6;
+      --line: #5a3f31;
+      --panel: #111721;
+      --accent: #bf5a29;
+      --accent-2: #f3cb96;
+      --flare: rgba(191,90,41,0.35);
+      --snow: rgba(230,236,245,0.72);
+      --smoke: rgba(155,166,188,0.16);
+      --ui-bg: #10151f;
+      --ui-panel: #131926;
+      --ui-line: #2f3a4e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: radial-gradient(circle at 20% 12%, var(--bg-b) 0%, var(--bg-a) 52%, #05070b 100%);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .pane {
+      border: 2px solid var(--ui-line);
+      border-radius: 12px;
+      background: var(--ui-panel);
+      overflow: hidden;
+    }
+
+    .head {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      border-bottom: 2px solid var(--ui-line);
+      background: var(--ui-bg);
+    }
+
+    .kicker {
+      font: 900 0.66rem/1 "SF Mono", Menlo, monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn {
+      min-height: 30px;
+      border: 1px solid var(--ui-line);
+      border-radius: 999px;
+      background: #151e30;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      font: 800 0.6rem/1.1 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .flow {
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .step {
+      border: 1px solid var(--ui-line);
+      border-radius: 10px;
+      background: #111828;
+      overflow: hidden;
+    }
+
+    .step-head {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--ui-line);
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 900;
+      background: #0f1521;
+    }
+
+    .step-body {
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .compact-list {
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+
+    .compact-list li {
+      border: 1px solid var(--ui-line);
+      border-radius: 8px;
+      background: #0d1320;
+      padding: 6px 8px;
+    }
+
+    .prompt-box,
+    .source-box {
+      border: 1px solid var(--ui-line);
+      border-radius: 8px;
+      background: #090e18;
+      color: #dfe7f5;
+      font: 0.68rem/1.4 "SF Mono", Menlo, monospace;
+      overflow: auto;
+      white-space: pre-wrap;
+      padding: 8px;
+    }
+
+    .prompt-box { max-height: 220px; }
+    .source-box { max-height: 240px; white-space: pre; }
+
+    .stage-wrap {
+      padding: 8px;
+      border-top: 1px solid var(--ui-line);
+      background: #0d1320;
+    }
+
+    #stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 290px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(160deg, var(--bg-c) 0%, var(--bg-a) 52%, #06080e 100%);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    #atmo {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 70% 12%, var(--flare) 0%, rgba(0,0,0,0) 46%), radial-gradient(circle at 20% 68%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 52%);
+      z-index: 1;
+    }
+
+    #grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity 0s;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x1 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .panel svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0.22) 4px);
+      pointer-events: none;
+      z-index: 8;
+    }
+
+    .panel.pulse { animation: pulse 0.42s ease-in-out infinite alternate; }
+    .panel.blur-x { animation: blurX 0.36s linear infinite; }
+    .panel.jitter { animation: jitter 0.18s steps(2, end) infinite; }
+    .panel.contrast { animation: contrast 0.26s ease-in-out infinite alternate; }
+    .panel.strobe { animation: strobe 0.22s steps(2, end) infinite; }
+
+    @keyframes pulse { from { filter: brightness(0.78); } to { filter: brightness(1.35); } }
+    @keyframes blurX { 0% { filter: blur(0px) brightness(1); } 50% { filter: blur(2px) brightness(1.25); } 100% { filter: blur(0px) brightness(1); } }
+    @keyframes jitter { 0% { transform: translate(0,0); } 50% { transform: translate(1px,-1px); } 100% { transform: translate(0,0); } }
+    @keyframes contrast { from { filter: contrast(0.95); } to { filter: contrast(1.35); } }
+    @keyframes strobe { 0% { opacity: 1; } 50% { opacity: 0.75; } 100% { opacity: 1; } }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.58;
+    }
+
+    #overlay svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    #text-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 6vw;
+      mix-blend-mode: screen;
+      text-align: left;
+    }
+
+    .word {
+      display: block;
+      text-transform: uppercase;
+      font-family: "Impact", "Arial Black", sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 0.86;
+      color: var(--ink);
+      transform: translateX(-40px) scale(0.98);
+      opacity: 0;
+      transition: none;
+      text-shadow: 0 0 16px rgba(0,0,0,0.35);
+    }
+
+    .word.visible {
+      transform: translateX(0) scale(1);
+      opacity: 1;
+    }
+
+    .word.large { font-size: clamp(2.6rem, 9vw, 7.6rem); }
+    .word.small { font-size: clamp(0.85rem, 3vw, 1.7rem); letter-spacing: 0.18em; color: var(--muted); }
+    .word.xl { font-size: clamp(3rem, 12vw, 9.8rem); color: var(--accent); mix-blend-mode: normal; }
+
+    #red-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      opacity: 0;
+      z-index: 10;
+    }
+
+    #red-line.pulse-line { animation: pulseLine 0.62s ease-out forwards; }
+
+    @keyframes pulseLine {
+      0% { transform: scaleX(0); opacity: 1; }
+      60% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    #particles {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      z-index: 11;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+      background-size: 190px;
+    }
+
+    .footer-meta {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (min-width: 1080px) {
+      .flow {
+        grid-template-columns: 1fr 1fr;
+      }
+      .flow .step:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Singular Production Artifact</div>
+        <h1>1.0 THE SPLIT :: AG06 True Detective Operator</h1>
+        <div class="meta">Distinct lineage page. Prompt generated from section+agent, then translated into standalone animation artifact.</div>
+        <div class="actions">
+          <a class="btn" href="../index.html">Singular Index</a>
+          <a class="btn" href="../../graph-operator-creatureliness.html">Graph Operator</a>
+          <a class="btn" href="../prompts/s01-a06-ag06-1-0.md">Prompt Markdown</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+          <button id="copySource" class="btn" type="button">Copy HTML Source</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="step">
+          <div class="step-head">1. Concept Breakdown</div>
+          <div class="step-body">
+            <ul class="compact-list"><li>Seed: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.</li><li>Straightjackets Cut: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.</li><li>Emergent Resonance: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.</li><li>Lineage: AG06:double:smolder</li><li>Overlay/Motion: double/smolder</li></ul>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-head">2. The Beat Map</div>
+          <div class="step-body">
+            <ol class="compact-list"><li>0.0-1.2s Establish locus from seed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.</li><li>1.2-2.4s Split-screen expansion with immediate percussive cuts.</li><li>2.4-3.6s Constraint rupture enters frame: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.</li><li>3.6-4.8s Body-machine contact under stress.</li><li>4.8-6.0s Mechanical escalation across concurrent panels.</li><li>6.0-7.2s Resonance motif surfaces: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.</li><li>7.2-8.4s Typography snap sequence in negative space.</li><li>8.4-9.6s Convergence toward singular focal intensity.</li><li>9.6-10.8s Lock image with narrative pressure: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn&#39;t thinking. It was freezing. And therefore, so was he.</li><li>10.8-12.0s Hard cut to black, red pulse, reset.</li></ol>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-head">3. The Final Output</div>
+          <div class="step-body">
+            <div>
+              <strong style="font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--muted);">Master AI Video Prompt</strong>
+              <pre id="videoPromptText" class="prompt-box">Create a 12-second title sequence for &quot;1.0 THE SPLIT&quot;.
+Agent lineage: AG06 True Detective Operator.
+Style lens: double overlay system, smolder motion profile, palette anchored by #bf5a29.
+Seed: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.
+Straightjacket cut: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.
+Emergent resonance: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.
+Output constraints: high-contrast graphic style, no smooth cinematic panning, rhythmic hard cuts only.
+Mechanical + creature motifs must coexist: apparatus macro + winter survival signal.
+Beat map:
+- 0.0-1.2s Establish locus from seed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.
+- 1.2-2.4s Split-screen expansion with immediate percussive cuts.
+- 2.4-3.6s Constraint rupture enters frame: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.
+- 3.6-4.8s Body-machine contact under stress.
+- 4.8-6.0s Mechanical escalation across concurrent panels.
+- 6.0-7.2s Resonance motif surfaces: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.
+- 7.2-8.4s Typography snap sequence in negative space.
+- 8.4-9.6s Convergence toward singular focal intensity.
+- 9.6-10.8s Lock image with narrative pressure: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn&#39;t thinking. It was freezing. And therefore, so was he.
+- 10.8-12.0s Hard cut to black, red pulse, reset.
+Return both outputs: (1) Master AI Video Prompt and (2) single-file HTML/CSS/JS animation artifact.</pre>
+            </div>
+            <div>
+              <strong style="font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--muted);">Single-File HTML/CSS/JS Source</strong>
+              <pre id="htmlSource" class="source-box">Loading source...</pre>
+            </div>
+            <div class="footer-meta">
+              <span>Lineage: AG06:double:smolder</span>
+              <span>Seed: 1858731698</span>
+              <span>Shots: 14</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="atmo"></div>
+          <canvas id="particles"></canvas>
+          <div id="grid" class="cfg-single"></div>
+          <div id="overlay"></div>
+
+          <div id="text-layer" aria-hidden="true">
+            <span id="word-a" class="word large">SEEING</span>
+            <span id="word-b" class="word small">SERVER</span>
+            <span id="word-c" class="word small">UNDERSTOOD</span>
+            <span id="word-d" class="word xl">SEEING</span>
+          </div>
+
+          <div id="red-line"></div>
+          <div id="grain"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const PAYLOAD = {"section":{"marker":"1.0","major":"THE SPLIT","label":"1.0 THE SPLIT"},"agent":{"id":"AG06","label":"True Detective Operator","role":"Inject gothic-industrial dread and layered silhouette composition."},"insight":{"seed":"Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.","outlineCut":"The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.","resonance":"The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.","lead":"Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.","deliveryText":"Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he."},"words":{"a":"SEEING","b":"SERVER","c":"UNDERSTOOD","d":"SEEING"},"seed":1858731698,"theme":{"fonts":{"display":"\"Impact\", \"Arial Black\", sans-serif","body":"\"Avenir Next\", \"Segoe UI\", sans-serif","mono":"\"SF Mono\", Menlo, monospace"},"palette":{"bgA":"#150f10","bgB":"#2d1b1b","bgC":"#1d1313","ink":"#e8ecf2","muted":"#9ca5b6","line":"#5a3f31","panel":"#111721","accent":"#bf5a29","accent2":"#f3cb96","flare":"rgba(191,90,41,0.35)","snow":"rgba(230,236,245,0.72)","smoke":"rgba(155,166,188,0.16)"},"overlay":"double","motion":"smolder","layouts":["cfg-single","cfg-2x1","cfg-3x2","cfg-2x2","cfg-3x1"],"modules":["silhouette","smoke","crossfade","wire","eye","fire","gauge"],"wordMode":"left","tint":"normal"},"shots":[{"t":0,"layout":"cfg-single","panels":[{"type":"gauge","fx":"contrast"}],"wordCue":null,"collapse":false,"pulse":false},{"t":380,"layout":"cfg-2x1","panels":[{"type":"wire","fx":"blur-x"},{"type":"smoke","fx":"blur-x"}],"wordCue":null,"collapse":false,"pulse":false},{"t":920,"layout":"cfg-3x1","panels":[{"type":"smoke","fx":""},{"type":"eye","fx":"blur-x"},{"type":"fire","fx":"jitter"}],"wordCue":null,"collapse":false,"pulse":false},{"t":1500,"layout":"cfg-2x2","panels":[{"type":"eye","fx":""},{"type":"fire","fx":"pulse"},{"type":"crossfade","fx":"jitter"},{"type":"silhouette","fx":"pulse"}],"wordCue":null,"collapse":false,"pulse":false},{"t":2200,"layout":"cfg-3x2","panels":[{"type":"fire","fx":"blur-x"},{"type":"crossfade","fx":"blur-x"},{"type":"silhouette","fx":"pulse"},{"type":"gauge","fx":"contrast"},{"type":"wire","fx":"strobe"},{"type":"smoke","fx":"contrast"}],"wordCue":null,"collapse":false,"pulse":false},{"t":3000,"layout":"cfg-single","panels":[{"type":"crossfade","fx":"strobe"}],"wordCue":"a","collapse":false,"pulse":false},{"t":3950,"layout":"cfg-2x1","panels":[{"type":"silhouette","fx":""},{"type":"gauge","fx":"blur-x"}],"wordCue":null,"collapse":false,"pulse":false},{"t":5000,"layout":"cfg-3x1","panels":[{"type":"gauge","fx":"jitter"},{"type":"wire","fx":"pulse"},{"type":"smoke","fx":"contrast"}],"wordCue":"b","collapse":false,"pulse":false},{"t":6100,"layout":"cfg-2x2","panels":[{"type":"wire","fx":"strobe"},{"type":"smoke","fx":"contrast"},{"type":"eye","fx":"blur-x"},{"type":"fire","fx":"contrast"}],"wordCue":null,"collapse":false,"pulse":false},{"t":7300,"layout":"cfg-3x2","panels":[{"type":"smoke","fx":""},{"type":"eye","fx":"blur-x"},{"type":"fire","fx":"pulse"},{"type":"crossfade","fx":"jitter"},{"type":"silhouette","fx":"strobe"},{"type":"gauge","fx":"blur-x"}],"wordCue":"c","collapse":false,"pulse":false},{"t":8500,"layout":"cfg-single","panels":[{"type":"eye","fx":"strobe"}],"wordCue":"d","collapse":false,"pulse":false},{"t":9800,"layout":"cfg-2x1","panels":[{"type":"fire","fx":"pulse"},{"type":"crossfade","fx":"contrast"}],"wordCue":null,"collapse":true,"pulse":false},{"t":11100,"layout":"cfg-3x1","panels":[{"type":"crossfade","fx":"contrast"},{"type":"silhouette","fx":"blur-x"},{"type":"gauge","fx":"jitter"}],"wordCue":null,"collapse":false,"pulse":true},{"t":12400,"layout":"cfg-2x2","panels":[{"type":"silhouette","fx":"jitter"},{"type":"gauge","fx":"blur-x"},{"type":"wire","fx":"blur-x"},{"type":"smoke","fx":""}],"wordCue":null,"collapse":false,"pulse":false}],"beatMap":["0.0-1.2s Establish locus from seed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.","1.2-2.4s Split-screen expansion with immediate percussive cuts.","2.4-3.6s Constraint rupture enters frame: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.","3.6-4.8s Body-machine contact under stress.","4.8-6.0s Mechanical escalation across concurrent panels.","6.0-7.2s Resonance motif surfaces: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.","7.2-8.4s Typography snap sequence in negative space.","8.4-9.6s Convergence toward singular focal intensity.","9.6-10.8s Lock image with narrative pressure: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.","10.8-12.0s Hard cut to black, red pulse, reset."],"videoPrompt":"Create a 12-second title sequence for \"1.0 THE SPLIT\".\nAgent lineage: AG06 True Detective Operator.\nStyle lens: double overlay system, smolder motion profile, palette anchored by #bf5a29.\nSeed: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.\nStraightjacket cut: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.\nEmergent resonance: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.\nOutput constraints: high-contrast graphic style, no smooth cinematic panning, rhythmic hard cuts only.\nMechanical + creature motifs must coexist: apparatus macro + winter survival signal.\nBeat map:\n- 0.0-1.2s Establish locus from seed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.\n- 1.2-2.4s Split-screen expansion with immediate percussive cuts.\n- 2.4-3.6s Constraint rupture enters frame: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.\n- 3.6-4.8s Body-machine contact under stress.\n- 4.8-6.0s Mechanical escalation across concurrent panels.\n- 6.0-7.2s Resonance motif surfaces: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.\n- 7.2-8.4s Typography snap sequence in negative space.\n- 8.4-9.6s Convergence toward singular focal intensity.\n- 9.6-10.8s Lock image with narrative pressure: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.\n- 10.8-12.0s Hard cut to black, red pulse, reset.\nReturn both outputs: (1) Master AI Video Prompt and (2) single-file HTML/CSS/JS animation artifact.","lineageTag":"AG06:double:smolder"};
+
+    const el = {
+      grid: document.getElementById("grid"),
+      overlay: document.getElementById("overlay"),
+      redLine: document.getElementById("red-line"),
+      particles: document.getElementById("particles"),
+      copyPrompt: document.getElementById("copyPrompt"),
+      copySource: document.getElementById("copySource"),
+      htmlSource: document.getElementById("htmlSource")
+    };
+
+    const state = {
+      frame: 0,
+      timer: null,
+      live: null,
+      wordShown: {
+        a: false,
+        b: false,
+        c: false,
+        d: false
+      }
+    };
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      return Promise.resolve();
+    }
+
+    el.copyPrompt.addEventListener("click", function () {
+      copyText(PAYLOAD.videoPrompt);
+    });
+
+    el.copySource.addEventListener("click", function () {
+      copyText(el.htmlSource.textContent || "");
+    });
+
+    fetch(window.location.href, { cache: "no-store" })
+      .then(function (res) { return res.text(); })
+      .then(function (html) { el.htmlSource.textContent = html; })
+      .catch(function () { el.htmlSource.textContent = "Source load failed."; });
+
+    function setGridLayout(layout) {
+      el.grid.className = "";
+      el.grid.classList.add(layout || "cfg-single");
+    }
+
+    function showGrid() {
+      el.grid.style.opacity = "1";
+    }
+
+    function hideGrid() {
+      el.grid.style.opacity = "0";
+    }
+
+    function showWord(key) {
+      const id = "word-" + key;
+      const node = document.getElementById(id);
+      if (node) node.classList.add("visible");
+      state.wordShown[key] = true;
+    }
+
+    function hideAllWords() {
+      ["word-a", "word-b", "word-c", "word-d"].forEach(function (id) {
+        const node = document.getElementById(id);
+        if (node) node.classList.remove("visible");
+      });
+      state.wordShown = { a: false, b: false, c: false, d: false };
+    }
+
+    function panelSvg(type, frame, panelIndex) {
+      const t = PAYLOAD.theme;
+      const p = t.palette;
+      const f = frame % 240;
+      const wobble = Math.sin((f + panelIndex * 19) / 12);
+      const tw = Math.cos((f + panelIndex * 23) / 15);
+      const acc = p.accent;
+      const acc2 = p.accent2;
+      const line = p.line;
+
+      if (type === "gauge") {
+        const angle = -130 + ((f * 7 + panelIndex * 30) % 260);
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0b1118"/>' +
+          '<circle cx="100" cy="100" r="82" fill="none" stroke="' + line + '" stroke-width="4"/>' +
+          '<circle cx="100" cy="100" r="65" fill="#0a0d14" stroke="#2a3448" stroke-width="2"/>' +
+          '<line x1="100" y1="100" x2="' + (100 + 56 * Math.cos((angle - 90) * Math.PI / 180)) + '" y2="' + (100 + 56 * Math.sin((angle - 90) * Math.PI / 180)) + '" stroke="' + acc + '" stroke-width="3" stroke-linecap="round"/>' +
+          '<circle cx="100" cy="100" r="7" fill="' + acc + '"/>' +
+          '</svg>';
+      }
+
+      if (type === "gear") {
+        const g = (Math.floor(f / 12) + panelIndex) % 6 + 1;
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#111019"/>' +
+          '<rect x="85" y="25" width="30" height="150" rx="4" fill="#1d2330" stroke="' + line + '"/>' +
+          '<circle cx="100" cy="28" r="22" fill="#202738" stroke="' + acc + '" stroke-width="2"/>' +
+          '<text x="100" y="33" text-anchor="middle" fill="' + acc2 + '" font-size="15" font-family="monospace">' + g + '</text>' +
+          '</svg>';
+      }
+
+      if (type === "eye") {
+        const blink = ((f + panelIndex * 31) % 47) < 3;
+        if (blink) {
+          return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0a0d14"/><line x1="18" y1="100" x2="182" y2="100" stroke="' + acc + '" stroke-width="2"/></svg>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0a0d14"/>' +
+          '<ellipse cx="100" cy="100" rx="70" ry="24" fill="#1a202f" stroke="' + line + '"/>' +
+          '<ellipse cx="100" cy="100" rx="22" ry="22" fill="#11131c" stroke="' + acc + '" stroke-width="1.6"/>' +
+          '<circle cx="100" cy="100" r="11" fill="#050609"/>' +
+          '<circle cx="95" cy="95" r="4" fill="#f5f7fa" opacity="0.6"/>' +
+          '</svg>';
+      }
+
+      if (type === "fire") {
+        const h = 18 + ((f + panelIndex * 9) % 48);
+        const h2 = 12 + ((f + panelIndex * 13) % 35);
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#08080a"/>' +
+          '<rect x="0" y="140" width="200" height="60" fill="#10121a"/>' +
+          '<polygon points="95,140 105,140 100,' + (140 - h) + '" fill="' + acc + '"/>' +
+          '<polygon points="90,145 110,145 100,' + (145 - h2) + '" fill="' + acc2 + '" opacity="0.8"/>' +
+          '</svg>';
+      }
+
+      if (type === "snow") {
+        let flakes = "";
+        for (let i = 0; i < 16; i += 1) {
+          const x = (i * 17 + f * 2 + panelIndex * 13) % 200;
+          const y = (i * 29 + f * 3 + panelIndex * 7) % 200;
+          flakes += '<circle cx="' + x + '" cy="' + y + '" r="1.3" fill="' + p.snow + '"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0b1018"/>' + flakes + '</svg>';
+      }
+
+      if (type === "circuit") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0a1117"/>' +
+          '<line x1="20" y1="40" x2="180" y2="40" stroke="' + line + '" stroke-width="2"/>' +
+          '<line x1="20" y1="100" x2="140" y2="100" stroke="' + acc + '" stroke-width="2"/>' +
+          '<line x1="60" y1="20" x2="60" y2="180" stroke="' + line + '" stroke-width="2"/>' +
+          '<circle cx="140" cy="100" r="5" fill="' + acc2 + '"/>' +
+          '</svg>';
+      }
+
+      if (type === "monolith") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#090d14"/>' +
+          '<rect x="68" y="24" width="64" height="152" fill="#101722" stroke="' + line + '" stroke-width="2"/>' +
+          '<circle cx="100" cy="100" r="22" fill="none" stroke="' + acc + '" stroke-width="1.8"/>' +
+          '</svg>';
+      }
+
+      if (type === "helix") {
+        let curve = "";
+        for (let i = 0; i < 9; i += 1) {
+          const y = 20 + i * 20;
+          const x = 100 + Math.sin((f + i * 24) / 18) * 34;
+          curve += '<circle cx="' + x + '" cy="' + y + '" r="4" fill="' + (i % 2 === 0 ? acc : acc2) + '"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0a1217"/>' + curve + '</svg>';
+      }
+
+      if (type === "wire") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0a0f16"/>' +
+          '<path d="M10,30 C80,' + (60 + wobble * 14) + ' 120,' + (16 + tw * 16) + ' 190,60" stroke="' + acc + '" fill="none" stroke-width="2"/>' +
+          '<path d="M10,120 C90,' + (90 + wobble * 11) + ' 120,' + (170 + tw * 8) + ' 190,150" stroke="' + acc2 + '" fill="none" stroke-width="2"/>' +
+          '</svg>';
+      }
+
+      if (type === "bars" || type === "redact") {
+        let bars = "";
+        for (let i = 0; i < 10; i += 1) {
+          const y = 16 + i * 18;
+          const w = 140 + ((i + panelIndex) % 4) * 11;
+          bars += '<rect x="' + (20 + (i % 2) * 6) + '" y="' + y + '" width="' + w + '" height="10" fill="' + (i % 3 === 0 ? acc : line) + '" opacity="0.65"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0d0f17"/>' + bars + '</svg>';
+      }
+
+      if (type === "fracture" || type === "shards") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0f1117"/>' +
+          '<polygon points="20,20 92,80 30,150" fill="' + line + '" opacity="0.55"/>' +
+          '<polygon points="180,24 134,96 174,170" fill="' + acc + '" opacity="0.62"/>' +
+          '<polygon points="76,130 126,90 148,170" fill="' + acc2 + '" opacity="0.54"/>' +
+          '</svg>';
+      }
+
+      if (type === "spiral" || type === "ring") {
+        let rings = "";
+        for (let i = 0; i < 6; i += 1) {
+          rings += '<circle cx="100" cy="100" r="' + (18 + i * 16 + (f % 9)) + '" fill="none" stroke="' + (i % 2 ? acc : acc2) + '" stroke-width="1" opacity="0.55"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0a1018"/>' + rings + '</svg>';
+      }
+
+      if (type === "silhouette" || type === "poster") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0d1118"/>' +
+          '<path d="M70,180 L80,120 L95,94 L105,94 L120,120 L130,180 Z" fill="#161f2b" stroke="' + line + '"/>' +
+          '<circle cx="100" cy="76" r="18" fill="#161f2b" stroke="' + acc + '"/>' +
+          '</svg>';
+      }
+
+      if (type === "signal" || type === "diag") {
+        let pts = "";
+        for (let i = 0; i < 20; i += 1) {
+          const x = i * 10;
+          const y = 100 + Math.sin((f + i * 9) / 10) * 18;
+          pts += (i ? " L" : "M") + x + "," + y;
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#081018"/><path d="' + pts + '" stroke="' + acc + '" fill="none" stroke-width="2"/></svg>';
+      }
+
+      if (type === "gridwave") {
+        let grid = "";
+        for (let i = 0; i < 10; i += 1) {
+          const o = 0.2 + (i % 3) * 0.15;
+          grid += '<line x1="0" y1="' + (i * 20) + '" x2="200" y2="' + (i * 20) + '" stroke="' + line + '" opacity="' + o + '"/>';
+          grid += '<line x1="' + (i * 20) + '" y1="0" x2="' + (i * 20) + '" y2="200" stroke="' + line + '" opacity="' + o + '"/>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#081018"/>' + grid + '</svg>';
+      }
+
+      if (type === "liquid") {
+        const y1 = 70 + Math.sin((f + panelIndex * 17) / 12) * 16;
+        const y2 = 120 + Math.cos((f + panelIndex * 19) / 14) * 14;
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="200" height="200" fill="#0a0f1a"/>' +
+          '<path d="M0,' + y1 + ' C40,' + (y1 - 24) + ' 80,' + (y1 + 24) + ' 120,' + y1 + ' C160,' + (y1 - 20) + ' 180,' + (y1 + 18) + ' 200,' + y1 + ' L200,200 L0,200 Z" fill="' + acc + '" opacity="0.55"/>' +
+          '<path d="M0,' + y2 + ' C40,' + (y2 - 16) + ' 80,' + (y2 + 16) + ' 120,' + y2 + ' C160,' + (y2 - 14) + ' 180,' + (y2 + 14) + ' 200,' + y2 + ' L200,200 L0,200 Z" fill="' + acc2 + '" opacity="0.4"/>' +
+          '</svg>';
+      }
+
+      if (type === "void") {
+        const r = 24 + ((f + panelIndex * 33) % 34);
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#05070c"/><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="' + acc2 + '" opacity="0.5"/><circle cx="100" cy="100" r="' + Math.max(10, r - 18) + '" fill="#070a10"/></svg>';
+      }
+
+      if (type === "biomech") {
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#091018"/><ellipse cx="100" cy="100" rx="70" ry="40" fill="none" stroke="' + line + '" stroke-width="3"/><line x1="20" y1="100" x2="180" y2="100" stroke="' + acc + '" stroke-width="2"/></svg>';
+      }
+
+      if (type === "glyph") {
+        const chars = ["I", "X", "O", "V", "A", "Y"];
+        let out = "";
+        for (let i = 0; i < 10; i += 1) {
+          out += '<text x="' + (18 + (i % 5) * 34) + '" y="' + (34 + Math.floor(i / 5) * 78) + '" fill="' + (i % 2 ? acc : acc2) + '" opacity="0.65" font-size="28" font-family="monospace">' + chars[(i + panelIndex) % chars.length] + '</text>';
+        }
+        return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0b0f16"/>' + out + '</svg>';
+      }
+
+      return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#0d1018"/></svg>';
+    }
+
+    function overlaySvg(style, frame) {
+      const p = PAYLOAD.theme.palette;
+      const acc = p.accent;
+      const line = p.line;
+      const w = Math.sin(frame / 18) * 16;
+
+      if (style === "reticle" || style === "optic") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="28" fill="none" stroke="' + acc + '" stroke-width="0.5" opacity="0.4"/><line x1="50" y1="0" x2="50" y2="100" stroke="' + line + '" stroke-width="0.35"/><line x1="0" y1="50" x2="100" y2="50" stroke="' + line + '" stroke-width="0.35"/></svg>';
+      }
+      if (style === "helix") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10,12 C40,' + (20 + w * 0.1) + ' 60,' + (80 - w * 0.1) + ' 90,88" stroke="' + acc + '" fill="none" stroke-width="0.6" opacity="0.5"/><path d="M10,88 C40,' + (80 - w * 0.1) + ' 60,' + (20 + w * 0.1) + ' 90,12" stroke="' + p.accent2 + '" fill="none" stroke-width="0.6" opacity="0.4"/></svg>';
+      }
+      if (style === "shards" || style === "propaganda") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="4,8 36,20 12,46" fill="' + line + '" opacity="0.2"/><polygon points="96,14 70,42 92,74" fill="' + acc + '" opacity="0.18"/><polygon points="24,86 52,62 74,92" fill="' + p.accent2 + '" opacity="0.14"/></svg>';
+      }
+      if (style === "paper") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="10" width="84" height="80" fill="none" stroke="' + line + '" stroke-dasharray="2 2" opacity="0.3"/><line x1="8" y1="32" x2="92" y2="32" stroke="' + acc + '" opacity="0.2"/></svg>';
+      }
+      if (style === "orbital") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="50" rx="35" ry="14" fill="none" stroke="' + acc + '" opacity="0.3"/><ellipse cx="50" cy="50" rx="18" ry="35" fill="none" stroke="' + p.accent2 + '" opacity="0.26"/></svg>';
+      }
+      if (style === "double") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="16" width="72" height="68" fill="none" stroke="' + line + '" opacity="0.2"/><line x1="18" y1="20" x2="84" y2="80" stroke="' + acc + '" opacity="0.25"/></svg>';
+      }
+      if (style === "void") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="44" fill="none" stroke="' + line + '" opacity="0.2"/><circle cx="50" cy="50" r="18" fill="none" stroke="' + acc + '" opacity="0.3"/></svg>';
+      }
+      if (style === "biohazard") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="8" fill="none" stroke="' + acc + '"/><circle cx="50" cy="30" r="16" fill="none" stroke="' + line + '" opacity="0.35"/><circle cx="34" cy="60" r="16" fill="none" stroke="' + line + '" opacity="0.35"/><circle cx="66" cy="60" r="16" fill="none" stroke="' + line + '" opacity="0.35"/></svg>';
+      }
+      if (style === "liquid") {
+        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,34 C24,' + (30 + w * 0.2) + ' 48,' + (38 - w * 0.15) + ' 72,34 C84,' + (32 + w * 0.15) + ' 92,30 100,34" stroke="' + p.accent2 + '" fill="none" opacity="0.35"/><path d="M0,68 C24,' + (70 - w * 0.2) + ' 48,' + (62 + w * 0.14) + ' 72,68 C84,' + (70 - w * 0.1) + ' 92,72 100,68" stroke="' + acc + '" fill="none" opacity="0.3"/></svg>';
+      }
+
+      return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="50" x2="100" y2="50" stroke="' + line + '" opacity="0.2"/></svg>';
+    }
+
+    function setPanels(shot) {
+      setGridLayout(shot.layout || "cfg-single");
+      el.grid.innerHTML = "";
+
+      shot.panels.forEach(function (panel, idx) {
+        const node = document.createElement("div");
+        node.className = "panel" + (panel.fx ? " " + panel.fx : "");
+        node.dataset.type = panel.type;
+        node.dataset.idx = String(idx);
+        node.innerHTML = panelSvg(panel.type, state.frame, idx);
+        el.grid.appendChild(node);
+      });
+
+      showGrid();
+    }
+
+    function refreshLivePanels() {
+      const panels = el.grid.querySelectorAll(".panel");
+      panels.forEach(function (panel, idx) {
+        const type = panel.dataset.type || "gauge";
+        panel.innerHTML = panelSvg(type, state.frame, idx);
+      });
+      el.overlay.innerHTML = overlaySvg(PAYLOAD.theme.overlay, state.frame);
+    }
+
+    function startLive() {
+      stopLive();
+      state.live = setInterval(function () {
+        state.frame += 1;
+        refreshLivePanels();
+      }, 110);
+    }
+
+    function stopLive() {
+      if (state.live) {
+        clearInterval(state.live);
+        state.live = null;
+      }
+    }
+
+    function pulseLine() {
+      el.redLine.classList.remove("pulse-line");
+      void el.redLine.offsetWidth;
+      el.redLine.classList.add("pulse-line");
+    }
+
+    function snowParticles(frame) {
+      const canvas = el.particles;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const count = 70;
+      ctx.fillStyle = PAYLOAD.theme.palette.snow;
+      for (let i = 0; i < count; i += 1) {
+        const x = ((i * 57) + frame * 2 + (i % 7) * 11) % w;
+        const y = ((i * 41) + frame * 3 + (i % 9) * 7) % h;
+        const r = (i % 3) + 0.6;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = PAYLOAD.theme.palette.smoke;
+      ctx.fillRect(0, h * 0.68, w, h * 0.32);
+    }
+
+    function resizeCanvas() {
+      const box = el.particles.getBoundingClientRect();
+      el.particles.width = Math.max(2, Math.floor(box.width));
+      el.particles.height = Math.max(2, Math.floor(box.height));
+    }
+
+    function runSequence() {
+      stopLive();
+      hideGrid();
+      hideAllWords();
+      state.frame = 0;
+      el.overlay.innerHTML = overlaySvg(PAYLOAD.theme.overlay, state.frame);
+
+      PAYLOAD.shots.forEach(function (shot, idx) {
+        setTimeout(function () {
+          if (shot.collapse) {
+            hideGrid();
+            stopLive();
+          } else {
+            setPanels(shot);
+            startLive();
+          }
+
+          if (shot.wordCue && !state.wordShown[shot.wordCue]) {
+            showWord(shot.wordCue);
+          }
+
+          if (shot.pulse) {
+            pulseLine();
+          }
+
+          state.frame += idx * 3;
+          refreshLivePanels();
+        }, shot.t);
+      });
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    setInterval(function () {
+      state.frame += 1;
+      snowParticles(state.frame);
+    }, 70);
+
+    runSequence();
+    setInterval(runSequence, 12600);
+  </script>
+</body>
+</html>

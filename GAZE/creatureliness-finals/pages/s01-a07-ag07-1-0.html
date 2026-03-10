@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1.0 THE SPLIT | AG07 Alien Operator</title>
+  <style>
+    :root {
+      --bg: #eeebe4;
+      --panel: #f8f5ef;
+      --ink: #14171e;
+      --muted: #5f6570;
+      --line: #b8b1a4;
+      --primary: #0f1522;
+      --accent: #b9472e;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #fff; display: grid; gap: 6px; }
+    .kicker { font: 900 0.66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; line-height: 1.25; }
+    .meta { font-size: 0.72rem; color: var(--muted); }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 32px; border: 1px solid var(--line); border-radius: 999px; padding: 0 10px; background: #fff; color: var(--ink); font: 800 0.62rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .grid { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
+    .block { padding: 8px; display: grid; gap: 8px; }
+    .block h2 { margin: 0; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .canvas { border: 1px solid var(--line); border-radius: 10px; background: #0d1016; color: #e4e8ef; min-height: 180px; padding: 12px; display: grid; align-content: space-between; gap: 10px; }
+    .glyph { height: 74px; border: 1px solid #2b3344; border-radius: 8px; position: relative; overflow: hidden; }
+    .bar { position: absolute; top: 0; bottom: 0; width: 8%; background: linear-gradient(180deg, #e8ecef 0%, #6a7489 100%); left: 2%; transform: skewX(-8deg); opacity: 0.9; transition: left 0.35s ease, width 0.35s ease, opacity 0.35s ease; }
+    .glow { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(185,71,46,0.34) 0%, rgba(13,16,22,0) 62%); pointer-events: none; }
+    .beat { font: 700 0.76rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; color: #ced5e2; min-height: 40px; }
+    .list { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+    .lrow { display: grid; grid-template-columns: 48px minmax(0,1fr); border-top: 1px solid #ece7dc; }
+    .lrow:first-child { border-top: 0; }
+    .ln { border: 0; border-right: 1px solid #ece7dc; background: #f7f3ea; color: #8b93a1; text-align: right; padding: 6px 8px 6px 0; font: 800 0.66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; cursor: pointer; }
+    .lt { margin: 0; padding: 6px 10px; white-space: pre-wrap; font: 0.72rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .timeline { display: grid; gap: 4px; }
+    .beat-row { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: #fff; font: 0.7rem/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .beat-row.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #fff5f2; }
+    @media (min-width: 960px) {
+      .grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Finals Artifact</div>
+        <h1>1.0 THE SPLIT | AG07 Alien Operator</h1>
+        <div class="meta">Section 1.0 · Agent AG07 · Dual output generated.</div>
+        <div class="actions">
+          <a class="btn" href="../index.html">Back To Manual</a>
+          <a class="btn" href="../prompts/s01-a07-ag07-1-0.md">Open Prompt Markdown</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+          <button id="copyDelivery" class="btn" type="button">Copy Act Text</button>
+        </div>
+      </header>
+    </section>
+
+    <section class="grid">
+      <section class="pane block">
+        <h2>Master AI Video Prompt</h2>
+        <div class="list" id="videoBlock">
+          <div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="1">1</button><pre class="lt">Create a 12-second cinematic title sequence for &quot;1.0 THE SPLIT&quot;.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="2">2</button><pre class="lt">Agent lens: Alien Operator.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="3">3</button><pre class="lt">Stylistic direction: Near-dark emergence, vacuum silence, typographic suspense and negative space.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="4">4</button><pre class="lt">Seed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="5">5</button><pre class="lt">Outline straightjacket cut: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="6">6</button><pre class="lt">Emergent resonance: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="7">7</button><pre class="lt">Visual language: high-contrast typography, hard geometric framing, physical textures (frost, ash, wire, smoke), no glossy futurism.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="8">8</button><pre class="lt">Camera language: measured dolly and lock-offs, punctuated by abrupt calibration drifts at beat transitions.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="9">9</button><pre class="lt">Audio direction: low mechanical hum, brittle transient impacts, no triumphant score.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="10">10</button><pre class="lt">Output must include exact beat timing map:</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="11">11</button><pre class="lt">- 0.0-1.2s  Establish locus: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="12">12</button><pre class="lt">- 1.2-2.4s  Intrusion: frost, breath, smoke, or telemetry instability enters frame.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="13">13</button><pre class="lt">- 2.4-3.6s  Constraint cut: The trope of the &quot;waking, malevolent AI.&quot; We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="14">14</button><pre class="lt">- 3.6-4.8s  Contact event: body and apparatus collide under resistance.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="15">15</button><pre class="lt">- 4.8-6.0s  System response: stuttered text, pulse bars, unstable logic cadence.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="16">16</button><pre class="lt">- 6.0-7.2s  Emergent resonance: The condensation on the server glass from Elias&#39;s own breathing becomes the lens through which the machine is understood.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="17">17</button><pre class="lt">- 7.2-8.4s  Threshold turn: analysis collapses into survival mechanics.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="18">18</button><pre class="lt">- 8.4-9.6s  Material witness: wire, ash, frost, blood, or soot anchors reality.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="19">19</button><pre class="lt">- 9.6-10.8s Recomposition: language condenses into operational intent.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="20">20</button><pre class="lt">- 10.8-12.0s Lock image: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn&#39;t thinking. It was freezing. And therefore, so was he.</pre></div><div class="lrow"><button class="ln" type="button" data-copy-line="video" data-line="21">21</button><pre class="lt">Deliver both: (1) master video prompt text and (2) a functional single-file HTML/CSS/JS animation interpretation.</pre></div>
+        </div>
+      </section>
+
+      <section class="pane block">
+        <h2>Single-File HTML Animation (Live)</h2>
+        <div class="canvas">
+          <div class="glyph"><div class="bar" id="bar"></div><div class="glow"></div></div>
+          <div class="beat" id="beatText"></div>
+          <div class="actions">
+            <button id="playBtn" class="btn" type="button">Play 12s Loop</button>
+            <button id="stopBtn" class="btn" type="button">Stop</button>
+          </div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+    </section>
+
+    <section class="pane block">
+      <h2>Cold Delivery Source (Line-Copy Enabled)</h2>
+      <div class="list" id="deliveryBlock">
+        <div class="lrow"><button class="ln" type="button" data-copy-line="delivery" data-line="1">1</button><pre class="lt">Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn&#39;t thinking. It was freezing. And therefore, so was he.</pre></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const BEATS = ["0.0-1.2s  Establish locus: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.","1.2-2.4s  Intrusion: frost, breath, smoke, or telemetry instability enters frame.","2.4-3.6s  Constraint cut: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.","3.6-4.8s  Contact event: body and apparatus collide under resistance.","4.8-6.0s  System response: stuttered text, pulse bars, unstable logic cadence.","6.0-7.2s  Emergent resonance: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.","7.2-8.4s  Threshold turn: analysis collapses into survival mechanics.","8.4-9.6s  Material witness: wire, ash, frost, blood, or soot anchors reality.","9.6-10.8s Recomposition: language condenses into operational intent.","10.8-12.0s Lock image: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he."];
+    const SEED = "Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.";
+    const LEAD = "Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.";
+    const VIDEO_PROMPT = "Create a 12-second cinematic title sequence for \"1.0 THE SPLIT\".\nAgent lens: Alien Operator.\nStylistic direction: Near-dark emergence, vacuum silence, typographic suspense and negative space.\nSeed motif: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.\nOutline straightjacket cut: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.\nEmergent resonance: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.\nVisual language: high-contrast typography, hard geometric framing, physical textures (frost, ash, wire, smoke), no glossy futurism.\nCamera language: measured dolly and lock-offs, punctuated by abrupt calibration drifts at beat transitions.\nAudio direction: low mechanical hum, brittle transient impacts, no triumphant score.\nOutput must include exact beat timing map:\n- 0.0-1.2s  Establish locus: Looking at the metal and seeing a frightened animal in the cold instead of a mirrored god.\n- 1.2-2.4s  Intrusion: frost, breath, smoke, or telemetry instability enters frame.\n- 2.4-3.6s  Constraint cut: The trope of the \"waking, malevolent AI.\" We discard the god-machine. The machine is pathetic; the horror is in its fragility, which is our own.\n- 3.6-4.8s  Contact event: body and apparatus collide under resistance.\n- 4.8-6.0s  System response: stuttered text, pulse bars, unstable logic cadence.\n- 6.0-7.2s  Emergent resonance: The condensation on the server glass from Elias's own breathing becomes the lens through which the machine is understood.\n- 7.2-8.4s  Threshold turn: analysis collapses into survival mechanics.\n- 8.4-9.6s  Material witness: wire, ash, frost, blood, or soot anchors reality.\n- 9.6-10.8s Recomposition: language condenses into operational intent.\n- 10.8-12.0s Lock image: Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.\nDeliver both: (1) master video prompt text and (2) a functional single-file HTML/CSS/JS animation interpretation.";
+    const DELIVERY_TEXT = "Elias wiped the rime from the casing of the deep-logic mainframe with the heel of his glove. He had come to the sublevel expecting the low, comforting hum of absolute syntax-the crystal cathedral of the cooling fans. Instead, the glass was opaque with his own exhaled breath. He scrubbed harder, leaning in. Behind the heavy panes, the led-arrays were not processing. They were shivering. Power fluctuated, dimming and surging in erratic, panicked arrhythmias. He looked for a god of pure reason in the dark of the compound, but the glass only threw back his own sunken eyes, his chapped lips, the cloud of his breath. The machine wasn't thinking. It was freezing. And therefore, so was he.";
+
+    const el = {
+      bar: document.getElementById("bar"),
+      beatText: document.getElementById("beatText"),
+      timeline: document.getElementById("timeline"),
+      copyPrompt: document.getElementById("copyPrompt"),
+      copyDelivery: document.getElementById("copyDelivery"),
+      playBtn: document.getElementById("playBtn"),
+      stopBtn: document.getElementById("stopBtn")
+    };
+
+    let t = null;
+    let idx = 0;
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      return Promise.resolve();
+    }
+
+    function renderTimeline(active) {
+      el.timeline.innerHTML = BEATS.map(function (line, i) {
+        const css = i === active ? "active" : "";
+        return "<div class=\"beat-row " + css + "\">" + line.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</div>";
+      }).join("");
+    }
+
+    function paint(i) {
+      const normalized = i / Math.max(1, BEATS.length - 1);
+      const left = 2 + normalized * 78;
+      const width = 8 + (i % 3) * 4;
+      el.bar.style.left = left + "%";
+      el.bar.style.width = width + "%";
+      el.bar.style.opacity = String(0.55 + (i % 4) * 0.1);
+      el.beatText.textContent = BEATS[i] + " | Seed: " + SEED;
+      renderTimeline(i);
+    }
+
+    function startLoop() {
+      stopLoop();
+      idx = 0;
+      paint(idx);
+      t = setInterval(() => {
+        idx = (idx + 1) % BEATS.length;
+        paint(idx);
+      }, 1200);
+    }
+
+    function stopLoop() {
+      if (t) clearInterval(t);
+      t = null;
+    }
+
+    document.body.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-copy-line]");
+      if (!btn) return;
+      const block = btn.getAttribute("data-copy-line");
+      const line = Number(btn.getAttribute("data-line"));
+      if (!Number.isFinite(line)) return;
+      if (block === "video") {
+        const lineText = VIDEO_PROMPT.split("\n")[line - 1] || "";
+        void copyText(lineText);
+      }
+      if (block === "delivery") {
+        const lineText = DELIVERY_TEXT.split("\n")[line - 1] || "";
+        void copyText(lineText);
+      }
+    });
+
+    el.copyPrompt.addEventListener("click", () => { void copyText(VIDEO_PROMPT); });
+    el.copyDelivery.addEventListener("click", () => { void copyText(DELIVERY_TEXT); });
+    el.playBtn.addEventListener("click", startLoop);
+    el.stopBtn.addEventListener("click", stopLoop);
+
+    paint(0);
+    el.beatText.textContent = BEATS[0] + " | Lock image lead: " + LEAD;
+  </script>
+</body>
+</html>

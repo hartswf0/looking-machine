@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10.0 MORNING · M23 Wings Of Desire</title>
+  <style>
+    :root {
+      --bg: #0e1115;
+      --ink: #f3f0ea;
+      --muted: #a5a39e;
+      --line: #555a63;
+      --ash: #c0c3c9;
+      --dawn: #d9b58a;
+      --coal: #2b2f36;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: linear-gradient(180deg, #2c3748 0%, #151922 40%, #090b0f 100%); color: var(--ink); font-family: "Georgia", "Times New Roman", serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #151921; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #1f2632; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #303846; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 "Avenir Next", "Segoe UI", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #f3f0ea; color: #1b1f27; border-color: #f3f0ea; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #1b222e; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.82rem; line-height: 1.45; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #181f2a; padding: 8px; color: #ece6db; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #11151c; }
+    #dawn { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(217,181,138,0.36), rgba(18,23,31,0.06) 45%, rgba(8,10,14,0.8)); }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #1b212b; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #ash { position: absolute; inset: 0; pointer-events: none; }
+    #ash i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: rgba(220,226,236,0.65); animation: drift linear infinite; }
+    @keyframes drift { to { transform: translateY(-30vh) translateX(18px); opacity: 0; } }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transition: opacity 0.2s ease; text-transform: uppercase; letter-spacing: 0.1em; font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .word.on { opacity: 1; }
+    .w1 { font-size: clamp(30px, 6vw, 88px); color: #faf6ef; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #d8d7d3; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #d8d7d3; }
+    .w4 { font-size: clamp(42px, 9vw, 124px); color: #d9b58a; }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 10/10</div>
+        <h1>10.0 MORNING · Agent M23 Wings Of Desire</h1>
+        <div class="meta">No epiphany. Ash, wind, tool, repetition.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: morning is continuation, not resolution.</li>
+            <li>Agent lens: poetic observational closure with sparse movement.</li>
+            <li>Primary motif: ash field, weak dawn, hand returning to the wrench.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.8s: dim dawn gradient over ash.</li>
+            <li>1.8–3.8s: split with broken rack and cold floor.</li>
+            <li>3.8–6.8s: 2x2 fragments of ash, tool, wall text, empty chassis.</li>
+            <li>6.8–9.2s: words strike: GATHER / THE / WOOD / AGAIN.</li>
+            <li>9.2–11.2s: single frame: raised wrench silhouette.</li>
+            <li>11.2–12.0s: quiet hold, no conclusion card.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "10.0 MORNING" in Wings-of-Desire mode.
+Poetic, restrained dawn atmosphere over ash and wreckage.
+Narrative: intelligence is repetition under weather, not triumphant finale.
+Use cut rhythm and stillness pockets.
+Show ash bed, broken server shell, soot text on wall, and hand lifting tool again.
+Typography impacts: GATHER / THE / WOOD / AGAIN.
+End with unresolved hold in weak morning light.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="dawn"></div>
+          <div id="grid" class="cfg-single"></div>
+          <div id="ash"></div>
+          <div id="words">
+            <span id="w1" class="word w1">GATHER</span>
+            <span id="w2" class="word w2">THE</span>
+            <span id="w3" class="word w3">WOOD</span>
+            <span id="w4" class="word w4">AGAIN</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const ash = document.getElementById('ash');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function ashField(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#1a2029'/><ellipse cx='150' cy='166' rx='110' ry='24' fill='#707985'/><ellipse cx='150' cy='160' rx='90' ry='16' fill='#98a1ac'/><text x='18' y='28' fill='#d6d6d6' font-size='11'>MORNING LIGHT ${(20+v%50)}%</text></svg>`;
+    }
+
+    function rack(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#1c232e'/><rect x='72' y='30' width='156' height='138' fill='none' stroke='#9ca6b5'/><line x1='72' y1='72' x2='228' y2='72' stroke='#7f8896'/><line x1='72' y1='114' x2='228' y2='114' stroke='#7f8896'/><path d='M 120 168 L 170 128 L 190 168 Z' fill='#d9b58a' opacity='0.75'/></svg>`;
+    }
+
+    function wall(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#202734'/><text x='34' y='92' fill='#e7e3db' font-size='22' font-family='Georgia'>IT IS COLD</text><text x='34' y='118' fill='#bdb8af' font-size='11'>ELIAS // SECTOR 4</text><line x1='28' y1='128' x2='242' y2='128' stroke='#4f5661'/></svg>`;
+    }
+
+    function wrench(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#151b24'/><path d='M 140 176 L 184 54 L 196 58 L 154 180 Z' fill='#c9d1de'/><circle cx='190' cy='52' r='14' fill='none' stroke='#c9d1de' stroke-width='4'/><text x='18' y='184' fill='#d9b58a' font-size='11'>CONTINUE // ${v}</text></svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    function makeAsh(){
+      ash.innerHTML = '';
+      for (let i=0; i<90; i++) {
+        const p = document.createElement('i');
+        p.style.left = `${Math.random()*100}%`;
+        p.style.bottom = `${Math.random()*20}%`;
+        p.style.animationDuration = `${3 + Math.random()*5}s`;
+        p.style.animationDelay = `${-Math.random()*6}s`;
+        ash.appendChild(p);
+      }
+    }
+
+    let tick = 0;
+    function run(){
+      clearWords();
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([ashField(0)]); }},
+        { t:1800, fn:()=>{ setLayout('cfg-2x1'); setPanels([rack(0), ashField(1)]); }},
+        { t:3800, fn:()=>{ setLayout('cfg-2x2'); setPanels([ashField(2), wrench(2), wall(2), rack(2)]); }},
+        { t:5200, fn:()=>show(0)},
+        { t:6200, fn:()=>show(1)},
+        { t:7200, fn:()=>show(2)},
+        { t:8200, fn:()=>show(3)},
+        { t:9200, fn:()=>{ setLayout('cfg-single'); setPanels([wrench(8)]);} },
+        { t:12400, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn,b.t));
+    }
+
+    setInterval(()=>{
+      tick += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = wrench(tick%20);
+      if (grid.classList.contains('cfg-2x2') && p.length===4) {
+        p[0].innerHTML = ashField((tick+1)%20);
+        p[1].innerHTML = wrench((tick+2)%20);
+        p[2].innerHTML = wall((tick+3)%20);
+        p[3].innerHTML = rack((tick+4)%20);
+      }
+    }, 220);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    makeAsh();
+    run();
+  </script>
+</body>
+</html>

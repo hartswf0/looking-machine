@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.0 THE CRYSTAL AND THE BURN · M03 Andromeda</title>
+  <style>
+    :root {
+      --bg: #030605;
+      --panel: #07100d;
+      --ink: #bffad7;
+      --muted: #79b896;
+      --line: #1d4f3a;
+      --alert: #ff3f4d;
+      --amber: #ffc06e;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #020504; color: var(--ink); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #040b08; overflow: hidden; box-shadow: inset 0 0 80px rgba(0,255,120,0.04); }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #06100d; display: grid; gap: 5px; }
+    .kicker { font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.76rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #0d1c18; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 700 0.58rem/1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #bffad7; color: #031109; border-color: #bffad7; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #07120f; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.78rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #020705; padding: 8px; color: #a9f9ca; font-size: 0.68rem; line-height: 1.35; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #010302; }
+    #stage::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 255, 130, 0.05), rgba(0, 255, 130, 0.05) 1px, transparent 1px, transparent 3px); pointer-events: none; z-index: 30; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #010403; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+    .panel { position: relative; overflow: hidden; background: #010403; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+    .panel.alert { box-shadow: inset 0 0 20px rgba(255, 63, 77, 0.4); }
+
+    #ticker { position: absolute; left: 0; right: 0; top: 0; height: 26px; border-bottom: 1px solid #1a4a38; background: rgba(0, 10, 8, 0.72); color: #8eeab8; font-size: 0.68rem; display: flex; align-items: center; gap: 20px; padding: 0 10px; z-index: 20; white-space: nowrap; overflow: hidden; }
+    #ticker span { animation: crawl 9s linear infinite; }
+    @keyframes crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    #words { position: absolute; inset: 0; z-index: 21; pointer-events: none; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transform: scale(0.8); transition: opacity 0.14s ease, transform 0.14s ease; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+    .word.on { opacity: 1; transform: scale(1); }
+    .w1 { font-size: clamp(28px, 6vw, 88px); color: #d4ffe8; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: var(--amber); }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #d1fbcf; }
+    .w4 { font-size: clamp(34px, 8vw, 110px); color: var(--alert); }
+
+    #alarm { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgba(255, 63, 77, 0.12), transparent 60%); opacity: 0; z-index: 15; }
+    #alarm.on { animation: alarm 0.35s linear 2; }
+    @keyframes alarm { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 02/10</div>
+        <h1>2.0 THE CRYSTAL AND THE BURN · Agent M03 Andromeda</h1>
+        <div class="meta">Pure syntax fails under thermal stress. Feedback arrives as pain, not abstraction.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: crystal-language promise collapses when circuit meets cold and burns.</li>
+            <li>Agent lens: 1970s technocratic horror, military diagnostics, monochrome CRT panic.</li>
+            <li>Primary motif: command console remains legible while hardware physically fails.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.5s: baseline diagnostic green trace, stable readouts.</li>
+            <li>1.5–3.2s: two-panel split, syntax grid vs thermal relay crack.</li>
+            <li>3.2–6.0s: 3x2 escalation with alarms and command denial.</li>
+            <li>6.0–8.3s: words strike: FEEDBACK / IS / THE / BURN.</li>
+            <li>8.3–10.8s: status turns from VALID to FAILED while line oscillates.</li>
+            <li>10.8–12.0s: red event flash and blackout.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "2.0 THE CRYSTAL AND THE BURN" in the Andromeda mode.
+Visual language: monochrome CRT diagnostics, classified procedure overlays, emergency red interruption.
+Narrative: symbolic cleanliness cannot survive thermal contact; feedback arrives through bodily burn.
+Use rigid jump cuts and raster scan texture, no smooth camera movement.
+Show command console, thermal relay diagram, cracked coolant channel, hazard code panes, waveform instability.
+Typography enters in four impacts: FEEDBACK / IS / THE / BURN.
+Finish with TOTAL PROCEDURE FAILURE and immediate blackout.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="ticker"><span>SECTOR-4 // BIOSIGNAL LOSS // RELAY TEMP CRITICAL // AUTH DENIED // FEEDBACK CHANNEL ACTIVE //</span></div>
+          <div id="grid" class="cfg-single"></div>
+          <div id="alarm"></div>
+          <div id="words">
+            <span id="w1" class="word w1">FEEDBACK</span>
+            <span id="w2" class="word w2">IS</span>
+            <span id="w3" class="word w3">THE</span>
+            <span id="w4" class="word w4">BURN</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const alarm = document.getElementById('alarm');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function osc(v) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#010403"/>
+        <path d="M 0 110 ${Array.from({length:24}).map((_,i)=>{ const x=12*i+8; const y=100+Math.sin((i+v)*0.8)*36; return `L ${x} ${y}`; }).join(' ')}" fill="none" stroke="#7bf0b6" stroke-width="2"/>
+        <text x="12" y="22" fill="#89e6ba" font-size="12">BIOFEEDBACK CHANNEL</text>
+      </svg>`;
+    }
+
+    function relay(k) {
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#020705"/>
+        <rect x="60" y="36" width="180" height="128" fill="none" stroke="#72caa1" stroke-width="2"/>
+        <line x1="60" y1="100" x2="240" y2="100" stroke="#72caa1"/>
+        <line x1="150" y1="36" x2="150" y2="164" stroke="#72caa1"/>
+        <path d="M 24 ${48+k} L 60 ${48+k} L 88 ${82+k} L 132 ${40+k}" fill="none" stroke="#ff3f4d" stroke-width="2"/>
+        <text x="12" y="188" fill="#ffc06e" font-size="11">THERMAL RELAY FUSED</text>
+      </svg>`;
+    }
+
+    function code(v) {
+      const rows = Array.from({length: 16}).map((_,i) => `<text x="10" y="${18+i*11}" fill="#8fe9bb" font-size="10">SYS_${String.fromCharCode(65+(i%26))}${(1000+i+v)} // ${i%3===0?'WARN':'OK'}</text>`).join('');
+      return `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#010403"/>${rows}
+      </svg>`;
+    }
+
+    function setLayout(name) { grid.className = ''; grid.classList.add(name); }
+    function setPanels(items) { grid.innerHTML = items.map((p)=>`<div class="panel ${p.alert ? 'alert' : ''}">${p.svg}</div>`).join(''); }
+    function clearWords() { words.forEach((w) => w.classList.remove('on')); }
+    function showWord(i) { words[i].classList.add('on'); }
+
+    let t = 0;
+    function run() {
+      clearWords();
+      const beats = [
+        { t: 0, fn: () => { setLayout('cfg-single'); setPanels([{ svg: osc(0) }]); } },
+        { t: 1400, fn: () => { setLayout('cfg-2x1'); setPanels([{ svg: code(0) }, { svg: relay(0), alert: true }]); } },
+        { t: 3200, fn: () => { setLayout('cfg-3x2'); setPanels([{ svg: code(2) }, { svg: osc(2) }, { svg: relay(3), alert: true }, { svg: code(4) }, { svg: relay(6), alert: true }, { svg: osc(4) }]); alarm.classList.add('on'); } },
+        { t: 4300, fn: () => showWord(0) },
+        { t: 5150, fn: () => showWord(1) },
+        { t: 6000, fn: () => showWord(2) },
+        { t: 6900, fn: () => showWord(3) },
+        { t: 8400, fn: () => { setLayout('cfg-2x2'); setPanels([{ svg: relay(8), alert: true }, { svg: code(8) }, { svg: osc(8) }, { svg: code(12) }]); } },
+        { t: 10800, fn: () => { alarm.classList.add('on'); setLayout('cfg-single'); setPanels([{ svg: `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#020302'/><text x='20' y='100' fill='#ff3f4d' font-size='20' font-family='monospace'>TOTAL PROCEDURE FAILURE</text></svg>` }]); clearWords(); } },
+        { t: 12400, fn: run }
+      ];
+      beats.forEach((b) => setTimeout(b.fn, b.t));
+    }
+
+    setInterval(() => {
+      t += 1;
+      const panels = grid.querySelectorAll('.panel');
+      if (!panels.length) return;
+      panels.forEach((p, i) => {
+        if (i % 3 === 0) p.innerHTML = code(t + i);
+        if (i % 3 === 1) p.innerHTML = osc(t + i);
+        if (i % 3 === 2) p.innerHTML = relay((t + i) % 12);
+      });
+      if (t % 10 === 0) alarm.classList.remove('on');
+    }, 170);
+
+    document.getElementById('copyPrompt').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    run();
+  </script>
+</body>
+</html>

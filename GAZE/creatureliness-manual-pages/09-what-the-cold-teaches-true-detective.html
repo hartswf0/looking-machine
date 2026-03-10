@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>9.0 WHAT THE COLD TEACHES · M21 True Detective</title>
+  <style>
+    :root {
+      --bg: #0a0b0d;
+      --ink: #e8e3da;
+      --muted: #a49a8b;
+      --line: #4a4137;
+      --dust: #d5b890;
+      --rust: #b65549;
+      --smoke: #7b7f86;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 30% 0%, #26211b 0%, #100f0d 38%, #060607 100%); color: var(--ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 10px; display: grid; gap: 8px; }
+    .pane { border: 2px solid var(--line); border-radius: 12px; background: #0f0d0b; overflow: hidden; }
+    .head { padding: 8px; border-bottom: 2px solid var(--line); background: #181512; display: grid; gap: 5px; }
+    .kicker { font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    h1 { margin: 0; font-size: 1rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { min-height: 30px; border: 1px solid var(--line); border-radius: 999px; background: #2a231d; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; padding: 0 10px; font: 800 0.58rem/1.1 inherit; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn.primary { background: #e8e3da; color: #221a15; border-color: #e8e3da; cursor: pointer; }
+
+    .flow { display: grid; gap: 8px; padding: 8px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #16120f; }
+    .card h2 { margin: 0 0 6px; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+    .card ul, .card ol { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .card li { font-size: 0.8rem; line-height: 1.4; }
+    pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; background: #120f0d; padding: 8px; color: #e8d8c3; font: 0.69rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 230px; overflow: auto; }
+
+    .stage-wrap { padding: 0 8px 8px; }
+    #stage { position: relative; height: min(58vh, 620px); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #100f0e; }
+    #grid { position: absolute; inset: 0; display: grid; gap: 2px; background: #0d0c0b; }
+    #grid.cfg-single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #grid.cfg-2x1 { grid-template-columns: 1fr 1fr; }
+    #grid.cfg-2x2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #grid.cfg-3x2 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .panel { position: relative; overflow: hidden; background: #171412; }
+    .panel svg { width: 100%; height: 100%; display: block; }
+
+    #leak { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(circle at 18% 70%, rgba(182,85,73,0.28), transparent 50%),
+      radial-gradient(circle at 78% 20%, rgba(213,184,144,0.2), transparent 48%);
+      mix-blend-mode: screen;
+    }
+
+    #words { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-content: center; text-align: center; }
+    .word { opacity: 0; transition: opacity 0.2s ease; text-transform: uppercase; letter-spacing: 0.1em; font-family: "Arial Black", Impact, sans-serif; }
+    .word.on { opacity: 1; }
+    .w1 { font-size: clamp(30px, 6vw, 90px); color: #eee6d9; }
+    .w2 { font-size: clamp(18px, 3vw, 40px); color: #cdb89c; }
+    .w3 { font-size: clamp(18px, 3vw, 40px); color: #cdb89c; }
+    .w4 { font-size: clamp(44px, 9vw, 124px); color: #b65549; }
+
+    @media (min-width: 1040px) { .flow { grid-template-columns: 1fr 1fr; } .flow .card:nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pane">
+      <header class="head">
+        <div class="kicker">Creatureliness Manual · Context 09/10</div>
+        <h1>9.0 WHAT THE COLD TEACHES · Agent M21 True Detective</h1>
+        <div class="meta">The cold reveals willingness, not image; creatureliness in hard outline.</div>
+        <div class="btns">
+          <a class="btn" href="index.html">Manual Index</a>
+          <a class="btn" href="../on-creatureliness.md">Source Text</a>
+          <button id="copyPrompt" class="btn primary" type="button">Copy Video Prompt</button>
+        </div>
+      </header>
+
+      <section class="flow">
+        <article class="card">
+          <h2>1. Concept Breakdown</h2>
+          <ul>
+            <li>Section logic: mirror gives image, cold gives decision under pressure.</li>
+            <li>Agent lens: noir double exposure, rural desolation, psychological residue.</li>
+            <li>Primary motif: human silhouette filled with industrial ruin and winter breath.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>2. Beat Map</h2>
+          <ol>
+            <li>0.0–1.8s: silhouette emerges from black grain.</li>
+            <li>1.8–3.6s: split into face shadow and refinery horizon.</li>
+            <li>3.6–6.8s: 3x2 double-exposure dossier.</li>
+            <li>6.8–9.0s: words strike: COLD / SHOWS / WHAT / STAYS.</li>
+            <li>9.0–11.0s: single breath cloud in empty field.</li>
+            <li>11.0–12.0s: rust-toned fade to dark.</li>
+          </ol>
+        </article>
+
+        <article class="card">
+          <h2>3. Final Output</h2>
+          <pre id="videoPrompt">Create a 12-second title sequence for "9.0 WHAT THE COLD TEACHES" in True Detective mode.
+Use double-exposure noir language: silhouettes, refinery lines, desolate roads, light leaks, breath haze.
+Narrative: cold reveals what survives and what one will do to continue.
+Hard-cut rhythm only.
+Show human profile masks filled with terrain, industrial structures, and dark weather.
+Typography impacts: COLD / SHOWS / WHAT / STAYS.
+Resolve on visible breath against dark and rust fade to black.
+Return both outputs: (1) Master AI Video Prompt and (2) complete single-file HTML/CSS/JS artifact.</pre>
+          <pre>Single-file HTML/CSS/JS animation is this document.</pre>
+        </article>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="stage">
+          <div id="grid" class="cfg-single"></div>
+          <div id="leak"></div>
+          <div id="words">
+            <span id="w1" class="word w1">COLD</span>
+            <span id="w2" class="word w2">SHOWS</span>
+            <span id="w3" class="word w3">WHAT</span>
+            <span id="w4" class="word w4">STAYS</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const words = [
+      document.getElementById("w1"),
+      document.getElementById("w2"),
+      document.getElementById("w3"),
+      document.getElementById("w4")
+    ];
+
+    function profile(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#12100f'/><path d='M 88 22 C 118 26, 138 46, 142 70 C 149 100, 144 118, 156 128 C 148 140, 132 145, 126 160 C 116 176, 90 184, 72 180 C 78 152, 76 120, 74 100 C 70 72, 68 48, 88 22 Z' fill='#d6c4ad' opacity='0.34'/><line x1='170' y1='140' x2='284' y2='140' stroke='#a48a6b'/><line x1='180' y1='126' x2='284' y2='126' stroke='#a48a6b'/><text x='170' y='188' fill='#b79b7d' font-size='11'>CASE ${120+v}</text></svg>`;
+    }
+
+    function road(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#16120f'/><path d='M 0 164 L 120 118 L 180 118 L 300 164 Z' fill='#2e2721'/><line x1='150' y1='118' x2='150' y2='164' stroke='#d5b890' stroke-dasharray='8 8'/><rect x='0' y='72' width='300' height='44' fill='rgba(170,180,194,0.16)'/><text x='14' y='186' fill='#b59d82' font-size='11'>WINTER COUNTY LINE</text></svg>`;
+    }
+
+    function flare(v){
+      return `<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'><rect width='300' height='200' fill='#140f0d'/><rect x='0' y='84' width='300' height='30' fill='#5a4a3d'/><path d='M 38 84 L 48 28 L 58 84 Z' fill='#a8a8a8'/><circle cx='48' cy='22' r='${8+(v%6)}' fill='#b65549' opacity='0.8'/><path d='M 196 84 L 206 40 L 216 84 Z' fill='#a8a8a8'/><circle cx='206' cy='35' r='${7+(v%6)}' fill='#d5b890' opacity='0.7'/></svg>`;
+    }
+
+    function setLayout(c){ grid.className=''; grid.classList.add(c); }
+    function setPanels(arr){ grid.innerHTML = arr.map(svg=>`<div class='panel'>${svg}</div>`).join(''); }
+    function clearWords(){ words.forEach(w=>w.classList.remove('on')); }
+    function show(i){ words[i].classList.add('on'); }
+
+    let t = 0;
+    function run(){
+      clearWords();
+      const beats = [
+        { t:0, fn:()=>{ setLayout('cfg-single'); setPanels([profile(0)]); }},
+        { t:1800, fn:()=>{ setLayout('cfg-2x1'); setPanels([profile(2), road(0)]); }},
+        { t:3600, fn:()=>{ setLayout('cfg-3x2'); setPanels([profile(3), road(1), flare(1), road(2), profile(5), flare(3)]); }},
+        { t:5200, fn:()=>show(0)},
+        { t:6200, fn:()=>show(1)},
+        { t:7100, fn:()=>show(2)},
+        { t:8000, fn:()=>show(3)},
+        { t:9000, fn:()=>{ setLayout('cfg-single'); setPanels([road(8)]); }},
+        { t:12400, fn:run }
+      ];
+      beats.forEach(b=>setTimeout(b.fn,b.t));
+    }
+
+    setInterval(()=>{
+      t += 1;
+      const p = grid.querySelectorAll('.panel');
+      if (!p.length) return;
+      if (grid.classList.contains('cfg-single')) p[0].innerHTML = road(t%10);
+      if (grid.classList.contains('cfg-3x2') && p.length===6) {
+        p[0].innerHTML = profile((t+1)%20);
+        p[1].innerHTML = road((t+2)%20);
+        p[2].innerHTML = flare((t+3)%20);
+        p[3].innerHTML = road((t+4)%20);
+        p[4].innerHTML = profile((t+5)%20);
+        p[5].innerHTML = flare((t+6)%20);
+      }
+    }, 180);
+
+    document.getElementById('copyPrompt').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(document.getElementById('videoPrompt').textContent.trim() + '\n'); } catch (_) {}
+    });
+
+    run();
+  </script>
+</body>
+</html>

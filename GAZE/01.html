@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.0 THE SPLIT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #FFFFFF;
+    --black: #000000;
+    --gray: #D3D3D3;
+    --dim: #888888;
+    --faint: rgba(255,255,255,0.06);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 100;
+  }
+
+  #stage {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── SPLIT LINE ── */
+  #split-line {
+    position: absolute;
+    left: 0; top: 50%;
+    width: 100%; height: 1px;
+    background: var(--white);
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    z-index: 10;
+  }
+
+  /* ── HALVES ── */
+  #half-top, #half-bottom {
+    position: absolute;
+    left: 0; width: 100%; height: 50%;
+    transition: background 1.2s ease;
+  }
+  #half-top { top: 0; background: transparent; }
+  #half-bottom { bottom: 0; background: transparent; }
+  #half-top.lit { background: rgba(255,255,255,0.03); }
+  #half-bottom.dark { background: rgba(0,0,0,0.0); }
+
+  /* ── SVG MECHANICAL ARM ── */
+  #arm-svg {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 320px;
+    opacity: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  #arm-svg path, #arm-svg line, #arm-svg circle, #arm-svg rect {
+    fill: none;
+    stroke: var(--white);
+    stroke-width: 0.6;
+    stroke-linecap: round;
+  }
+
+  .arm-segment {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+  }
+
+  /* ── IRIS ── */
+  #iris-svg {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px; height: 120px;
+    opacity: 0;
+    z-index: 20;
+  }
+  #iris-svg circle { fill: none; stroke: var(--white); }
+
+  /* ── TEXT BLOCKS ── */
+  .text-block {
+    position: absolute;
+    opacity: 0;
+    letter-spacing: 0.35em;
+    color: var(--white);
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  #title-main {
+    top: calc(50% - 80px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(10px, 1.4vw, 18px);
+    font-weight: 200;
+    letter-spacing: 0.6em;
+    color: var(--gray);
+  }
+
+  .section-num {
+    font-size: clamp(7px, 0.7vw, 10px);
+    color: var(--dim);
+    letter-spacing: 0.5em;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .section-line {
+    display: block;
+    font-size: clamp(9px, 1.0vw, 13px);
+    font-weight: 100;
+    letter-spacing: 0.2em;
+    line-height: 2.1;
+    color: rgba(255,255,255,0.0);
+    transition: color 1.5s ease;
+  }
+  .section-line.revealed { color: rgba(255,255,255,0.88); }
+
+  /* TOP HALF texts */
+  #text-1-1 {
+    top: calc(50% - 160px);
+    left: 10%;
+    text-align: left;
+    max-width: 40%;
+  }
+  #text-1-2-top {
+    top: calc(50% - 170px);
+    right: 8%;
+    text-align: right;
+    max-width: 38%;
+  }
+  #text-1-3-top {
+    top: calc(50% - 140px);
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    max-width: 50%;
+  }
+
+  /* BOTTOM HALF texts */
+  #text-1-2-bot {
+    top: calc(50% + 60px);
+    right: 8%;
+    text-align: right;
+    max-width: 38%;
+  }
+  #text-1-3-bot {
+    top: calc(50% + 50px);
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    max-width: 50%;
+  }
+  #text-1-4 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: clamp(10px, 1.3vw, 16px);
+    font-weight: 200;
+    letter-spacing: 0.5em;
+    line-height: 2.8;
+    z-index: 35;
+  }
+  #text-1-4 .section-line {
+    font-size: clamp(10px, 1.3vw, 16px);
+    letter-spacing: 0.5em;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  #noise {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0.018;
+    z-index: 100;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* ── FADE OVERLAY ── */
+  #fade-overlay {
+    position: fixed; inset: 0;
+    background: #000;
+    opacity: 0;
+    z-index: 200;
+    pointer-events: none;
+  }
+
+  /* ── RESTART BUTTON ── */
+  #restart-btn {
+    position: fixed;
+    bottom: 32px; right: 36px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    color: rgba(255,255,255,0.2);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    z-index: 300;
+    transition: color 0.4s;
+    padding: 0;
+  }
+  #restart-btn:hover { color: rgba(255,255,255,0.65); }
+
+  /* ── SCAN LINE ── */
+  #scan {
+    position: absolute;
+    left: 0; width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    opacity: 0;
+    z-index: 8;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="half-top"></div>
+  <div id="half-bottom"></div>
+
+  <!-- Mechanical Arm SVG -->
+  <svg id="arm-svg" viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Arm structure -->
+    <line class="arm-segment" x1="50" y1="160" x2="220" y2="160"/>
+    <line class="arm-segment" x1="220" y1="160" x2="280" y2="100"/>
+    <line class="arm-segment" x1="280" y1="100" x2="380" y2="100"/>
+    <line class="arm-segment" x1="380" y1="100" x2="420" y2="160"/>
+    <line class="arm-segment" x1="420" y1="160" x2="560" y2="160"/>
+    <line class="arm-segment" x1="560" y1="160" x2="590" y2="140"/>
+    <!-- Needle tip -->
+    <line class="arm-segment" x1="590" y1="140" x2="650" y2="161"/>
+    <!-- Joints -->
+    <circle class="arm-segment" cx="220" cy="160" r="6"/>
+    <circle class="arm-segment" cx="380" cy="100" r="5"/>
+    <circle class="arm-segment" cx="560" cy="160" r="4"/>
+    <!-- Crosshair at needle tip -->
+    <line class="arm-segment" x1="645" y1="155" x2="655" y2="165"/>
+    <line class="arm-segment" x1="645" y1="165" x2="655" y2="155"/>
+    <!-- Ribcage suggestion (bottom) -->
+    <path class="arm-segment" d="M 250 210 Q 290 195 330 210 Q 350 225 330 240 Q 290 255 250 240 Q 230 225 250 210 Z"/>
+    <line class="arm-segment" x1="290" y1="195" x2="290" y2="255"/>
+    <path class="arm-segment" d="M 270 210 Q 290 205 310 210"/>
+    <path class="arm-segment" d="M 265 225 Q 290 218 315 225"/>
+    <path class="arm-segment" d="M 268 240 Q 290 233 312 240"/>
+    <!-- Measurement tick marks -->
+    <line class="arm-segment" x1="100" y1="155" x2="100" y2="165"/>
+    <line class="arm-segment" x1="150" y1="155" x2="150" y2="165"/>
+    <line class="arm-segment" x1="200" y1="153" x2="200" y2="167"/>
+    <!-- Data readout lines -->
+    <line class="arm-segment" x1="420" y1="75" x2="480" y2="75"/>
+    <line class="arm-segment" x1="420" y1="82" x2="465" y2="82"/>
+    <line class="arm-segment" x1="420" y1="89" x2="470" y2="89"/>
+  </svg>
+
+  <!-- Iris SVG -->
+  <svg id="iris-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="60" r="50" stroke-width="0.5" opacity="0.5"/>
+    <circle cx="60" cy="60" r="38" stroke-width="0.5" opacity="0.6"/>
+    <circle cx="60" cy="60" r="26" stroke-width="0.8" opacity="0.8"/>
+    <circle cx="60" cy="60" r="14" stroke-width="1" opacity="1"/>
+    <circle cx="60" cy="60" r="4" stroke-width="1.5" opacity="1"/>
+    <!-- iris blades -->
+    <line x1="60" y1="10" x2="60" y2="25" stroke-width="0.6" opacity="0.5"/>
+    <line x1="60" y1="95" x2="60" y2="110" stroke-width="0.6" opacity="0.5"/>
+    <line x1="10" y1="60" x2="25" y2="60" stroke-width="0.6" opacity="0.5"/>
+    <line x1="95" y1="60" x2="110" y2="60" stroke-width="0.6" opacity="0.5"/>
+    <line x1="21" y1="21" x2="32" y2="32" stroke-width="0.6" opacity="0.4"/>
+    <line x1="88" y1="88" x2="99" y2="99" stroke-width="0.6" opacity="0.4"/>
+    <line x1="99" y1="21" x2="88" y2="32" stroke-width="0.6" opacity="0.4"/>
+    <line x1="21" y1="99" x2="32" y2="88" stroke-width="0.6" opacity="0.4"/>
+  </svg>
+
+  <!-- Scan line -->
+  <div id="scan"></div>
+
+  <!-- Split line -->
+  <div id="split-line"></div>
+
+  <!-- Title -->
+  <div id="title-main" class="text-block">1.0 &nbsp; T H E &nbsp; S P L I T</div>
+
+  <!-- 1.1 -->
+  <div id="text-1-1" class="text-block">
+    <span class="section-num">1.1</span>
+    <span class="section-line" id="l1">We build machines to avoid</span>
+    <span class="section-line" id="l2">looking at ourselves.</span>
+    <span class="section-line" id="l3">Yet in the architecture of the machine,</span>
+    <span class="section-line" id="l4">the split in our nature</span>
+    <span class="section-line" id="l5">returns as reflection.</span>
+  </div>
+
+  <!-- 1.2 top -->
+  <div id="text-1-2-top" class="text-block">
+    <span class="section-num">1.2</span>
+    <span class="section-line" id="l6">One looks at the metal</span>
+    <span class="section-line" id="l7">and demands a mirror of God.</span>
+  </div>
+
+  <!-- 1.2 bottom -->
+  <div id="text-1-2-bot" class="text-block">
+    <span class="section-line" id="l8">Another looks and sees</span>
+    <span class="section-line" id="l9">a frightened animal in the cold.</span>
+  </div>
+
+  <!-- 1.3 top -->
+  <div id="text-1-3-top" class="text-block">
+    <span class="section-num">1.3</span>
+    <span class="section-line" id="l10">What we know best is not God.</span>
+  </div>
+
+  <!-- 1.3 bottom -->
+  <div id="text-1-3-bot" class="text-block">
+    <span class="section-line" id="l11">What we know best is</span>
+    <span class="section-line" id="l12">the animal in the cold.</span>
+  </div>
+
+  <!-- 1.4 center -->
+  <div id="text-1-4" class="text-block">
+    <span class="section-line" id="l13">We are the animal.</span>
+    <span class="section-line" id="l14">We are the cold.</span>
+  </div>
+</div>
+
+<div id="noise"></div>
+<div id="fade-overlay"></div>
+<button id="restart-btn" onclick="runSequence()">&#x21BA; &nbsp; restart</button>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function css(el, props) { Object.assign(el.style, props); }
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function fadeEl(el, toOpacity, dur, easing='ease') {
+  return new Promise(r => {
+    el.style.transition = `opacity ${dur}ms ${easing}`;
+    el.style.opacity = toOpacity;
+    setTimeout(r, dur);
+  });
+}
+
+function animateLine(el, dur) {
+  return new Promise(r => {
+    el.style.strokeDashoffset = 300;
+    el.style.transition = `stroke-dashoffset ${dur}ms linear`;
+    requestAnimationFrame(() => {
+      el.style.strokeDashoffset = 0;
+    });
+    setTimeout(r, dur);
+  });
+}
+
+function drawSplitLine(dur) {
+  return new Promise(r => {
+    const line = $('split-line');
+    line.style.opacity = '1';
+    line.style.transition = `transform ${dur}ms cubic-bezier(0.25,0.1,0.25,1)`;
+    line.style.transform = 'scaleX(1)';
+    setTimeout(r, dur);
+  });
+}
+
+function revealLines(ids, stagger=220) {
+  return new Promise(async r => {
+    for (const id of ids) {
+      const el = $(id);
+      if (el) el.classList.add('revealed');
+      await delay(stagger);
+    }
+    r();
+  });
+}
+
+function hideLines(ids) {
+  ids.forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove('revealed');
+  });
+}
+
+async function runSequence() {
+  // Reset everything
+  const allLineIds = ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11','l12','l13','l14'];
+  hideLines(allLineIds);
+
+  const textBlocks = ['title-main','text-1-1','text-1-2-top','text-1-2-bot','text-1-3-top','text-1-3-bot','text-1-4'];
+  textBlocks.forEach(id => css($(id), { opacity: '0', transition: 'none' }));
+
+  css($('split-line'), { opacity: '0', transform: 'scaleX(0)', transition: 'none' });
+  css($('arm-svg'), { opacity: '0', transition: 'none' });
+  css($('iris-svg'), { opacity: '0', transition: 'none' });
+  css($('scan'), { opacity: '0', transition: 'none' });
+  css($('half-top'), { background: 'transparent' });
+  css($('half-bottom'), { background: 'transparent' });
+  css($('fade-overlay'), { opacity: '0', transition: 'none' });
+
+  document.querySelectorAll('.arm-segment').forEach(seg => {
+    seg.style.transition = 'none';
+    seg.style.strokeDashoffset = '300';
+  });
+
+  await delay(100);
+
+  // 0.0s — Title appears
+  await fadeEl($('title-main'), 1, 1400, 'ease');
+  await delay(300);
+
+  // 1.2s — Arm draws in
+  await fadeEl($('arm-svg'), 1, 600, 'ease');
+  const segs = document.querySelectorAll('.arm-segment');
+  const promises = [];
+  segs.forEach((seg, i) => {
+    promises.push(new Promise(r => {
+      setTimeout(() => animateLine(seg, 900 + i * 60).then(r), i * 80);
+    }));
+  });
+  await Promise.all(promises);
+  await delay(200);
+
+  // 2.5s — Split line draws
+  drawSplitLine(1200);
+  await delay(400);
+
+  // Text 1.1 appears (top half)
+  await fadeEl($('text-1-1'), 1, 500, 'ease');
+  revealLines(['l1','l2','l3','l4','l5'], 280);
+  await delay(1800);
+
+  // Half tones shift subtly
+  css($('half-top'), { background: 'rgba(255,255,255,0.025)', transition: 'background 1.5s ease' });
+  css($('half-bottom'), { background: 'rgba(0,0,0,0.3)', transition: 'background 1.5s ease' });
+
+  // 1.2 texts both halves
+  await fadeEl($('text-1-2-top'), 1, 500, 'ease');
+  await fadeEl($('text-1-2-bot'), 1, 500, 'ease');
+  revealLines(['l6','l7'], 320);
+  await delay(300);
+  revealLines(['l8','l9'], 320);
+  await delay(1800);
+
+  // Arm fades, Iris appears
+  fadeEl($('arm-svg'), 0, 800, 'ease');
+  await delay(200);
+  fadeEl($('iris-svg'), 1, 700, 'ease');
+
+  // Iris rotation animation
+  const iris = $('iris-svg');
+  iris.style.transition = 'opacity 700ms ease';
+  iris.animate([
+    { transform: 'translate(-50%, -50%) rotate(0deg)', opacity: 1 },
+    { transform: 'translate(-50%, -50%) rotate(180deg)', opacity: 1 },
+  ], { duration: 5000, fill: 'forwards', easing: 'linear' });
+
+  // 1.3 texts appear simultaneously
+  await fadeEl($('text-1-3-top'), 1, 500, 'ease');
+  await fadeEl($('text-1-3-bot'), 1, 500, 'ease');
+  revealLines(['l10'], 200);
+  await delay(200);
+  revealLines(['l11','l12'], 280);
+  await delay(1800);
+
+  // Scan line passes
+  const scan = $('scan');
+  scan.style.top = '0';
+  scan.style.transition = 'none';
+  scan.style.opacity = '0.7';
+  scan.animate([
+    { top: '0', opacity: 0.7 },
+    { top: '100%', opacity: 0 }
+  ], { duration: 2200, fill: 'forwards', easing: 'ease-in' });
+  await delay(600);
+
+  // 1.4 — Fade everything else, show center text
+  fadeEl($('text-1-1'), 0, 800, 'ease');
+  fadeEl($('text-1-2-top'), 0, 800, 'ease');
+  fadeEl($('text-1-2-bot'), 0, 800, 'ease');
+  fadeEl($('text-1-3-top'), 0, 800, 'ease');
+  fadeEl($('text-1-3-bot'), 0, 800, 'ease');
+  fadeEl($('iris-svg'), 0, 800, 'ease');
+
+  await delay(700);
+
+  // Halves compress toward center
+  css($('half-top'), { transform: 'scaleY(0)', transformOrigin: 'top', transition: 'transform 1.8s cubic-bezier(0.7,0,0.3,1)' });
+  css($('half-bottom'), { transform: 'scaleY(0)', transformOrigin: 'bottom', transition: 'transform 1.8s cubic-bezier(0.7,0,0.3,1)' });
+
+  await delay(400);
+  await fadeEl($('text-1-4'), 1, 600, 'ease');
+  revealLines(['l13'], 200);
+  await delay(500);
+  revealLines(['l14'], 200);
+  await delay(2200);
+
+  // Resolution — title persists, 1.4 fades
+  fadeEl($('text-1-4'), 0, 1200, 'ease');
+  await delay(800);
+
+  // Split line retracts (right to left)
+  const line = $('split-line');
+  line.style.transition = 'transform 1200ms cubic-bezier(0.7,0,1,1)';
+  line.style.transformOrigin = 'right center';
+  line.style.transform = 'scaleX(0)';
+
+  await delay(600);
+  fadeEl($('title-main'), 0, 1400, 'ease');
+  await delay(1200);
+
+  // Fade to black
+  const overlay = $('fade-overlay');
+  overlay.style.transition = 'opacity 1600ms ease';
+  overlay.style.opacity = '1';
+  await delay(1600);
+}
+
+// Auto-run on load
+window.addEventListener('load', () => {
+  setTimeout(runSequence, 400);
+});
+</script>
+</body>
+</html>
