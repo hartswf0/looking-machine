@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cineosis 44 · Reference Shots</title>
+<style>
+:root{--bg:#0e0d0c;--fg:#e9e4da;--dim:#8d877c;--line:#2a2724;--good:#9bc49a;--ok:#d6c58a;--weak:#d98f7a;--literal:#8fb3d9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 ui-monospace,Menlo,monospace}
+header{padding:28px 16px 12px;max-width:1400px;margin:auto}
+h1{font:600 22px/1.2 Georgia,serif;margin:0 0 6px;letter-spacing:.02em}
+header p{color:var(--dim);margin:4px 0;max-width:80ch}
+.legend span{margin-right:14px;white-space:nowrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+main{max-width:1400px;margin:auto;padding:0 16px 60px}
+.fam{font-size:11px;letter-spacing:.14em;color:var(--dim);margin:26px 0 8px;border-top:1px solid var(--line);padding-top:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:#161513;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.card video{width:100%;aspect-ratio:4/3;object-fit:cover;background:#000;display:block;cursor:pointer}
+.meta{padding:10px 12px 12px}
+.n{color:var(--dim);margin-right:6px}
+.sign{font:600 15px Georgia,serif}
+.q{color:var(--dim);font-style:italic;margin:4px 0 8px;font-family:Georgia,serif}
+.film{font-size:12px}
+.film a{color:var(--fg)}
+.small{font-size:11px;color:var(--dim);margin-top:6px}
+.small a{color:var(--dim)}
+</style>
+</head>
+<body>
+<header>
+<h1>Cineosis 44 · reference shots from the Moving Image Archive</h1>
+<p>One shot for each of Deamer's 44 signs, found with the archive's visual search. The archive is mostly Prelinger-style educational, industrial and amateur film, so each shot shows the operation, not a canonical film. Hover to play; the clip opens at the moment that matched the query.</p>
+<p class="legend"><span><i class="dot" style="background:var(--good)"></i>good: the shot performs the sign</span><span><i class="dot" style="background:var(--ok)"></i>ok: usable once cut in context</span><span><i class="dot" style="background:var(--literal)"></i>literal: a picture of the idea, not the operation</span><span><i class="dot" style="background:var(--weak)"></i>weak: placeholder, needs a better search</span></p>
+</header>
+<main id="m"></main>
+<script>
+const D=/*DATA*/[];
+const m=document.getElementById('m');let fam='',grid;
+for(const r of D){
+  if(r.family!==fam){fam=r.family;const h=document.createElement('div');h.className='fam';h.textContent=fam;m.appendChild(h);grid=document.createElement('div');grid.className='grid';m.appendChild(grid)}
+  const c=document.createElement('div');c.className='card';
+  const off=Math.max(0,r.match-r.start).toFixed(1);
+  c.innerHTML=`<video muted loop playsinline preload="metadata" src="${r.video}#t=${off}"></video>
+  <div class="meta"><div><span class="n">${String(r.n).padStart(2,'0')}</span><span class="sign">${r.sign}</span> <i class="dot" title="${r.fit}" style="background:var(--${r.fit})"></i></div>
+  <div class="q">${r.question}</div>
+  <div class="film"><a href="${r.page}" target="_blank" rel="noopener">${r.film}</a>${r.year?' · '+r.year:''} · ${Math.floor(r.start/60)}:${String(Math.floor(r.start%60)).padStart(2,'0')}–${Math.floor(r.end/60)}:${String(Math.floor(r.end%60)).padStart(2,'0')}</div>
+  <div class="small">query: “${r.query}” · <a href="${r.video}" target="_blank" rel="noopener">mp4</a></div></div>`;
+  const v=c.querySelector('video');
+  c.addEventListener('mouseenter',()=>v.play().catch(()=>{}));
+  c.addEventListener('mouseleave',()=>{v.pause();v.currentTime=+off});
+  v.addEventListener('click',()=>v.paused?v.play():v.pause());
+  grid.appendChild(c);
+}
+</script>
+</body>
+</html>
