@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where the Archive Came From</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="explain/film.css?v=2"><link rel="stylesheet" href="explain/episode.css?v=2">
+<!-- CINEOSIS · EPISODE 1 · WHERE THE ARCHIVE CAME FROM. The lab's 15,149 shots were asked for, not taken: each project went into the
+     Moving Image Archive with its own questions, and what came back is the lab. Every query and every result here is from the
+     projects' own search records (explain/ep1.py → explain/ep/ep1.json). Format of the series: moving pictures first, one line at a
+     time, each project in its own colour, our films playing with their own sound. -->
+</head>
+<body>
+<div id="wrap"><div id="stage"></div></div>
+<div id="bar"><button id="bPrev" title="previous (←)">‹</button><button id="bPlay" title="play / pause (space)">❚❚</button><button id="bNext" title="next (→)">›</button><div id="chs"></div><span id="time"></span><button id="bSnd" title="sound">♪ on</button></div>
+<div id="start"><div><p style="font:600 16px var(--mono);letter-spacing:.2em;color:var(--dim);margin:0 0 14px">CINEOSIS · EPISODE 1</p><h1>Where the Archive Came From</h1><p>Fifteen thousand shots, asked for one question at a time. About eight minutes, with sound.</p><b>▶ Watch</b></div></div>
+<audio id="score" preload="auto"></audio><audio id="voice" preload="auto"></audio>
+<script>
+window.EPISODE = {
+  data: ['explain/ep/ep1.json?v=2'],
+  cues: ['dae-preparation-drift', 'dae-compass-spin-in-heavy-fog', 'dae-snowbound-umea-cabin', 'dae-salvaged-room-traveling-light', 'dae-slide-carousel-at-blue-hour', 'dae-cold-current-paddle', 'dae-salvaged-timber', 'dae-cedar-and-cassette'],
+  build([E], B, K) {
+    const { esc, fmt, line, later, raf, typeIn, startVideos } = K, Hq = E.howq, $ = K.$;
+    const wall = fog => `<div class="vwall">${E.wall.map(w => `<video data-src="${esc(w.video)}" data-t="${w.t}" muted playsinline loop poster="${esc(w.thumb)}"></video>`).join('')}</div>${fog ? '<div class="fog"></div>' : ''}`;
+    /* the archive */
+    B('The archive', 15, () => `${wall(true)}${line(['Somewhere there is an archive of public films.', `About <b style="color:var(--gold)">${fmt(E.archive_est)}</b> shots of them.`], 'the Moving Image Archive · the size is the lab\'s own estimate')}`, el => startVideos(el));
+    B('The archive', 7, () => `${wall(true).replace('class="fog"', 'class="fog" style="background:rgba(0,0,0,.82)"')}${line(['We never watched it all.', 'We went looking for particular things.'])}`, el => startVideos(el));
+    /* cineosis */
+    const mos = (op = .3) => `<div class="mosaic" style="opacity:${op}">${E.read.map(r => `<i style="--c:${r.col};background-image:url('${esc(r.thumb)}');opacity:1;animation:none"></i>`).join('')}</div>`;
+    B('Cineosis', 12, () => `${mos(.25)}${line(['First we looked for <b style="color:var(--gold)">cineosis</b>:', 'the signs of cinema Gilles Deleuze described, as David Deamer set them out.', 'Forty-five of them. Each one is a different thing an image can do.'], '', 2.4)}`);
+    B('Cineosis', 11, () => `<div class="big2" style="color:var(--gold)">${esc(Hq.sign.name)}</div><div class="big2 fadein" style="top:220px;font:400 38px/1.35 var(--serif);color:#e8e4da;animation-delay:1s">${esc(Hq.sign.definition.split(':')[0])}.</div>${line(['One sign, as Deamer defines it.'])}`);
+    /* how a question is made */
+    B('How a question is made', 14, () => `<div class="big2" style="font:400 22px var(--mono);color:var(--dim);letter-spacing:.1em">A LANGUAGE MODEL WROTE THE SIGN AS SCENES A SEARCH COULD FIND</div>
+        <div class="phr" style="position:absolute;left:90px;right:90px;top:200px;display:flex;flex-direction:column;gap:12px">${Hq.sign.queries.map((q, i) => `<p style="margin:0;font:30px/1.25 var(--serif);color:${/sheep/.test(q) ? 'var(--gold)' : '#d6c8f2'};opacity:0;animation:up .8s ease forwards ${.4 + i * .9}s">“${esc(q)}”</p>`).join('')}</div>`);
+    B('How a question is made', 15, () => `<div class="json" id="js"></div><img id="th" style="position:absolute;right:90px;top:210px;width:600px;opacity:0;transition:opacity 1s" src="thumbs/21171e70-f59f-55b6-85c3-29691c97e312.jpg">
+        ${line(['One question is one request to the archive.', 'It answers with shots: a few seconds of a film, and the moment that matched.'])}`,
+      el => { const J = $('#js', el), r = Hq.response; const txt = `<i>POST</i> movingimagearchive.com/api/search\n{ "query": "<b>${esc(Hq.request)}</b>" }\n\n<i>→</i> { "clips": [\n` + r.map(x => `   { "sourceTitle": "${esc(x.sourceTitle)}",\n     "startSeconds": ${x.startSeconds}, "endSeconds": ${x.endSeconds},\n     "matchTimestampSeconds": <b>${x.matchTimestampSeconds}</b>, "score": ${x.score.toFixed(3)} },`).join('\n') + `\n   … ] }`;
+        const parts = txt.split('\n'); parts.forEach((p, i) => later(300 + i * 260, () => { J.innerHTML = parts.slice(0, i + 1).join('\n'); })); later(4200, () => $('#th', el).style.opacity = 1); });
+    B('How a question is made', 9, () => `<video class="full" data-src="${esc(Hq.first.video)}" data-t="${Hq.first.t}" muted playsinline loop></video><div class="fog"></div>${line([`The best match, played from the moment that matched:`, `<i>${esc(Hq.first.title)}</i>.`])}`, el => startVideos(el));
+    B('How a question is made', 12, () => `<div class="count4" style="position:absolute;left:90px;right:90px;top:200px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center">${[[45, 'signs'], ['× 8', 'scenes written for each'], [fmt(Hq.asked), 'questions sent'], [fmt(Hq.unique), 'different shots back']].map(([n, l], i) => `<div style="opacity:0;animation:up .9s ease forwards ${i * 1.2}s"><b style="display:block;font:600 110px/1 var(--serif);color:var(--gold)">${n}</b><span style="font:20px var(--mono);color:var(--dim)">${l}</span></div>`).join('')}</div>
+        ${line([`Fifteen answers were kept for each question. Many shots answered more than one.`])}`);
+    /* what reading means */
+    B('What reading means', 13, () => `<div class="sheet" style="top:70px;grid-template-columns:repeat(6,1fr)">${Hq.sheet.map((c, i) => `<figure style="animation-delay:${.3 + i * .15}s"><img src="${esc(c.thumb)}" style="${c.kept ? 'outline:4px solid var(--gold);outline-offset:-4px' : 'filter:brightness(.55)'}"><figcaption>${esc(c.title)}</figcaption></figure>`).join('')}</div>
+        ${line([`Each sign got a contact sheet: ${Hq.sheet.length} candidates, one per film.`, `A person kept ${Hq.sheet.filter(c => c.kept).length}.`])}`);
+    B('What reading means', 13, () => `<video class="full" data-src="${esc(Hq.first.video)}" data-t="${Hq.first.t}" muted playsinline loop></video><div class="fog"></div>
+        ${line(['A reading is one sentence: which sign, and what in the frame answers its question.', '<span style="color:#ffe39a">“A flock with a stray: the series shows its rule by breaking it.”</span>'], 'Demark · the reader\'s certainty: 50 percent · later, watched whole, the stray turned out to be a sheepdog')}`, el => startVideos(el));
+    /* what we asked: every project */
+    const cueBeat = () => `<div class="big2" style="font:400 22px var(--mono);color:var(--dim);letter-spacing:.1em">CUTBASTARD, THE LAB'S MACHINE EDITOR FOR THE POEM, ASKED EACH LINE THREE WAYS</div>
+        <div class="roles" style="top:230px;grid-template-columns:1fr;gap:26px">${[['LITERALLY', Hq.cue.literal], ['OBLIQUELY', Hq.cue.oblique], ['AS A PLACE', Hq.cue.place]].map(([r, q], i) => `<div style="animation-delay:${i * 1.6}s;--c:#9fd36a"><b>${r}</b><p style="font-size:30px">“${esc(q)}”</p></div>`).join('')}</div>`;
+    E.searches.forEach(s => {
+      if (s.project === 'CUTBASTARD') B('Every project asked', 12, cueBeat);
+      B('Every project asked', 14, () => `<div style="--c:${s.col}"><div class="sbar"><i></i><span id="q"></span></div><div class="who">${esc(s.project)}<em>${esc(s.day)} · ${esc(s.why)}</em></div>
+        <div class="sheet">${s.hits.map((h, i) => `<figure style="animation-delay:${2.6 + i * .22}s"><img src="${esc(h.thumb)}"><figcaption>${esc(h.title || '')} ${esc(h.year || '')}</figcaption></figure>`).join('')}</div>
+        <div class="tally" style="animation-delay:6s"><b>${fmt(s.asked)}</b> questions sent · ${fmt(s.got)} shots came back</div></div>`, el => later(300, () => typeIn($('#q', el), s.q))); });
+    /* what we kept */
+    const RC = { cineosis: '#f2c14e', wygwyl: '#c4f46a', forage: '#9fd36a' };
+    B('What we kept', 15, () => `<canvas class="full" id="cv" width="1600" height="900"></canvas>${line([`Three of those searches, all on 24 September, filled the lab:`, `<b style="color:var(--gold)">${fmt(E.total)}</b> shots from ${fmt(E.films)} films. ${E.hours} hours.`])}`,
+      el => { const g = $('#cv', el).getContext('2d'), N = E.total, cols = 190, sz = 6.2, ox = 210, oy = 110, keys = Object.keys(E.routes), seq = keys.flatMap(k => Array(E.routes[k]).fill(k));
+        raf(t => { const n = Math.min(N, Math.floor(N * Math.min(1, t / 7))); g.fillStyle = '#000'; g.fillRect(0, 0, 1600, 900);
+          for (let i = 0; i < n; i++) { g.fillStyle = RC[seq[i]]; g.fillRect(ox + (i % cols) * sz, oy + Math.floor(i / cols) * sz, sz - 1.5, sz - 1.5); }
+          g.font = '17px IBM Plex Mono'; keys.forEach(k => { g.fillStyle = RC[k]; g.fillText(`${k === 'forage' ? 'CUTBASTARD' : k === 'wygwyl' ? 'WYGWYL forage suite' : 'Cineosis signs'} · ${fmt(E.routes[k])}`, ox + ({ cineosis: 0, wygwyl: 420, forage: 820 })[k], 80); });
+          return t < 8; }); });
+    B('What we kept', 11, () => `<canvas class="full" id="cv" width="1600" height="900"></canvas>${line(['The Odyssey and Slopfeeder asked thousands more.', `All our libraries together: about <b style="color:var(--gold)">${fmt(E.all_libraries)}</b> shots.`])}`,
+      el => { const g = $('#cv', el).getContext('2d'), R = 330, cx = 800, cy = 380, f = E.all_libraries / E.archive_est;
+        raf(t => { const k = Math.min(1, t / 4); g.fillStyle = '#000'; g.fillRect(0, 0, 1600, 900); g.strokeStyle = '#3a352d'; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.stroke();
+          g.fillStyle = 'rgba(242,193,78,.85)'; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * f * k); g.fill(); g.fillStyle = '#a8a196'; g.font = '18px IBM Plex Mono'; g.fillText('the whole archive', cx + R + 20, cy - R + 30); return t < 5; }); });
+    B('What we kept', 10, () => `<video class="full" data-src="${esc(Hq.first.video)}" data-t="4" muted playsinline loop></video><div class="fog"></div>${line(['So the lab is not the archive. It is the shape of our questions.', 'It has a flock with one dark animal in it because we asked for one.'])}`, el => startVideos(el));
+    /* what we read */
+    B('What we read', 15, () => `<div class="mosaic">${E.read.map((r, i) => `<i style="--c:${r.col};background-image:url('${esc(r.thumb)}');animation-delay:${i * .03}s"></i>`).join('')}</div>
+        ${line([`Across all 45 signs, <b style="color:var(--gold)">253</b> shots were read.`, `From ${E.read_films} films, mostly from the 1930s to the 1950s.`], 'coloured by family of sign')}`);
+    B('What we read', 8, () => `${mos(.25)}${line(['The reader was rarely sure: mostly 40 to 60 percent.', 'Each reading is a hypothesis to test.'])}`);
+    /* what we made */
+    B('What we made', 5, () => line(['And then we made films.']).replace('class="line"', 'class="line" style="bottom:auto;top:420px"'));
+    E.made.forEach(m => B('What we made', m.len, () => `<video class="full" data-src="${esc(m.video)}" data-t="${m.t}" ${m.audio ? 'muted' : 'data-snd="1"'} playsinline loop></video><div class="ident" style="--c:${m.col}"><b>${esc(m.title)}</b><span>${esc(m.by)}</span></div>`,
+      el => { startVideos(el); K.duck(true); if (m.audio) { const v = K.voice(); v.src = m.audio; v.addEventListener('loadedmetadata', () => { v.currentTime = m.a0; if (K.sound()) v.play().catch(() => { }); }, { once: true }); } }, { voice: !!m.audio }));
+    /* the rest */
+    B('What we never asked', 13, () => `<canvas class="full" id="cv" width="1600" height="900"></canvas>${line([`About <b style="color:var(--gold)">${fmt(Math.round((E.archive_est - E.all_libraries) / 1000) * 1000)}</b> shots no question of ours has reached.`, 'What would we find if we asked differently?'])}`,
+      el => { const g = $('#cv', el).getContext('2d'), N = 2400, f = E.all_libraries / E.archive_est;
+        raf(t => { g.fillStyle = '#000'; g.fillRect(0, 0, 1600, 900); for (let i = 0; i < N; i++) { const a = i * 2.39996, r = 13 * Math.sqrt(i), x = 800 + r * Math.cos(a), y = 380 + r * Math.sin(a) * .62; g.fillStyle = (i / N) < f ? 'rgba(242,193,78,.9)' : `rgba(90,84,74,${.3 + .3 * Math.sin(t * 1.5 + i)})`; g.fillRect(x, y, 4, 4); } return true; }); });
+    B('What we never asked', 40, () => `<div class="next"><small>NEXT</small><h1>The Odyssey</h1><p style="font:28px/1.35 var(--serif);color:#d8d0c2;max-width:1100px;margin:0">Homer asks, and the archive answers in its own recorded words.</p>
+        <nav><a href="episode-4.html">Watch the Odyssey episode</a><a class="ghost" href="how-it-sees.html">How the lab sees</a><a class="ghost" href="series.html">All episodes</a></nav></div>`);
+  }
+};
+</script>
+<script src="explain/player.js?v=9"></script>
+</body>
+</html>
