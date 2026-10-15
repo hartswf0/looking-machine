@@ -1,0 +1,30 @@
+# the book's text and source PDF are never published
+deamer.txt
+*.pdf
+# re-creatable / heavy / local-only
+lab/.venv/
+lab/models/
+lab/cache/live/
+lab/reel/parts/
+lab/reel/*.mp4
+lab/assignments.json
+__pycache__/
+.DS_Store
+lab/cache/remote/
+lab/edits/
+lab/cache/watch/
+# films stream from the GitHub release (wygwyl-v1), not from the repo
+*.mp4
+!lab/clips/*.mp4
+!lab/wygwyl/tempest/*.mp4
+!lab/explain/lesson/m/*.mp4
+lab/wygwyl/**/parts/
+lab/wygwyl/parts/
+lab/wygwyl/web/
+lab/cache/sound/
+lab/cache/sound-calib/
+sound/atlas-cache/
+lab/syzygy/.frames/
+lab/syzygy/.halfworld-frames/
+lab/monte/judge2/sheets/
+lab/monte/cache/
