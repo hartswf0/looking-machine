@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cineosis Lab</title>
+<meta name="description" content="An instrument for searching, sorting and re-seeing the Cineosis 44 corpus of archive shots.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css?v=20261013x">
+</head>
+<body>
+<header id="top">
+  <button id="facetBtn" class="ghost" title="Show or hide the filter panel (F)" aria-label="Toggle filters">
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+  </button>
+  <div class="brand"><b>CINEOSIS</b><span>LAB</span></div>
+  <nav id="modes" aria-label="Modes">
+    <button data-mode="wall" title="WALL · every shot in the selection as a grid; click a shot to inspect it">Wall<i>1</i></button>
+    <button data-mode="map" title="MAP · shots placed by visual likeness; drag to pan, wheel to zoom, 0 to fit">Map<i>2</i></button>
+    <button data-mode="ring" title="RING · the first 240 shots on a cylinder; drag or wheel to spin">Ring<i>3</i></button>
+    <button data-mode="strata" title="STRATA · each shot as a stack of its frames; hover a stack to run it">Strata<i>4</i></button>
+    <button data-mode="cuts" title="CUT-OUTS · figures lifted from the shots; drag one onto the table to compose">Cut-outs<i>5</i></button>
+    <button data-mode="reel" title="REEL · plays the table sign by sign; space plays, ← → changes sign, Esc exits">Reel<i>6</i></button>
+    <button data-mode="montage" title="MONTAGE · recipes for signs that need two or more shots; click → CUT on one to send it to the editor">Montage<i>7</i></button>
+    <button data-mode="wyg" title="WYGWYL · the Forage Suite film beat by beat; space plays, ← → steps beats">WYGWYL<i>8</i></button>
+  </nav>
+  <form id="search" autocomplete="off">
+    <div class="scope" role="radiogroup" aria-label="Search scope">
+      <button type="button" data-scope="corpus" class="on">corpus</button>
+      <button type="button" data-scope="archive">archive</button>
+    </div>
+    <input id="q" type="search" placeholder="search titles, readings, queries, subjects · #Dm · 1940s" spellcheck="false" aria-label="Search">
+    <span id="qstat"></span>
+  </form>
+  <div id="sortbox">
+    <label>sort <select id="sort">
+      <option value="sign">sign order</option>
+      <option value="hue">hue</option>
+      <option value="lum">luminance</option>
+      <option value="year">year</option>
+      <option value="conf">confidence</option>
+      <option value="sim">similarity</option>
+      <option value="film">film</option>
+      <option value="aff" title="machine affinity for the selected sign (or the shot's strongest sign)">sign affinity</option>
+    </select></label>
+    <button id="sortDir" class="ghost" title="Reverse order">↓</button>
+    <label class="grp">group <select id="group">
+      <option value="none">none</option>
+      <option value="sign">sign</option>
+      <option value="decade">decade</option>
+      <option value="hue">hue band</option>
+      <option value="subject">subject</option>
+      <option value="scale">scale</option>
+      <option value="kind">kind of film</option>
+      <option value="shape">aspect ratio</option>
+    </select></label>
+    <label class="size" title="Tile size"><input id="size" type="range" min="56" max="280" step="4" value="132" aria-label="Tile size"></label>
+  </div>
+  <div class="links">
+    <span id="srvBadge" class="srv"></span>
+    <button id="sendBtn" class="ghost" title="Send the shots on screen, in this order, to an editor">send view</button>
+    <button id="reload" class="ghost" title="Reload lab-data.json: newly computed analysis appears">↻</button>
+    <a class="ghost explainers" style="color:var(--ink);border-color:var(--rule2)" href="series.html" title="Every film about the lab, in clearly labelled sections, in watching order">Explainers ▸</a>
+    <details class="more"><summary title="Other tools of the lab">more ▾</summary><div class="more-list"><a href="series.html">explainers: every film about the lab</a><a href="how-it-sees.html">how the lab sees (film I)</a><a href="operative.html">how the image becomes operative (film II)</a><a href="?made">how a shot is made</a>
+    <a href="syntagm.html" title="Read and rearrange passages through Metz’s eight categories">Syntagm ↗</a>
+    <a href="aspect.html" title="Aspect Explorer: every film in the repo by the shape of its picture, cinema sorted from the rest">Aspect ↗</a>
+    <a href="wes.html" title="A Wes Anderson Cineosis: the archive's most Andersonian shots and films, in chapters">Wes ↗</a>
+    <a href="monte.html" title="Monte Carlo Cinema: rules that make films from the archive, a critic that scores them, rules that evolve">Monte ↗</a>
+    <a href="monte-gallery.html" title="The Monte Carlo gallery: the printed films and the ones you kept, to watch, save or send">Gallery ↗</a>
+    <a href="blacktop.html" title="Blacktop: the Slopfeeder flat-top; every shot laid out by the embeddings (grid, map, ring), and the pass, six versions of a song's film at once">Blacktop ↗</a>
+    <a href="slopfeeder-films.html" title="The eight Slopfeeder films: one per song, cut by CUTBASTARD, with logline, story and how each was made">Slopfeeder films ↗</a>
+    <a href="slopfeeder-storyshots.html" title="Story shots to generate: six per film and two for the megafilm, with prompts and reference stills">Story shots ↗</a>
+    <a href="slopfeeder.html" title="SLOPFEEDER read from inside the lab: its source memes taken apart, its world segmented, and the archive's rhymes for every piece">Slopfeeder ↗</a>
+    <a href="slopfeeder-studio.html" title="Slopfeeder Studio: music videos for the Liturgy of the Two Buttons from archive plates, moving SAM cut-outs, code and AI prompts">Studio ↗</a>
+    <a href="slopfeeder-cartoon.html" title="Slopfeeder Multiplane: eight cartoons drawn in code, one per part of the world, read by CLIP and match-cut into the archive">Cartoons ↗</a>
+    <a href="slopfeeder-chapters.html" title="Slopfeeder Chapters: eight music videos, eight bets, the AI moments still to generate with their references and prompts">Chapters ↗</a>
+    <a href="mcts.html" title="The Grand Editing Machine: a Monte Carlo tree search that directs films from the archive, imagining thousands of futures and keeping the best story">Machine ↗</a>
+    <a href="ludens/" title="Ludens: editing as play: Putt-Off, Tennis and Open Cut, ball games over the Slopfeeder field where the path is the cut">Ludens ↗</a>
+    <a href="party.html" title="Party: one multiplayer room for every game; one screen is the stand, every phone joins once and plays Call Time, the Casino and Monte Carlo Pictures">Party ↗</a>
+    <a href="pictures.html" title="Monte Carlo Pictures: make the movie with what you've got; six reels, a production problem each, the house rolls the takes, the room prints one">Pictures ↗</a>
+    <a href="casino.html" title="The Casino: ten rounds; a clip plays, tap one of three answers, the archive plays the right one">Casino ↗</a>
+    <a href="patch.html" title="The Cineosis cinema as a patch: built once, played live, every module firing as the film plays">Patch ↗</a>
+    <a href="markov-poet.html" title="The Markov Poet: an empty room for a spoken or typed line, a narrative wall, and the engine">Markov Poet ↗</a>
+    </div></details>
+    <a href="../periodic-table.html" target="_blank" rel="noopener" title="Open the periodic table of the 45 signs in a new tab">Table ↗</a>
+    <button id="aboutBtn" class="ghost" title="Show the first steps (?); press again for every key and view" aria-label="Help">?</button>
+  </div>
+</header>
+
+<aside id="facets" aria-label="Filters"></aside>
+
+<main id="stage">
+  <div id="status" role="status" aria-live="polite"></div>
+  <div id="livebar" hidden></div>
+  <section class="mode" id="m-wall" hidden></section>
+  <section class="mode" id="m-map" hidden></section>
+  <section class="mode" id="m-ring" hidden></section>
+  <section class="mode" id="m-strata" hidden></section>
+  <section class="mode" id="m-cuts" hidden></section>
+  <section class="mode" id="m-montage" hidden></section>
+  <section class="mode" id="m-wyg" hidden></section>
+  <div id="guide" hidden></div>
+  <div id="boot">loading lab-data.json…</div>
+</main>
+
+<div id="reel" hidden></div>
+<div id="inspector" hidden></div>
+<div id="about" hidden></div>
+<div id="sendPop" hidden></div>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+
+<script src="app.js?v=20261013x"></script>
+<script src="film-mode.js?v=20261013x"></script>
+<script src="made.js?v=20261013x"></script>
+</body>
+</html>
