@@ -20,6 +20,7 @@ SET = [  # slug, source file in the scratchpad (None = page already on the site)
     ('webs-that-matter', 'webs-that-matter', 'Webs That Matter', 'Signs as their differences; film webs spun from data.'),
     ('web-of-cineosis', 'web-of-cineosis', 'The Web of Cineosis', 'The whole ontology as a circle, web types and radars.'),
     ('webs-of-significance', 'webs-of-significance', 'Webs of Significance', 'One real line, its questions, finds and choices.'),
+    ('editing-table', None, 'The Editing Table', 'One shot placed while another waits: a scene you steer, and your own cut.'),
 ]
 
 NAV_CSS = """<style>
